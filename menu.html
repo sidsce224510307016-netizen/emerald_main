@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Emerald Menu - Premium Mobile</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #ffcc00;
+  --primary-dark: #cc9900;
+  --bg-light: #f7f7f7;
+  --text-dark: #111;
+  --surface: #ffffff;
+  --intro-beige: #d2b48c; 
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #111;
+  color: var(--text-dark);
+  height: 100vh;
+  display: flex;
+  overflow: hidden;
+}
+
+/* --- INTRO ANIMATION --- */
+#intro-wrapper {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: var(--intro-beige);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  transition: transform 0.8s cubic-bezier(0.7, 0, 0.3, 1);
+}
+#intro-wrapper.exit { transform: translateX(-100%); }
+
+.brand-header {
+  position: absolute;
+  top: 60px;
+  font-family: 'Arial Black', serif;
+  font-size: 32px;
+  letter-spacing: 4px;
+  color: #3d2b1f;
+  text-transform: uppercase;
+}
+
+.animation-container {
+  position: relative;
+  width: 350px;
+  height: 250px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  padding-bottom: 60px;
+}
+
+.plate-side {
+  width: 180px;
+  height: 8px;
+  background: #ffffff;
+  border-radius: 0 0 15px 15px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  position: relative;
+  z-index: 10;
+  animation: slidePlate 0.7s ease-out forwards;
+}
+
+@keyframes slidePlate {
+  0% { transform: translateX(100vw); }
+  100% { transform: translateX(0); }
+}
+
+.falling-item { position: absolute; font-size: 40px; opacity: 0; z-index: 5; }
+.item-burger { animation: dropIn 0.5s 0.8s forwards; left: 85px; }
+.item-fries  { animation: dropIn 0.5s 1.1s forwards; left: 125px; }
+.item-salad  { animation: dropIn 0.5s 1.4s forwards; left: 160px; }
+.item-wine   { animation: dropIn 0.5s 1.7s forwards; left: 200px; } 
+
+@keyframes dropIn {
+  0% { transform: translateY(-300px); opacity: 0; }
+  100% { transform: translateY(-8px); opacity: 1; }
+}
+
+.intro-text-container {
+  margin-top: 20px;
+  height: 50px;
+  text-align: center;
+  font-family: 'Times New Roman', serif;
+  font-size: 24px;
+  position: relative;
+  width: 100%;
+}
+
+.text-msg { position: absolute; width: 100%; left: 0; opacity: 0; }
+.msg-1 { animation: textFlow 2s 2.7s forwards; }
+.msg-2 { animation: textFlow 2s 4.7s forwards; }
+
+@keyframes textFlow {
+  0% { opacity: 0; transform: translateX(30px); }
+  20%, 80% { opacity: 1; transform: translateX(0); }
+  100% { opacity: 0; transform: translateX(-30px); }
+}
+
+/* --- SIDEBAR & NESTED NAV --- */
+.sidebar { 
+  width: 90px;
+  background: #1a1a1a; 
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  padding-top: 15px;
+  padding-bottom: 100px;
+  position: relative; 
+  overflow-y: auto; 
+  height: 100vh;
+  border-right: 1px solid rgba(255,255,255,0.1); 
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.sidebar::-webkit-scrollbar { display: none; }
+
+.nav-indicator { 
+  position: absolute; 
+  left: 10px; 
+  width: 70px; 
+  height: 70px; 
+  background: var(--primary); 
+  border-radius: 12px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+  z-index: 1; 
+}
+
+.nav-group { width: 100%; display: flex; flex-direction: column; align-items: center; margin-bottom: 5px; }
+
+.nav-item { 
+  width: 70px; 
+  height: 70px; 
+  margin-bottom: 5px; 
+  border-radius: 12px; 
+  display: flex; 
+  flex-direction: column; 
+  align-items: center;
+  justify-content: center; 
+  cursor: pointer; 
+  position: relative; 
+  z-index: 2; 
+  transition: color 0.3s ease; 
+  color: rgba(255,255,255,0.6); 
+  flex-shrink: 0; 
+}
+
+.nav-item.active { color: #000; }
+.nav-item span { font-size: 22px; margin-bottom: 4px; }
+.nav-item label { font-size: 9px; font-weight: 700; text-transform: uppercase; text-align: center; pointer-events: none; }
+
+/* Submenu Styling */
+.submenu {
+  width: 100%;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease-out;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(255, 204, 0, 0.07);
+  border-left: 2px solid rgba(255, 204, 0, 0.18);
+  border-right: 2px solid rgba(255, 204, 0, 0.18);
+  border-radius: 0 0 10px 10px;
+}
+
+.nav-group.expanded .submenu { max-height: 700px; padding-bottom: 10px; }
+
+.sub-item {
+  width: 60px;
+  height: 55px;
+  margin-top: 8px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 2;
+  color: rgba(255,255,255,0.55);
+  transition: all 0.3s ease;
+  background: rgba(255,255,255,0.04);
+}
+
+.sub-item.active { color: #000; }
+.sub-item span { font-size: 16px; }
+.sub-item label { font-size: 7px; font-weight: 600; text-transform: uppercase; margin-top: 2px; pointer-events: none; }
+
+/* --- MAIN CONTENT --- */
+.main-content { flex: 1; display: flex; flex-direction: column; background: var(--bg-light); border-top-left-radius: 25px; overflow: hidden; }
+.hero-header { padding: 15px 20px; background: #fff; border-bottom: 1px solid #eee; text-align: center; position: relative; display: flex; align-items: center; justify-content: center; }
+#section-name { font-family: 'Playfair Display', serif; font-size: 16px; background: var(--primary); color: #000; display: inline-block; padding: 5px 12px; border-radius: 8px; box-shadow: 0 4px 10px rgba(255, 204, 0, 0.2); }
+
+.search-container { position: absolute; right: 15px; display: flex; align-items: center; }
+#search-input { width: 0; opacity: 0; padding: 8px 0; border: none; border-bottom: 2px solid var(--primary); outline: none; transition: all 0.3s ease; font-size: 14px; }
+#search-input.active { width: 120px; opacity: 1; padding: 8px 10px; margin-right: 5px; }
+.search-icon-btn { background: none; border: none; font-size: 20px; cursor: pointer; }
+
+.menu-container { flex: 1; overflow-y: auto; padding: 12px; padding-bottom: 100px; }
+.items-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+
+.food-card { background: #fff; border-radius: 16px; padding: 8px; display: flex; flex-direction: column; position: relative; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+.food-card img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 12px; margin-bottom: 8px; }
+.food-card h4 { font-size: 12px; line-height: 1.2; margin-bottom: 4px; height: 32px; overflow: hidden; }
+.price { font-weight: 700; color: #555; font-size: 14px; margin-bottom: 8px; }
+
+.cart-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #ff4444;
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 10px;
+  border: 2px solid white;
+  display: none;
+  z-index: 15;
+}
+
+.add-initial { width: 100%; padding: 8px; background: #111; color: #fff; border: none; border-radius: 8px; font-weight: 600; font-size: 12px; cursor: pointer; }
+.qty-controls { display: none; align-items: center; justify-content: space-between; background: #f0f0f0; border-radius: 8px; padding: 2px; }
+.btn-qty { width: 28px; height: 28px; border: none; background: #fff; border-radius: 6px; font-weight: 700; cursor: pointer; }
+
+.cart-bar { position: fixed; bottom: 15px; left: 105px; right: 15px; background: #28a745; height: 50px; border-radius: 12px; display: none; align-items: center; justify-content: space-between; padding: 0 15px; color: #fff; font-weight: 700; z-index: 1000; cursor: pointer; }
+.cart-popup { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: flex-end; z-index: 2000; }
+.cart-content { width: 100%; max-width: 500px; background: #fff; border-top-left-radius: 25px; border-top-right-radius: 25px; padding: 25px; max-height: 80vh; overflow-y: auto; }
+
+.cart-item-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #eee; }
+.cart-item-info { flex: 1; }
+.cart-item-info h5 { font-size: 14px; margin-bottom: 2px; }
+.cart-item-info p { font-size: 12px; color: #777; }
+.cart-item-actions { display: flex; align-items: center; gap: 10px; }
+
+.pay-btn { width: 100%; padding: 16px; background: #28a745; color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; margin-top: 20px; cursor: pointer; }
+
+/* --- ORDER CONFIRMATION OVERLAY --- */
+#order-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9000;
+}
+#order-confirm-overlay.visible { display: flex; }
+.order-confirm-box {
+  background: #fff;
+  border-radius: 24px;
+  padding: 40px 30px;
+  text-align: center;
+  width: 85%;
+  max-width: 340px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+@keyframes popIn {
+  0% { transform: scale(0.7); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.order-confirm-icon { font-size: 52px; margin-bottom: 12px; }
+.order-confirm-title { font-family: 'Playfair Display', serif; font-size: 22px; color: #111; margin-bottom: 20px; }
+.order-timer-ring {
+  position: relative;
+  width: 130px;
+  height: 130px;
+  margin: 0 auto 20px;
+}
+.order-timer-ring svg { transform: rotate(-90deg); }
+.timer-track { fill: none; stroke: #f0f0f0; stroke-width: 8; }
+.timer-progress {
+  fill: none;
+  stroke: #28a745;
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-dasharray: 339.29;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 1s linear;
+}
+.timer-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 800;
+  color: #111;
+}
+.order-ready-text {
+  font-size: 15px;
+  color: #555;
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+.order-confirm-close {
+  background: #111;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 32px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+#order-ready-banner {
+  display: none;
+  margin-bottom: 18px;
+  animation: readyPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+#order-ready-banner.visible { display: block; }
+.order-ready-badge {
+  background: #28a745;
+  color: #fff;
+  font-size: 20px;
+  font-weight: 800;
+  padding: 10px 24px;
+  border-radius: 50px;
+  display: inline-block;
+  letter-spacing: 0.5px;
+}
+@keyframes readyPop {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.token-box {
+  background: #fff8e1;
+  border: 2px dashed #ffcc00;
+  border-radius: 12px;
+  padding: 10px 18px;
+  margin: 0 auto 20px;
+  display: inline-block;
+  text-align: center;
+}
+.token-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #888;
+  letter-spacing: 1.5px;
+  margin-bottom: 4px;
+}
+.token-number {
+  font-size: 28px;
+  font-weight: 800;
+  color: #111;
+  letter-spacing: 3px;
+  font-family: 'Courier New', monospace;
+}
+
+/* --- TRACK ORDER BUTTON --- */
+#track-order-btn {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #e00000;
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  padding: 13px 20px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  z-index: 8000;
+  box-shadow: 0 4px 18px rgba(220,0,0,0.45);
+  letter-spacing: 0.5px;
+}
+#track-order-btn.visible {
+  display: block;
+}
+@keyframes trackShake {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  15%       { transform: translateX(-5px) rotate(-3deg); }
+  30%       { transform: translateX(5px) rotate(3deg); }
+  45%       { transform: translateX(-4px) rotate(-2deg); }
+  60%       { transform: translateX(4px) rotate(2deg); }
+  75%       { transform: translateX(-2px) rotate(-1deg); }
+  90%       { transform: translateX(2px) rotate(1deg); }
+}
+#track-order-btn.shake {
+  animation: trackShake 0.6s ease;
+}
+</style>
+</head>
+<body>
+
+<div id="intro-wrapper">
+  <div class="brand-header">EMERALD</div>
+  <div class="animation-container">
+    <div class="plate-side"></div>
+    <div class="falling-item item-burger">🍔</div>
+    <div class="falling-item item-fries">🍟</div>
+    <div class="falling-item item-salad">🥗</div>
+    <div class="falling-item item-wine">🍷</div>
+  </div>
+  <div class="intro-text-container">
+    <div class="text-msg msg-1">Prioritizing Taste</div>
+    <div class="text-msg msg-2">Serving With Speed</div>
+  </div>
+</div>
+
+<div class="sidebar" id="sidebar">
+  <div class="nav-indicator" id="nav-indicator"></div>
+
+  <!-- 1. Starters -->
+  <div class="nav-group expanded" id="group-starters">
+    <div class="nav-item active" onclick="toggleGroup('starters', this)">
+      <span>🍢</span><label>Starters</label>
+    </div>
+    <div class="submenu">
+      <div class="sub-item" onclick="showSection('starters', this)"><span>🍽️</span><label>Indian</label></div>
+      <div class="sub-item" onclick="showSection('snacks', this)"><span>🍕</span><label>Snacks</label></div>
+      <div class="sub-item" onclick="showSection('salads', this)"><span>🥗</span><label>Salads</label></div>
+    </div>
+  </div>
+
+  <!-- 2. Main Course -->
+  <div class="nav-group" id="group-main">
+    <div class="nav-item" onclick="toggleGroup('main', this)">
+      <span>🫕</span><label>Main</label>
+    </div>
+    <div class="submenu">
+      <div class="sub-item" onclick="showSection('paneer', this)"><span>🧀</span><label>Paneer</label></div>
+      <div class="sub-item" onclick="showSection('indian_curry', this)"><span>🍛</span><label>Curries</label></div>
+      <div class="sub-item" onclick="showSection('dal', this)"><span>🍲</span><label>Dal</label></div>
+      <div class="sub-item" onclick="showSection('rice_merged', this)"><span>🍚</span><label>Rice</label></div>
+    </div>
+  </div>
+
+  <!-- 3. Breads -->
+  <div class="nav-group" id="group-breads">
+    <div class="nav-item" onclick="toggleGroup('breads', this)">
+      <span>🍞</span><label>Breads</label>
+    </div>
+    <div class="submenu">
+      <div class="sub-item" onclick="showSection('tandoor', this)"><span>🔥</span><label>Tandoor</label></div>
+      <div class="sub-item" onclick="showSection('kofta', this)"><span>🫓</span><label>Kofta</label></div>
+    </div>
+  </div>
+
+  <!-- Chinese (Merged) -->
+  <div class="nav-group">
+    <div class="nav-item" onclick="showSection('chinese_merged', this)"><span>🍜</span><label>Chinese</label></div>
+  </div>
+
+  <!-- 5. Soups & Accompaniments -->
+  <div class="nav-group" id="group-soups">
+    <div class="nav-item" onclick="toggleGroup('soups', this)">
+      <span>🥣</span><label>Soups</label>
+    </div>
+    <div class="submenu">
+      <div class="sub-item" onclick="showSection('soups', this)"><span>🍲</span><label>Soups</label></div>
+    </div>
+  </div>
+
+  <!-- Sizzlers -->
+  <div class="nav-group">
+    <div class="nav-item" onclick="showSection('sizzlers', this)"><span>🍝</span><label>Sizzlers</label></div>
+  </div>
+
+  <!-- Continental -->
+  <div class="nav-group">
+    <div class="nav-item" onclick="showSection('continental', this)"><span>🍝</span><label>Continental</label></div>
+  </div>
+
+  <!-- 6. Beverages & Desserts -->
+  <div class="nav-group" id="group-beverages">
+    <div class="nav-item" onclick="toggleGroup('beverages', this)">
+      <span>🥤</span><label>Drinks</label>
+    </div>
+    <div class="submenu">
+      <div class="sub-item" onclick="showSection('drinks', this)"><span>🍷</span><label>Beverages</label></div>
+      <div class="sub-item" onclick="showSection('shakes', this)"><span>🥛</span><label>Shakes</label></div>
+      <div class="sub-item" onclick="showSection('ice_cream', this)"><span>🍦</span><label>Desserts</label></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="main-content">
+  <div class="hero-header">
+    <h1 id="section-name">Starters</h1>
+    <div class="search-container">
+      <input type="text" id="search-input" placeholder="Search item..." oninput="handleSearch()">
+      <button class="search-icon-btn" onclick="toggleSearch()">🔍</button>
+    </div>
+  </div>
+  <div class="menu-container"><div class="items-grid" id="menu-grid"></div></div>
+</div>
+
+<div class="cart-bar" id="cart-bar" onclick="toggleCart()">
+  <span id="cart-item-count">0 Items</span>
+  <span id="cart-total-price">₹0.00</span>
+  <span>View Cart →</span>
+</div>
+
+<div class="cart-popup" id="cart-popup">
+  <div class="cart-content">
+    <div style="display:flex; justify-content:space-between; margin-bottom:15px">
+      <h3>Your Basket</h3>
+      <button onclick="toggleCart()" style="background:none; border:none; color:#999; font-size:20px">✕</button>
+    </div>
+    <div id="cart-items-list"></div>
+    <div style="background: #f9f9f9; padding: 15px; border-radius: 12px; margin-top: 15px;">
+      <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 20px;">
+        <span>Total</span><span id="cart-total-price-popup">₹0.00</span>
+      </div>
+    </div>
+    <button class="pay-btn" onclick="processPayment()">Place Order</button>
+  </div>
+</div>
+
+<!-- ORDER CONFIRMATION OVERLAY -->
+<div id="order-confirm-overlay">
+  <div class="order-confirm-box">
+    <div class="order-confirm-icon">🍽️</div>
+    <div class="order-confirm-title">Order Placed!</div>
+    <div style="text-align:center; margin-bottom: 18px;">
+      <div class="token-box">
+        <div class="token-label">🎫 Your Token Number</div>
+        <div class="token-number" id="order-token-number">#---</div>
+      </div>
+    </div>
+    <div class="order-timer-ring">
+      <svg width="130" height="130" viewBox="0 0 130 130">
+        <circle class="timer-track" cx="65" cy="65" r="54"/>
+        <circle class="timer-progress" id="timer-progress-circle" cx="65" cy="65" r="54"/>
+      </svg>
+      <div class="timer-label" id="timer-display">15:00</div>
+    </div>
+    <div class="order-ready-text" id="order-ready-subtext">Your order will be ready in 15 minutes</div>
+    <div id="order-ready-banner"><span class="order-ready-badge">🍴 Order Ready !</span></div>
+    <button class="order-confirm-close" onclick="closeOrderConfirm()">Got it!</button>
+  </div>
+</div>
+
+<!-- TRACK ORDER BUTTON (shown only after Got it! is pressed) -->
+<button id="track-order-btn" onclick="goToTrackOrder()">🛵 Track Order</button>
+
+<script>
+const menuData = {
+  /* ── 1. STARTERS ── */
+  starters: [
+    { id: 'st1',  name: 'Corn Tikki',                  price: 200.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSnMSoDPqbSHVRvP9UUOfUXeQmo2cHT-_TPtUZ3YJRXKf8o38sRbov1ICUmpA&s' },
+    { id: 'st2',  name: 'Paneer Tikka Dry',             price: 235.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQLGilZUsB-UT5Fg1yIFJYN2dzc-ctilFBpzVYPiRlRvGNKCxo4Hus6uDl2Zrg&s' },
+    { id: 'st3',  name: 'Paneer Phudina Tikka',         price: 235.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTHPW-1_J3YuQ8umbCW6ZvQ1chf-w9c2RAXcwqVwVvSakhp3Ua-W7zqcIvszY4&s' },
+    { id: 'st4',  name: 'Paneer Lahsuni Tikka',         price: 235.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSaK7iaUGqo5RGmx1gPMSJSwCWdYn-gd8zmsuEQ9r_FQRwCIYGxIQ_rwmgy660&s' },
+    { id: 'st5',  name: 'Hara Bhara Kabab',             price: 200.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvEdtCyriAu9hZPb3iXzI7hQb9UZU9iXi6iUBA8UcuHjR1ULg_tdI00-QyYw&s' },
+    { id: 'st6',  name: 'Raja Kabab',                   price: 210.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTd3XlcCjYFtIKVur7D10WD97WpOGOLlic7pAeumvMNPADhHDAQh5lck-ck4Q&s' },
+    { id: 'st7',  name: 'Veg. Sheekh Kabab',            price: 230.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQUZ9k9eehKgTjP9SjmhEDkuW8YNzEdDgMbrBH8rEhDntEJgKhKyJnXYx7rU7A&s' },
+    { id: 'st8',  name: 'Paneer Sheekh Kabab',          price: 260.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPVJK_eKYv-A8Cf29C0PeFm0IhtuI5sphRqy3UVxr8mxTKykkhYx4O7um5Lxs&s' },
+    { id: 'st9',  name: 'Veg. Brice Kabab',             price: 200.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRX1eCH5sW_OqxyeVuci48XeoKgSz2vzX8CZbK9dBSopgMjEf-6ezXNCXPFSQ&s' },
+    { id: 'st10', name: 'Veg. Dilruba Sheekh Kabab',    price: 260.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRjm5xJKeHPP5KVP_MnaM1Ge-ar-Zkx4cuLASlykXS_j3l63fM3o6ioGm0G8CI&s' },
+    { id: 'st11', name: 'Dahi Kabab',                   price: 190.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTs8qU1I9cJMvKSJPmdzVwyBcOyvN_RRF6LPgiin1ChAYPZ7P6aenjM9rMsPRA&s' },
+    { id: 'st12', name: 'Jahangiri Tikka',              price: 230.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRyZoBs7nOJyMXCegt8puFzSWIDb_kep2QtT6_UNsglPLHC59ZaSahcOTFTww&s' },
+    { id: 'st13', name: 'Tandoori Plater',              price: 285.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTh_9O4lCssUkRfWcTPlNTXtsboJRNaIYaIhtHz-w5Y-F1GOTwv9bfS-Iye0tg&s' }
+  ],
+
+  /* ── 1b. SNACKS (under Starters) ── */
+  snacks: [
+    { id: 'sn1', name: 'Veg. Pizza',           price: 135.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRcZbS_g1y4mcyqDyffzQ1em9LxESjjv_XboKDdb3dFi1KjY6JUi8RDtGowvA&s' },
+    { id: 'sn2', name: 'Italian Pizza',        price: 135.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRJiAJiyeCBwrKH9QGXwjmHcAK8N_N6pGV47gitT1a8II32wuTPl2OB98ju6x4&s' },
+    { id: 'sn3', name: 'Cheese Pizza',         price: 150.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRXfxisbWZ3dactVTVbzhllrSZFDxim-Vrtv9l16MI2TNQqVBAhTVgamAnS8A&s' },
+    { id: 'sn4', name: 'Jain Pizza',           price: 120.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR9gHkBz7Rqsdr8ONpnwPTzSwrxmJsmAaFNHrjhky3D-U6fE-YAhKyGYWKYYxU&s' },
+    { id: 'sn5', name: 'Veg. Club Sandwich',   price: 90.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQheZ7bqoOvbwsoztSEKj26v_jRiuDpbUGQ1xmklkNve00dCBrsVYkfaV19iKU&s' },
+    { id: 'sn6', name: 'Veg. Sandwich',        price: 80.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcToM5d8P8Uv2HNeCCTZFMVE-EPyS_BsFmoLro8SNetCuWvu1xwF7BBKEtMs6A&s' },
+    { id: 'sn7', name: 'Cheese Sandwich',      price: 80.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjb5DmJICAgE99DpNRr4PEdfE9fpp6xa49COhcEqao3kZlZhI2X30HBuqxXug&s' },
+    { id: 'sn8', name: 'Cheese Jam Sandwich',  price: 90.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSOgXouOb8XZS_uo3K9TbvxO9wcnf-fHbkRjG6n7ATThkKrbnz-HGbD9K8Wmw&s' },
+    { id: 'sn9', name: 'Bread Butter',         price: 55.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTCjaFXXRZfGg0loRiNy0IgPtttFEDaWd-H_LVAoUakfTeVt01CjO8jNe6D75I&s' },
+    { id: 'sn10',name: 'French Fries',         price: 100.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQMhzEnJCL7mXaVf_4Dsm01mZXmpTuIFURvjQxQaX3sZpeIpWpLLUVX85QrqQ&s' }
+  ],
+
+  /* ── 2. MAIN COURSE ── */
+  paneer: [ /* ... same as before ... */ 
+    { id: 'pn1',  name: 'Emerald Sp. Paneer',          price: 240.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQZ1NZRI0qF1uVzh3cHKrlV5ws8AzWEXNmr1wi_09jdFV9H_3-uauxLkbn2_Q&s' },
+    { id: 'pn2',  name: 'Paneer Sizzling',             price: 245.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTENXelHAQVN1o1El1uyXXlLt2sBzAXzikGoHMVWAug8tBM52wifobxgIQeLA&s' },
+    { id: 'pn3',  name: 'Paneer Kathiyawadi',          price: 230.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSwoTP1i4WHoSkkRDHcBUMjdAWvmDTmwcZrfljrsrKwZLCJEvZz1cihiZuWkQ&s' },
+    { id: 'pn4',  name: 'Paneer Darwar',               price: 230.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTqGTAsBD1JR_ZXKpQzWDolO5dziF1DyaCkgDtyeKAgoCoM7fenbwStizfNFA&s' },
+    { id: 'pn5',  name: 'Paneer Tiranga',              price: 235.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQhXqrGjVSrLeU93WHYDSR-EfRXRPIxZxn4oV_zQ70_5I7sU4EjGCFvhcA_Cw&s' },
+    { id: 'pn6',  name: 'Cheese Butter Masala',        price: 235.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSKlyiDm0odqlRKurnQH-qfCF_4lXoI_WnG6nKqWtQfz0o4it89F9PRTiajXuo&s' },
+    { id: 'pn7',  name: 'Cheese Angoori',              price: 235.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQxhIdaj-9HLlHepdg26np0FMO1eMPPYTnv8zUUo1MIZKn5dK1YwBM3UFDjMA&s' },
+    { id: 'pn8',  name: 'Paneer Mushroom Masala',      price: 230.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRYUwRncHgwsQfHX0l01zaldNbkKYoPX4QOIQWSupDnGNt-m4qI_F3MpQDcww&s' },
+    { id: 'pn9',  name: 'Paneer Butter Masala',        price: 210.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT-DKI6IZznGQYyEdIs8Pz9yuHJMF_ZdyUVVNisCbAZkBZ5uEILxnZBtZm_GxA&s' },
+    { id: 'pn10', name: 'Paneer Tikka Masala',         price: 220.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTA8kS6uIoiT-0d3uMOiEpGBWJx5poogJhhj9kB2F4hCvxM2G4cJNK0QjWtGm0&s' },
+    { id: 'pn11', name: 'Paneer Kankani',              price: 220.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSzoz_nUT7f9BddMaE1fYuj4bKZSEcQ5mNW3RoCUUwhe3brMwJvY28EhXAi-w&s' },
+    { id: 'pn12', name: 'Paneer Diwani Handi',         price: 220.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSV7HAYYhfdndeaKgsVe2KBHuwDz8GCZGkzVHQbRc-eMNJoEHz3SJH6Ezepe64&s' },
+    { id: 'pn13', name: 'Paneer Lajawab',              price: 220.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTMJzClOsFlc9fL2LDvD2PkKnSveiweQcaaqyTVlnUG1rEJPwEhTdMAw1W4fA&s' },
+    { id: 'pn14', name: 'Paneer Kalimirch',            price: 220.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRZT7hbYQPZWQS8EiPPQFUVHJRub8CrwyReuXc1-wmATrzMQyEokUfb_nlIkg&s' },
+    { id: 'pn15', name: 'Paneer Kadai',                price: 220.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRebYK9td9pnUuP4KBg2BjQA3WkFMqxsQG5WEjCx_azeFF8CR_V6ejMkN_5V1M&s' },
+    { id: 'pn16', name: 'Paneer Handi',                price: 220.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRpvTNMgzQEACbdSiR7M8Aw6khIVZDvXPb2b6-9YTGbGUK-hVWfQNHpG7YTqQ&s' },
+    { id: 'pn17', name: 'Balti Paneer',                price: 220.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRSBx2YwfjmqRmziJNb-TJxxI8YOZtSVP_FzpOKHyM5cjxWnaxVrmSYLby8gQ&s' },
+    { id: 'pn18', name: 'Tawa Paneer',                 price: 220.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTylUM036lj8Xm_gfyqp9nhp0aBlEF-z8w_K2-hhMXZRHOH6QpBHwESNb2RLw&s' },
+    { id: 'pn19', name: 'Paneer Toofani',              price: 220.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRsqrRnuUw1M4Ez-IbDTtXR5zVPSBAYSxXqTvS1GkyexbE7uSEQ--mApcDxYA&s' },
+    { id: 'pn20', name: 'Paneer Hara Masala',          price: 220.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT2uJ8s9UanvXFg1A7BCBxo49HcJZ6omi4wnORDSRs7km3wayEGTqTmZnUPdA&s' },
+    { id: 'pn21', name: 'Paneer Shahi Korma',          price: 220.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTD5awf2CJlTf8hfHOpvprTV00_8EdpEd0nfgQmPJ8sxT3Gw05i7_ZLuQXS-g&s' },
+    { id: 'pn22', name: 'Paneer Bhurjee',              price: 230.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSnohiVvfV6tw7Jgrme55F5ql8gZ5zhDy7jpNwiLDKL76XwO9I9SvNPrHIpwoM&s' },
+    { id: 'pn23', name: 'Paneer Pasanda',              price: 225.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSKPHEmr3Dz4JAG21aIpV_ryUombNLNCk2quT1yNLC8VucQaCNRASkrB9iiHA&s' },
+    { id: 'pn24', name: 'Mutter Paneer',               price: 200.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXdxMrCZ-IhHiDvVN--E6AUxBIe8zqUXFCaEHMf6-MDxhTTkDiHpLKn6vdUDs&s' },
+    { id: 'pn25', name: 'Palak Paneer',                price: 200.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQKSB61FcG0jywiAX4_aRFWKmrwoiBYrmsrq76QMcnDA0DEbN8_R63T9QOSPA&s' },
+    { id: 'pn26', name: 'Methi Paneer Masala',         price: 220.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvN7tPVw9DpOADOpZ3Qg9AF6mTrNPII3KYfPuYiACbVCxnGpa2YsKdWpX3xWg&s' },
+    { id: 'pn27', name: 'Kaju Paneer Masala',          price: 245.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRo8Uy8AutD9fjV-YtsnqdQT2rkYACD8rvwiLc-mYCmvqTuxynHyJxpGe9oDu4&s' },
+    { id: 'pn28', name: 'Khoya Kaju (sweet)',          price: 240.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSvj8SGZmE8PWPGw2qf0ZJLU1xbotrSgM2rIk4X4xByA3zAx-citw1e_VhSbuA&s' },
+    { id: 'pn29', name: 'Kaju Balti Masala / Kaju Curry', price: 245.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSDYpgFi8rUHoXXS0_Dcj8WeHkzCGrTO8T_BpfmhCMhI2XkxlDW5rhaBDc49lQ&s' }
+  ],
+  indian_curry: [ /* ... same ... */ 
+    { id: 'in1',  name: 'Emerald Sp. Veg.',            price: 210.00, img: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=400' },
+    { id: 'in2',  name: 'Veg. Mastani',                price: 215.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJken_OHzMdXzslUAgVF-OSzDKfxJfqYHUODZfD4snErypwhDpBmjiFjm8PdU&s' },
+    { id: 'in3',  name: 'Veg. Jawalamukhi',            price: 215.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR4iDXY1HwoY9OrCw9yLJ0KC9WWkW_d17O9eIXz4OTV7BSzC6KzvPLEPRKZQA&s' },
+    { id: 'in4',  name: 'Veg. Sizzling',               price: 220.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT9B-Rj54fQEMbx191I65tb9Nt-ZvopEFVugHwya7UdZdySG6_4W9HHSc0t_w&s' },
+    { id: 'in5',  name: 'Veg. Tawa Masala',            price: 200.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTAK8ADLVGpL8bYcbB6qAbq7wjy-DAb61nEdZX1fGu9PF8FqOn36Cm_UewIfA&s' },
+    { id: 'in6',  name: 'Veg. Kadai',                  price: 200.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSij1FeNHj-2YA4Y72JVA5IgvGid-VO-BKan0AgUYp6c_DuTiJtMg3w0-6VMQ&s' },
+    { id: 'in7',  name: 'Veg. Kolhapuri',              price: 200.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcToXzED7p4Qq6O-KagGUB_JjJDvrIGbFapk7GC_9mpOQNhu0QIPBZI9FA2g1g&s' },
+    { id: 'in8',  name: 'Veg. Makhanwala',             price: 200.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT1LUq1bH4isfxxbroZA4ULybVvEJxr8iYnhPrgI00MyfbZpVNBC-s64S6NTb8&s' },
+    { id: 'in9',  name: 'Veg. Jaipuri',                price: 200.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTP6xHIvQ0gQZHxVI9oSgvduCzj_WWS05K94IMZWiT1ZRnZ58RXrDT6wHu2Lsw&s' },
+    { id: 'in10', name: 'Veg. Singapuri',              price: 200.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQ57ovk-MqhRi-pTlYLG6RwgBa2R5_nKyXURh_sYDG8mW8m-LkMS9QhR0WNA&s' },
+    { id: 'in11', name: 'Veg. Handi',                  price: 200.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQoZcZF_rYeSkYKgZEQTAsghzq43cpCx6LC0SgXIUzbOcrUqlXOLqpdiGDpDqg&s' },
+    { id: 'in12', name: 'Veg. Jalfrezi',               price: 200.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTpmPm6oAUd4jRmFpq9tLBU8L4n7HfpnClrABa47BTfsUaXcGrUR27J5yl1wQ&s' },
+    { id: 'in13', name: 'Veg. Shahi Korma',            price: 200.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTDmtuafszLhm4mgMTxDD13bVRqxvf0hEQJ9pD2cyomzS_Da-QFJ_AIkw5VWfA&s' },
+    { id: 'in14', name: 'Veg. Toofani',                price: 200.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSmXe4d4xyXOZgVgOYIVMcrwoF7-e-lDTfQeDplAXQTHivQ33dONphajA_shnY&s' },
+    { id: 'in15', name: 'Veg. Hyderabadi',             price: 200.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSFE9HIpvhPpDDn0mg_j5KnQsx1Xwaqki-0nPtw4SlkCSMWpPgES7HEoHMV--M&s' },
+    { id: 'in16', name: 'Palak Corn Capsicum',         price: 200.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcREqJYS60btuPrCqTo0oJPHtwXQm-HqOCgUqu2Va2mmro6CA2SpK2CBRjNeLA&s' },
+    { id: 'in17', name: 'Mutter Methi Malai',          price: 215.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR5I2RJPVH6u-9wYKGsxNCky_5DsYQLld6gJQEyAUC3Yi90kgocTyavlBQjVw&s' },
+    { id: 'in18', name: 'Baby Corn Makhanwala',        price: 215.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTX410m7LpHjDoM3r_vqP6uIt4j0t_4noEaMQI9LXUDrsNQ9PJ1El3ZkM7cA5U&s' },
+    { id: 'in19', name: 'Navaratan Korma',             price: 215.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTLi9_6ksSOOZzX36L0OES0fZV0di7XjmPbevDZketQfx0zsVOHB_Ts2FnSU6Y&s' },
+    { id: 'in20', name: 'Corn Tomato Bhartha',         price: 200.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcREf03T4qEJWZj5KUyqhdv114Exh-K1AXDtwFTqAUcr0PkbJ-Ysmw-jAm9uTEc&s' },
+    { id: 'in21', name: 'Mutter Mushroom',             price: 215.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR5MtO-yHpfNO_A5BlQPzGtiq5L_88Vd2smHCQZVsZiPYUtv1eZ9TJcz0LaQPY&s' },
+    { id: 'in22', name: 'Mushroom Masala',             price: 215.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQRjqX-1J2tDkic0eM9HgKNeP-Tdn4FHZeify82jXsjfm5oQ7_TjlV40i2qJLA&s' },
+    { id: 'in23', name: 'Mix Vegetable',               price: 190.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR87kdrOanfilj1Tvij9hNEK6b9kVk0OZu5rK3NndJqmcaJdEZxnn_AhC9bjKo&s' },
+    { id: 'in24', name: 'Chana Masala',                price: 190.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRViB5mkcMJiQQLdNsMLUpadxknye9fGQiqUMPtZHFX8kOuPnx511_2eBngHs0&s' },
+    { id: 'in25', name: 'Aloo Masala',                 price: 190.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQrBQjeDOSKgkNjzSXS6WKBCrH-EE3rrIHnFbXQOTeBngN_hBJ00vpw5l6HZw&s' },
+    { id: 'in26', name: 'Dum Aloo',                    price: 190.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQS26r1lTLNKX6bdCAUgovAJSim9uoqiAFJG_nlWgdyBhINWwvx56PeHRPs1g&s' },
+    { id: 'in27', name: 'Aloo Methi',                  price: 155.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT3l5FgCh1jM3M5NQvwwI7Aw1b6O1DILhONvCEr-uZb0Ch1k342dAhzPq3PJw&s' },
+    { id: 'in28', name: 'Jeera Aloo',                  price: 155.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQh5q0nN3Jlq9yVxs6WpTiC9SJ7L34LXvXkJwXS7j1pMJ020miRpzEMdyxSUg&s' }
+  ],
+  dal: [
+    { id: 'da1', name: 'Dal Fry',        price: 115.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQz3YmEz-ixbsaPM1A-y-ikrxJ4jlaxbn1NhSphHfrc8srCw9WLLurGbesfSw&s' },
+    { id: 'da2', name: 'Dal Fry Butter', price: 120.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ1-WK5fyJ9AnMFXsrzlAJ8ZgOkV1AQn4_UyNOFenA576oB5x58C6VcjvVeQPI&s' },
+    { id: 'da3', name: 'Dal Fry Tadka',  price: 140.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQnuR-kW3Rc9D2no5JYcNqrxD1rNimPXDhhhkBcbQS6u1Qq8qGy92frN1BYng&s' },
+    { id: 'da4', name: 'Dal Palak',      price: 145.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJWRvY4cMb5Ffu_P8k6OyIvdVbEoTMmb1CqrEtq_x6XZMtb_x0G9cFkIsIS3w&s' }
+  ],
+  rice_merged: [
+    { id: 'ba1',  name: 'Emerald Sp. Biryani',      price: 199.00, img: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=400' },
+    { id: 'ba2',  name: 'Veg. Biryani',             price: 150.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRMrPvVVI_p51wmimkIOKW1vivFUbC_pD49cBrT8Qetko8WRW61m6OnP3JJhmo&s' },
+    { id: 'ba3',  name: 'Hyderabadi Biryani',       price: 165.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT4Wj8lV9gZkLGeSWxqyihCaG1WBSdJalfLcNw0c0f4ctpGasUTPrPDQG27yQ&s' },
+    { id: 'ba4',  name: 'Handi Biryani',            price: 165.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRWLsJJguNISxQLUHALM_VLsWojdnlh9cBOeQdMaNg9xyWX3UPWXNp5SGy2Kek&s' },
+    { id: 'ba5',  name: 'Veg. Pulav',               price: 130.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQYxzbc70NiAtkueNnlBVc55fyI9yLE_4rM3_bF3VrFsA-l-_P44BMPpqErRd4&s' },
+    { id: 'ba6',  name: 'Peas Pulav',               price: 130.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUrMpCoaeFZT2FDPxgTafhSSKLVn1azF3L2N97DDdGQ1U3QPAUruL-l_JjcA&s' },
+    { id: 'ba7',  name: 'Kashmiri Pulav',           price: 170.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTe1_D4BSZa-P722NmGagGAytQbFqx_En-IubCm0xZDyxasPhpDkrlZ-k3pi3M&s' },
+    { id: 'ba8',  name: 'Jeera Rice',               price: 125.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTcABEZQtmF-chKF2G637YT_qV42M6taWnfjTFoM7K4FMWHT455sVn36d9tzkw&s' },
+    { id: 'ba9',  name: 'Steamed Rice',             price: 95.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTA5vHz9AWNwXCVIAUEiHyIq_uW4LJ_6dPBYGeA10eoo339IjsT0JsuTkSXkQ&s' },
+    { id: 'ba10', name: 'Mint Rice',                price: 190.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR5cDoj1sm6c96yB5v56mL3ADZGLaQpsVLiVKlkOzidSKcMpFz6N-8VExMTtmw&s' },
+    { id: 'ba11', name: 'Corn Rice',                price: 190.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR0N6oVtKCd1mU7pFGkL1w95YC3yg5g9nFfTmifbwwsx35044oU6jLzfhEO4Q&s' },
+    { id: 'ri1', name: 'Mushroom Fry Rice',       price: 195.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR4jymona75F3B9EIYmK9sCNAQYPDhvr3sK1P9-XpAJy4jodmvGKp34GV96Kg&s' },
+    { id: 'ri2', name: 'Chinese Bhel',            price: 190.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcROOeB4BsRgKyqoam4VV0zTvgsG313zvd9cftgBZBiwj4EN2RLTsSM8dSRUAA&s' },
+    { id: 'ri3', name: 'American Chopsuey',       price: 190.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQCeXU7fixnVy0_Uz4BLui2r3BF5IreNNesB8XttYdJ7v-YxAtstMhSJgdQMXo&s' },
+    { id: 'ri4', name: 'Veg. Triple Fried Rice',  price: 210.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTi8F6l2aowfD4UAz2VXoe3s-cPzzC451OvQNBR_FTgAfQjOxaVdTidICTXL3M&s' },
+    { id: 'ri5', name: 'Veg. Fried Rice',         price: 185.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSRIItrz76aFxyRWjQ9fJ7Hamlt05YoQOWZpkW9KmC6Vlhuy32XZO5YUTinPUQ&s' },
+    { id: 'ri6', name: 'Schezwan Fried Rice',     price: 185.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRUE8D7f3AI6VhuH_QGfoekuBlxz4VrM5fmNW5Yu1nZSLhCaAWbHuzQB7AFyQ&s' }
+  ],
+
+  /* ── KOFTA (now under Breads) ── */
+  kofta: [
+    { id: 'ko1', name: 'Cheese Kofta',          price: 225.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTz6SjYMJmZJYKylGEGFEVjK_Lhuek0lp2Omnh2U6QYCFeZy9Uiw1l7Z-oqHX0&s' },
+    { id: 'ko2', name: 'Malai Kofta',           price: 220.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcStZp15hcWu3_F5UtuYx46XkcDiz3q2KbyP6L8a4dzarG6xUPNrz3Pky5049w&s' },
+    { id: 'ko3', name: 'Veg. Kofta',            price: 200.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ3W03iE8rsEd0yms9BZBdsjwX8h70qxlexq5ENmopDmFYXlaHEqX8ElxumBw&s' },
+    { id: 'ko4', name: 'Paneer Kofta',          price: 215.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRSKT-v8uo9kv5vfvAeFHC168NrANkAzpFQ6fGWkB3BkggYSgW6Bkz1GC2yUA&s' },
+    { id: 'ko5', name: 'Kashmiri Kofta',        price: 215.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT2eSXIeHsV-6-_0uWktGf4Kzyhvs2QQ7ZHZYPiGgNS4dVOUY2EHrZQAAj67dk&s' },
+    { id: 'ko6', name: 'Nargisi Kofta',         price: 205.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQU3jd1HNJyF0mSpQ-4pYnSD1hB3uH4313RJGp1COptabkF6iUMLN60oh-FyQ&s' },
+    { id: 'ko7', name: 'Kadai Kofta',           price: 210.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTAlQUx51gdmKbAqYGsAOxqBCJGZ9Iko2ecCJkK7QvH85fyhHHpdsWVu-0FVZs&s' },
+    { id: 'ko8', name: 'Kaju Kofta',            price: 225.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRIrpk1gWUI0HHns2P-wEnORCPaNtRd4CrFFjMMdwBgujE9ONto7Rf8Rt-nKFE&s' }
+  ],
+
+  /* ── 3. BREADS ── */
+  tandoor: [
+    { id: 'ta1',  name: 'Roti - Plain',             price: 25.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRASLfl7eQ6yo_5x2RAm7K50NkiqJa4pRoRaaCuCh-nO7-oaFPecwjyRYljIQ&s' },
+    { id: 'ta2',  name: 'Roti - Butter',            price: 28.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ8zgs_vMZS-m8AaHi6oqMcc89HEuhOlpu2JhhW8-B9oXq9Gx7qOPLUcD5ZvQ&s' },
+    { id: 'ta3',  name: 'Paratha',                  price: 40.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTGOYJh0ycbnLcO-LuKPROrR8p7HqHIoOW_cD2I2W5eK8gJocILeL4Qe0abtw&s' },
+    { id: 'ta4',  name: 'Paratha Butter',           price: 55.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTWM1KJVZ-SSn83NfgA5OwC51dc61K5hq3v8NpOvQEej3okOj0QVBW2n5HGGw&s' },
+    { id: 'ta5',  name: 'Lachha Paratha',           price: 60.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTheDXfXj0AF59FI5LbffwpUGzIyJ5QmVSqzenr0uLT9ODtV_lLe4hYYFPsyw&s' },
+    { id: 'ta6',  name: 'Paratha Stuffed',          price: 65.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQmUfJ5qUQ_slFjWGoV5zGPbvlN3-iasiV6mJ3cCUlfFEGNqDJV21XlTwVyxw&s' },
+    { id: 'ta7',  name: 'Paratha Phudina',          price: 65.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ5xmo3h3zGXy9rAfRgB8YLy_jt0pLEDmu7DeGn7lVHL2t8or0jvivBGT7NOkk&s' },
+    { id: 'ta8',  name: 'Paneer Paratha',           price: 99.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS4zZadWsG_YlMZQc5W0g2qlqA1aRvn2sOPLmiViA-2OoWEZgofxMmxpdJLkOI&s' },
+    { id: 'ta9',  name: 'Paneer Cheese Paratha',    price: 110.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSbpZk7HrC7QZQUeYyuKnvT8gzawzztm1-wmVo94HY0yNrzjOpAiUl9_FeF2g&s' },
+    { id: 'ta10', name: 'Naan',                     price: 50.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQd1N1Y4d9C6r_uIqLAVbfv1bdATFS7vgbm9LN4PlAzeM0euXZlv380FySvvQ&s' },
+    { id: 'ta11', name: 'Naan Butter',              price: 55.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSTnUEF57S2trussmAMuQv6KTtd5KYgXoznpDgLO4x9CZbSFVz9ndhB8irLjWU&s' },
+    { id: 'ta12', name: 'Naan Stuffed',             price: 80.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQyTTBVSnPtTmfhnsJzoDQQfkqMmW-AR-5zovcE50nFieEWm6xUfKdXKN_XeA&s' },
+    { id: 'ta13', name: 'Naan Kashmiri',            price: 90.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQrybUsfulbzurOesDhrk11uHlgtPSq6zJ5-1egnJ9BK0_z0bcpPHqL_tZAyQ&s' },
+    { id: 'ta14', name: 'Naan Garlic',              price: 90.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS557btQaA6U395Mmer33zLFkxpC3YIazuiheg3nCgGz6GKn6cLO97RZ4nQ0A&s' },
+    { id: 'ta15', name: 'Naan Cheese',              price: 99.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSQJkM5q0jbkuKuHzVx-nXh5_L23JvVa4NLsOXm5mNRml7N9U8yln2MtR5MXA&s' },
+    { id: 'ta16', name: 'Hariyali Naan',            price: 99.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRbt-VlE8VilJ1QOu3cCTL0uBrXOkC6FONNTIJqMHP1mIS9WdTG2dI1m-c8CA&s' },
+    { id: 'ta17', name: 'Naan Cheese Garlic',       price: 105.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT6nHIrI9Pa9v4j0eegeotv6C2gcHZFs7iIZxuQP3EwV3U7AorOny81ncOY9a0&s' },
+    { id: 'ta18', name: 'Family Naan',              price: 125.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTVcOTdM9eiM1sgfC0H6HtRyzKpwDjSWMDjF1MXM6ZDFz23A5jXTslo0KPWIQ&s' },
+    { id: 'ta19', name: 'Kulcha',                   price: 45.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRK1RV9agN-0pttHpx6sqKaFMQwT5UsjLpP6VRrVfMZqEb45U_if88hVRd1ug&s' },
+    { id: 'ta20', name: 'Kulcha Butter',            price: 55.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQD9vEShKzHYzpfhDmV8-cqPucHtS4CZlJxK_l0FfHcteJfG7oWJ641rn1HmA&s' },
+    { id: 'ta21', name: 'Kulcha Stuffed',           price: 70.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSTekETb_whlhAsYUEUGQAfVbFyPzABjm5vK5UV-u58x2R-RjV7fgoLT9KbgkA&s' },
+    { id: 'ta22', name: 'Onion Kulcha',             price: 70.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR0ylgoz7y_k3AtSxvaDCjPb1Fj9dDo7-0EmnuSzxOgjFuu1iPaOKDtbTuRfA&s' },
+    { id: 'ta23', name: 'Missi Roti',               price: 32.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQeIHg52BZmtq5AxFfXkxqtPXadmfOXnS68MH0k1-pcgdk4s_smfGBx08bY5Q&s' }
+  ],
+
+  /* ── CHINESE (Merged) ── */
+  chinese_merged: [
+    { id: 'cs1',  name: 'Oriental Crispy Vegetables',       price: 200.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSVGJB38RiIVf7iU4MN_YoeucVxPjkqBG9IVwWuyzm9eoR3Mmp83P10P2m8CNE&s' },
+    { id: 'cs2',  name: 'Baby Corn Chilli Fried',           price: 200.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQbOVJqtFib_CiEJkse9XY0cyegvVP-BdWFBA5HBx3UmaZX6kQiC_UKoqJ2an8&s' },
+    { id: 'cs3',  name: 'Schezwan Paneer',                  price: 225.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQAtONj6_wcUBzCF3gOewavdOpDvr1kLE11FFgcLV9awYzzaVlXZq4ymaY0fYg&s' },
+    { id: 'cs4',  name: 'Paneer Chilly (Dry / Gravy)',      price: 225.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSb-iM-omRNmhunWRotYHptxnQhB2Bxskea6oBXAfGp0yOGMUpSZY6mJTIxOg&s' },
+    { id: 'cs5',  name: 'Paneer Manchurian (Dry / Gravy)',  price: 220.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRcXdavS0xeX-oa5qTTn2Y_RyF227Q2raV4GvS4bZ8g6mmB7eSKZAQu-f1KI-I&s' },
+    { id: 'cs6',  name: 'Paneer 65',                        price: 225.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQgF9UQ7XEpa_hzoB4vqImJNxhtoXo1bSkxXXYNGSrJI7XQx7luoS0Ny9cp3iw&s' },
+    { id: 'cs7',  name: 'Veg. Manchurian (Dry / Gravy)',    price: 200.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS-T08wN9wEcv7K69YunK_KpkJI2JqwxoHp7KD6Tam4CZrzr79paeiQ_KXgYYw&s' },
+    { id: 'cs8',  name: 'Veg. Spring Roll',                 price: 210.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ9e71ZRaUf1eyTgPi-2DNdSRhvmCo_FQZs5az96-Kbh15ySvvhHtDcaLdn9Ho&s' },
+    { id: 'cs9',  name: 'Veg. Lollipop',                   price: 220.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQnHONXWkJZesco0moCnyRYWi9TSZbWvlDTMwYNjK1xv7DJRjTO2PyeAt5FDA&s' },
+    { id: 'cs10', name: 'Mushroom Chilly Fry',              price: 225.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTqTP7ncN-WIfRGMzbykjoIJyAU2iFO2LV01XUhGslMqCs-mALo4yZyiuZ_Ia0&s' },
+    { id: 'no1', name: 'Veg. Chow Mein',                price: 180.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR0i6lo6r8E6jBEwnRff4kEwRIfiGoPsEEP0UUPR-bnovLZ-HlcCudxPbz6cU4&s' },
+    { id: 'no2', name: 'Veg. Hakka Noodles',            price: 190.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSEMZ4JpLRuSa_REGClx1HXFOn7xk5WzUpmsAY0hK3GnzOUFjPIDpFh9Hc07Mo&s' },
+    { id: 'no3', name: 'Schezwan Noodles',              price: 190.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTwUPw_NlnJTWTLK5FEmnl9u01xEQOAq7vb6rPBn2ayEAGaiv_GHU3mykC9Z-8&s' },
+    { id: 'no4', name: 'Chilly Garlic Noodles',         price: 190.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT112W7k7LfbXy-JuWSi1ZO0kbDt8iuB7weVztEfMlTEQQhadfhVHQqsWU7Wg&s' },
+    { id: 'no5', name: 'Veg. Manchurian With Noodles',  price: 190.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQTCStge8hAfSjPp-wHhPCSyWx-RyBLehGLKgTd5J41dUxjnnDHUDtVibo-HeY&s' }
+  ],
+
+  soups: [ /* ... same as before ... */ 
+    { id: 'sp1',  name: 'Cream of Tomato',              price: 100.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQhVcyucgQyRU-6gf5VLl2wSkhJCo1QswUcjGp4pGOd5oJNWwV-RPw_0GD-hc8&s' },
+    { id: 'sp2',  name: 'Minestrone Soup',              price: 115.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjXwyRiOKV7X8Ka5SOV6zrhHvrXj8my110S6Ar0I9MRxU4PfJAhdNCfAc_-w&s' },
+    { id: 'sp3',  name: 'Sweet Corn Veg. Soup',         price: 100.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTBezZIreKezhrRagk-otaTRjdJydAaNY-k3WbIQQqmEQYNCnzjWAGXcYw8vQk&s' },
+    { id: 'sp4',  name: 'Veg. Hot & Sour Soup',         price: 115.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR252ppRRUXE-oXOa6n_Ma_SUEKBq44yyXfzj1-NiX3dj73kHQBoUFQHYlcUrM&s' },
+    { id: 'sp5',  name: 'Veg. Manchow Soup',            price: 115.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTXHUZbTvLv856SjtYAuIoDOfEqODqLHqe9J0CxMhlTj0i_ePxldvBntPqFEss&s' },
+    { id: 'sp6',  name: 'Lemon Coriander Soup',         price: 115.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR2bmb6BphHnxlflDhKxxQp34v5IKfBveenyJLGYmndbv7bU0L5VDEaLyk0-w&s' },
+    { id: 'sp7',  name: 'Palak Phudina Soup',           price: 115.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRH6zlUbe8n5OB24hH6fC0x1CfruI4X8OK4YIVHTkRxEX7LXi_ohz5erutb1PU&s' },
+    { id: 'sp8',  name: 'Veg. Mushroom Soup',           price: 120.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSDqiFfKY-dRTzl9MeMoP5sIoxkBMQ2gcjdKwkZtBcDnQfgjq5rBs6glw62yA&s' },
+    { id: 'sp9',  name: 'Clear Soup (Veg / Noodles)',   price: 100.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRsrQW6uBdAqf0tU5YvunqAlvngV9rChETaV9HPFOHw0kjRvbSUFH72ZgrpsFU&s' },
+    { id: 'sp10', name: 'Cheese Corn Tomato Soup',      price: 120.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSLA0NVQKGKhVKZpvSyCu6wA5MDu84hpHVHN7r4VqmBf7Yu-ZYQNKCRbPyDHQ&s' }
+  ],
+  salads: [ /* ... same ... */ 
+    { id: 'sl1',  name: 'Cream of Fruit Salad',             price: 125.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTdYPV0I5AhQgs7GHBAu7j6DDIa3ZYSu8NIJsPNSL77WH4C-kWBvcmCRSSghw&s' },
+    { id: 'sl2',  name: 'Fresh Green Salad',                price: 80.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQjRrWGoNl45Unb2FjG9GIQh-395tZqaaXNehe7KJQn87hWz8NJbxMnSl5bMDQ&s' },
+    { id: 'sl3',  name: 'Russian Salad',                    price: 125.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDcpbHfcda5cP0HuKqWeA6Y6nqEan367FBZ3-mXS6-xeuOSgcvbbQ7znMmCw&s' },
+    { id: 'sl4',  name: 'Kachumber Salad',                  price: 70.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTDFdMp-l7wAy_GTXG25mtega4Abw1hBqXs8xXZ7Dft_HZbI2jumxDWiX5hLw&s' },
+    { id: 'sl5',  name: 'Pineapple Raita',                  price: 95.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQljzEF3tlLQHGDS0X_1U2Jxb6mcoq3B9yGbcFpYLnSzQv4EhNuqKr-y-oqxtQ&s' },
+    { id: 'sl6',  name: 'Veg. Raita',                       price: 85.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR4bXlFE4dJwtcOE11BOplH9MMy9XB96w5NBKP8OeNeBOyW5v9dpwYRyAE3Cw&s' },
+    { id: 'sl7',  name: 'Cucumber Raita',                   price: 85.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXxOyenOXcVD5pe7PSafk_8r1mbcD-VEbpAyq25SLIJ4sG4df5jM3WNB7aos8&s' },
+    { id: 'sl8',  name: 'Boondi Raita',                     price: 85.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ2W-0dtojnRC-yQN3EYNQyCt7yUG0bDy2g_6nRfpAmej33_vpYUF7fWH2inFQ&s' },
+    { id: 'sl9',  name: 'Curd',                             price: 65.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQQs8asBPpIjmluNqnmtMFg8VpjIwbrgWVCBL6cZLN2xpZPnR1A7GxP0kF1mhg&s' },
+    { id: 'sl10', name: 'Papad Roasted',                    price: 25.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSMOpdTJr-WbAL1W_HYktzAE3OqCNnCVK3qEPiE5LuEUFsCzGnJkJUvGhL8c-k&s' },
+    { id: 'sl11', name: 'Papad Fried',                      price: 27.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR56gsgRwitwucyFaDTiooUwQIvnZ9fzblauSjoObkbUky8mSdU-5CvKjvsLQ&s' },
+    { id: 'sl12', name: 'Papad Masala',                     price: 45.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRMF4qjJcmXxI8UYlYYMD-aQnUf642CU77KknfePxKeJYam-xql2SJay6mOXA&s' },
+    { id: 'sl13', name: 'Papad Cheese Masala',              price: 60.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtTftYDmZvyB31TdH6u9IpacwT37Kk2VC1wVSiRBgbmUMjuV8Xp9LevVaP2g&s' }
+  ],
+
+  sizzlers: [
+    { id: 'sz1', name: 'Mix Grilled Sizzler', price: 330.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRNhXpjk4v0z5qnJiv5NZQiTvHJzw74HW3WIVZGjhPrmB6aKincBlLmZZPwd_Y&s' },
+    { id: 'sz2', name: 'Chinese Sizzler',     price: 340.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSxV54mJHwjNySJqYrpGMTA0y7m0Sb7v_KESr16JgQ_NfABg-QFzerN30gnhg&s' },
+    { id: 'sz3', name: 'Paneer Shaslik',      price: 340.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQuLOv1AGTjm7niu7pJVoNLJiv5DAmsAKUb9UoaWgAmi_ju9GjnNRQWkO5EFEE&s' },
+    { id: 'sz4', name: 'Paneer Stick',        price: 340.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSFaRXtioc6Bn525TLUYTvQ1rttLzoD3OVsYTTa3VB9YN4ldj3YlOU1bXjhUQ&s' }
+  ],
+
+  continental: [
+    { id: 'con1', name: 'Baked Macaroni with Pineapple', price: 205.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTVVJX4CejaVCf1__nhScf76SUT2rehI1hxnFmFoFKENFhuwQgurQmwFThpH2s&s' },
+    { id: 'con2', name: 'Baked Spaghetti with Pineapple', price: 205.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPIEUNdiU_3D_05lLNx7_LJOZAfINTL6iKkRddmTCCAyq-MnNSSQWzedUHXvs&s' },
+    { id: 'con3', name: 'Baked Vegetable with Pineapple', price: 205.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSq2IpgUk_IKO3kRU_WDdKj_vygon6dS-c6t6xRGkplMQBwKfDgWBCnd6cbEpM&s' }
+  ],
+
+  drinks: [ /* ... same ... */ 
+    { id: 'dr1',  name: 'Jal Jeera Water',                  price: 40.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSf0cAsq5HqaujK5x77DRVlG3b9BvqnyfxCXmTrTV9JlslsE5Woth3Q5mI_MA&s' },
+    { id: 'dr2',  name: 'Fresh Lime Soda',                  price: 40.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRjA3RR-0gcYfV-BdT_8pHkqzrfoGBcVR_K2etJ6rBNn3AsrZus7oCypAUSsw&s' },
+    { id: 'dr3',  name: 'Fresh Lime Water (Sweet / Salted)', price: 40.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQjOVDQ-Otf9GbsrU-LN4sm6mAIc_diVTI7NMZDw9AQLQ8GKgPLy7gl35TUFoI&s' },
+    { id: 'dr4',  name: 'Soft Drinks (MRP)',                price: 20.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTMiph65hMwBbzoSwSDfcoIuBpild2iFYczJIcL2bTfwAiYJU7rfBb9RtmtJOU&s' },
+    { id: 'dr5',  name: 'Lassi (Sweet / Salted)',           price: 80.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTYkV_QCDRXajyMpyOTcHwXhYc8s8L02lrHfLrTgoEYf9UkXWjL9SC0UDz-EA&s' },
+    { id: 'dr6',  name: 'Special Lassi',                    price: 100.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTpOgUouoKjVWADPVRthgzfFAjRQmfYqq-vxfEcR3kgT1qyKCODWfnuglFMvCE&s' },
+    { id: 'dr7',  name: 'Mineral Water (MRP)',              price: 20.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQUroTdaIvq6L8nK91XZawA7DQ_sReJ2Q7oWKQVBtdhiRb8c7bLlX40jX7A2Q&s' },
+    { id: 'dr8',  name: 'Fruit Punch',                      price: 70.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR29_XVWmX4oIJXhj_CSfWHLszTjoPZw6_beNMxafKWMH2aoVPLmha_lkhUYw&s' },
+    { id: 'dr9',  name: 'Butter Milk',                      price: 30.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRYpSPn1saRpuyGeS3UyVQWiN3qyzffJmg9AwwZyDAjT92T1vJtl5on4l4kBc0&s' },
+    { id: 'dr10', name: 'Masala Butter Milk',               price: 35.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRr5T8Xa2RWHMWT32eb_DymnN4ltCsFEGg2ZzvxKEyMdwbnhNn3P2Uqds4SEQ&s' }
+  ],
+  shakes: [ /* ... same with ice-cream variants ... */ 
+    { id: 'sh1', name: 'Vanilla Milk Shake',     price: 99.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQW9zETUU7svE5NKX_Tpp6GSCbkov4QO7Irxqfb5EmcSRLsD7MzVrYd2GFRkIk&s' },
+    { id: 'sh1ic', name: 'Vanilla Milk Shake (with Ice Cream)',     price: 110.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR07uPg02xlm0S2qZ2KE9SawbyKN2j1_Dtf8IM-_Aon5lmVK36GwAhmKgXNYHA&s' },
+    { id: 'sh2', name: 'Strawberry Milk Shake',  price: 99.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTsOt3GSgSnpyqmRKK_kwINygnlAOcTAmBh3t_N7nOJVZv08UhnDuntxvwd3Uk&s' },
+    { id: 'sh2ic', name: 'Strawberry Milk Shake (with Ice Cream)',  price: 110.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRex-x2KcskrW9DppN_cDMaJw-yNOccyaF58tNhYfER_52nBnA3IjHjRKcOqKM&s' },
+    { id: 'sh3', name: 'Chocolate Milk Shake',   price: 99.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRWGF8p_V1X6UaGYI_vQ7guVfluMoDTQb856snp2n2q_Vv4IwK6q3CjooII1Q&s' },
+    { id: 'sh3ic', name: 'Chocolate Milk Shake (with Ice Cream)',   price: 115.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRdWXPNQlIm5qYNZlDgd5h6zk8PDACwgjsz86ngV5UluLRNouebNqOVGNKr-60&s' },
+    { id: 'sh4', name: 'Kesar Pista Milk Shake', price: 110.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQZu3zt4SGqgkFpZRe9gPXkGyeLpxrtQY1SGftOpME8xxLQYVgw9yaKvrImGQ&s' },
+    { id: 'sh4ic', name: 'Kesar Pista Milk Shake (with Ice Cream)', price: 120.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTzgvQjBCJCdA6jGdVG3Z5tFXNgzS0ehQ9U7F0NQx8hIRKq4cmJ0MQ2FyzmDLU&s' },
+    { id: 'sh5', name: 'Kaju Draksh Milk Shake', price: 110.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQMBhqouZQQrDyiWp9Qt6en4zqm7HwFVLjDHoAsVZnLE3te1h19kowiycZymY&s' },
+    { id: 'sh5ic', name: 'Kaju Draksh Milk Shake (with Ice Cream)', price: 120.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRVqp-qtz0wCWOh6rRIQ1oAUMtn-y5K7q-WSGyWwj7QWrBv2e3cxdcxrOnYlBA&s' },
+    { id: 'sh6', name: 'Mango Milk Shake',        price: 110.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRbkhiKyv9z2nmYPyN_kTS1IILprknUv6J-0AHAxEr5DPiLLHb7U4NVpev_dg&s' },
+    { id: 'sh6ic', name: 'Mango Milk Shake (with Ice Cream)',        price: 120.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQu3_GpeR3B-p-dLLpF55JUtE3IvS2pGx3NbYFQLal8XWKwvnZp7m2fDOSEKA&s' },
+    { id: 'sh7', name: 'Cold Coffee',             price: 99.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTmUwVs_XeD4MZZ4tVCoshIE0Kn2D7y_jpSp9csBBZc-ltPbtNc1qYA5c1G6Ho&s' },
+    { id: 'sh7ic', name: 'Cold Coffee (with Ice Cream)',             price: 115.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRmiZWgxBPAKm0abDszJm1CN2oBwKsqt3VJs5v3yLjcgDQFFVjGi4Dae9Ml8A&s' }
+  ],
+  ice_cream: [ /* ... same ... */ 
+    { id: 'ic1',  name: 'Gulab Jamun',                  price: 50.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRsJA1SQdg5_BIZ9RrLGkTu6kJL5oOStSP89vBKB64KRpconDmKy2cqUfdYrg&s' },
+    { id: 'ic2',  name: 'Rajbhog',                      price: 99.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT2xZCICdx4jD8LaY17IUhVsYea_QhCND6GuZaShhQAbjUu4qRxjCXt6RzWrQ&s' },
+    { id: 'ic3',  name: 'Vanilla Ice Cream',            price: 80.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJCqFbb7Kys8VQXS-w3ccgUrsu0ENVkT2ltx0ctymJTd55cIpUus7o16nnv1A&s' },
+    { id: 'ic4',  name: 'Strawberry Ice Cream',         price: 80.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS_IiLaxDUz-XqJTCPB5mEaOZM9SG79epWEw-UI3rAvJn1Ab43gTGexw0eeFhY&s' },
+    { id: 'ic5',  name: 'Cheery Berry Ice Cream',       price: 80.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQcTwbZKqR7zLwpAy7n5AzAZQJ0o8OxHZLYP_qHhUDFbBQAz1GeowDyBQ3ZGnc&s' },
+    { id: 'ic6',  name: 'Mango Ice Cream',              price: 80.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR3pxk78iTaHADhDtQkGm0PP0sMzs_bo3uGdF2hDHXIZfU7zwS7XAnFaKaMgw&s' },
+    { id: 'ic7',  name: 'Kesar Pista Ice Cream',        price: 90.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTasoYFvxW6_4a7zWT146t5hQwxzK8vB8L6-n2z8Vxmg_xqV3BsLREGLQsa11U&s' },
+    { id: 'ic8',  name: 'Kaju Draksh Ice Cream',        price: 90.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIgY1vPl82wSeksM93GfkZ5WSWQps7w7qIg6ywEmIKnRYMX-lAMsqZPqpx26c&s' },
+    { id: 'ic9',  name: 'Butter Scotch Ice Cream',      price: 90.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRDe-rPhT2qd8R9iVqfrMdtlRVbyZn7T3YLylzxyxAhIs0zJZLf4ZC640iXSw&s' },
+    { id: 'ic10', name: 'Chocolate Ice Cream',          price: 90.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtRQfL6mM1ULa42AMgt8skn0Pyr4w3h5Qq_MMnHaaVo3l2LFZUL80mm1clYbw&s' },
+    { id: 'ic11', name: 'Fruit Salad with Ice Cream',   price: 140.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQbTrudasoK2XNCkuOqxAyOChwT_yarZLJA72QAhhtV3SO74XgLVVf5WWaBzw&s' },
+    { id: 'ic12', name: 'American Nut',                 price: 99.00,  img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRhXpPuia6sOViPa3XvY4PhIcgs0d3FxjG2K1LeBtL_ExZMXZ5A5KRE1C_ieA&s' }
+  ]
+};
+
+let cart = {};
+
+window.onload = () => {
+  setTimeout(() => {
+    document.getElementById('intro-wrapper').classList.add('exit');
+    const firstSubItem = document.querySelector('.sub-item');
+    showSection('starters', firstSubItem);
+  }, 5500);
+};
+
+function moveIndicator(el) {
+  const indicator = document.getElementById('nav-indicator');
+  const sidebar = document.getElementById('sidebar');
+  const rect = el.getBoundingClientRect();
+  const sidebarRect = sidebar.getBoundingClientRect();
+  const relativeTop = rect.top - sidebarRect.top + sidebar.scrollTop;
+  indicator.style.top = `${relativeTop}px`;
+  indicator.style.height = `${rect.height}px`;
+  indicator.style.width = `${rect.width}px`;
+  indicator.style.left = `${el.offsetLeft}px`;
+}
+
+let _togglePendingTimer = null;
+
+function toggleGroup(groupId, el) {
+  triggerHaptic();
+
+  // Cancel any in-flight delayed indicator move so rapid taps don't glitch
+  if (_togglePendingTimer !== null) {
+    clearTimeout(_togglePendingTimer);
+    _togglePendingTimer = null;
+  }
+
+  const allGroups = document.querySelectorAll('.nav-group');
+  const clickedGroup = el.closest('.nav-group');
+  const isExpanded = clickedGroup.classList.contains('expanded');
+
+  allGroups.forEach(g => g.classList.remove('expanded'));
+
+  if (!isExpanded) {
+    // Opening: expand group, then after animation settle move indicator to first sub-item
+    clickedGroup.classList.add('expanded');
+    _togglePendingTimer = setTimeout(() => {
+      _togglePendingTimer = null;
+      // Only move to sub-item if the group is still expanded (user didn't close it in the meantime)
+      if (clickedGroup.classList.contains('expanded')) {
+        const firstSub = clickedGroup.querySelector('.sub-item');
+        if (firstSub) {
+          const sectionName = firstSub.getAttribute('onclick').match(/'([^']+)'/)[1];
+          showSection(sectionName, firstSub);
+        } else {
+          moveIndicator(el);
+        }
+      } else {
+        // Group was closed before timer fired — point indicator at the parent nav-item
+        moveIndicator(el);
+      }
+    }, 400);
+  } else {
+    // Closing: indicator moves to the parent nav-item immediately, no delay
+    moveIndicator(el);
+  }
+}
+
+function showSection(section, el) {
+  triggerHaptic();
+  const grid = document.getElementById('menu-grid');
+  const nameDisplay = document.getElementById('section-name');
+  const menuContainer = document.querySelector('.menu-container');
+  document.querySelectorAll('.nav-item, .sub-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+  moveIndicator(el);
+  nameDisplay.innerText = section.replace(/_/g, ' ').toUpperCase().replace('Merged', '');
+  const items = menuData[section] || [];
+  grid.innerHTML = items.map(item => `
+    <div class="food-card">
+      <div class="cart-badge" id="badge-${item.id}">0</div>
+      <img src="${item.img}" alt="${item.name}">
+      <h4>${item.name}</h4>
+      <div class="price">&#8377;${item.price.toFixed(2)}</div>
+      <button class="add-initial" id="add-btn-${item.id}" onclick="addToCart('${section}', '${item.id}')">ADD</button>
+      <div class="qty-controls" id="qty-ctrl-${item.id}">
+        <button class="btn-qty" onclick="updateQty('${item.id}', -1)">-</button>
+        <span id="qty-val-${item.id}">0</span>
+        <button class="btn-qty" onclick="updateQty('${item.id}', 1)">+</button>
+      </div>
+    </div>
+  `).join('');
+  menuContainer.scrollTop = 0;
+  syncCartUI();
+}
+
+function addToCart(sec, id) {
+  triggerHaptic();
+  let item;
+  if (sec === 'search') {
+    Object.values(menuData).forEach(cat => {
+      const found = cat.find(i => i.id === id);
+      if (found) item = found;
+    });
+  } else {
+    item = menuData[sec].find(i => i.id === id);
+  }
+  if (item && !cart[id]) cart[id] = { ...item, qty: 1 };
+  syncCartUI();
+}
+
+function updateQty(id, delta) {
+  triggerHaptic();
+  if (cart[id]) {
+    cart[id].qty += delta;
+    if (cart[id].qty <= 0) delete cart[id];
+  }
+  syncCartUI();
+}
+
+function syncCartUI() {
+  let totalItems = 0;
+  let subtotal = 0;
+  document.querySelectorAll('.add-initial').forEach(b => b.style.display = 'block');
+  document.querySelectorAll('.qty-controls').forEach(c => c.style.display = 'none');
+  document.querySelectorAll('.cart-badge').forEach(b => b.style.display = 'none');
+  const cartList = document.getElementById('cart-items-list');
+  cartList.innerHTML = '';
+  Object.keys(cart).forEach(id => {
+    const item = cart[id];
+    totalItems += item.qty;
+    subtotal += item.price * item.qty;
+    const addBtn = document.getElementById(`add-btn-${id}`);
+    const qtyCtrl = document.getElementById(`qty-ctrl-${id}`);
+    const qtyVal = document.getElementById(`qty-val-${id}`);
+    const badge = document.getElementById(`badge-${id}`);
+    if (addBtn) {
+      addBtn.style.display = 'none';
+      qtyCtrl.style.display = 'flex';
+      qtyVal.innerText = item.qty;
+      badge.style.display = 'block';
+      badge.innerText = item.qty;
+    }
+    cartList.innerHTML += `
+      <div class="cart-item-row">
+        <div class="cart-item-info">
+          <h5>${item.name}</h5>
+          <p>&#8377;${(item.price * item.qty).toFixed(2)}</p>
+        </div>
+        <div class="cart-item-actions">
+           <button class="btn-qty" onclick="updateQty('${item.id}', -1)">-</button>
+           <span style="font-weight:700">${item.qty}</span>
+           <button class="btn-qty" onclick="updateQty('${item.id}', 1)">+</button>
+        </div>
+      </div>
+    `;
+  });
+  const bar = document.getElementById('cart-bar');
+  if (totalItems > 0) {
+    bar.style.display = 'flex';
+    document.getElementById('cart-item-count').innerText = `${totalItems} Items`;
+    document.getElementById('cart-total-price').innerText = `₹${subtotal.toFixed(2)}`;
+    document.getElementById('cart-total-price-popup').innerText = `₹${subtotal.toFixed(2)}`;
+  } else {
+    bar.style.display = 'none';
+    cartList.innerHTML = '<p style="text-align:center; color:#999; padding:20px;">Your basket is empty</p>';
+  }
+}
+
+function toggleCart() {
+  const p = document.getElementById('cart-popup');
+  p.style.display = (p.style.display === 'flex') ? 'none' : 'flex';
+}
+
+function toggleSearch() {
+  document.getElementById('search-input').classList.toggle('active');
+}
+
+function triggerHaptic() { if (window.navigator.vibrate) window.navigator.vibrate(10); }
+
+let orderTimerInterval = null;
+const TOTAL_SECONDS = 15 * 60;
+const CIRCUMFERENCE = 2 * Math.PI * 54;
+
+function processPayment() {
+  // Get order info from index.html
+  const orderInfo = JSON.parse(localStorage.getItem("currentOrderInfo") || "{}");
+  
+  // Create order object
+  const order = {
+    id: Date.now(),
+    tableNumber: Math.floor(Math.random() * 10) + 1, // Random table 1-10 for demo
+    orderType: orderInfo.orderType || "takeaway",
+    customerName: orderInfo.name || "Guest",
+    people: orderInfo.people || 1,
+    items: Object.values(cart).map(item => ({
+      name: item.name,
+      qty: item.qty,
+      price: item.price
+    })),
+    status: "Preparing",
+    diet: "Regular", // You can add diet selection in menu if needed
+    timestamp: Date.now()
+  };
+  
+  // Save order to localStorage
+  const allOrders = JSON.parse(localStorage.getItem("emeraldOrders") || "[]");
+  allOrders.push(order);
+  localStorage.setItem("emeraldOrders", JSON.stringify(allOrders));
+  
+  // Save current order ID for tracking
+  localStorage.setItem("currentOrderId", order.id.toString());
+  
+  // For manager view - add to table or queue
+  if (orderInfo.orderType === "dinein") {
+    const tables = JSON.parse(localStorage.getItem("emeraldTables") || "[]");
+    
+    // Initialize tables if empty
+    if (tables.length === 0) {
+      for (let i = 1; i <= 10; i++) {
+        tables.push({
+          number: i,
+          capacity: i <= 4 ? 2 : i <= 8 ? 4 : 6,
+          occupied: false,
+          current: null
+        });
+      }
+    }
+    
+    // Find available table
+    const availableTable = tables.find(t => !t.occupied && t.capacity >= orderInfo.people);
+    
+    if (availableTable) {
+      availableTable.occupied = true;
+      availableTable.current = {
+        name: orderInfo.name,
+        people: orderInfo.people,
+        since: Date.now(),
+        orderId: order.id
+      };
+    } else {
+      // Add to queue
+      const queue = JSON.parse(localStorage.getItem("emeraldQueue") || "[]");
+      queue.push({
+        name: orderInfo.name,
+        people: orderInfo.people,
+        time: Date.now(),
+        orderId: order.id
+      });
+      localStorage.setItem("emeraldQueue", JSON.stringify(queue));
+    }
+    
+    localStorage.setItem("emeraldTables", JSON.stringify(tables));
+  }
+  
+  cart = {};
+  syncCartUI();
+  toggleCart();
+  showOrderConfirm();
+}
+
+function showOrderConfirm() {
+  const overlay = document.getElementById('order-confirm-overlay');
+  document.getElementById('order-ready-subtext').style.display = 'block';
+  document.getElementById('order-ready-banner').classList.remove('visible');
+  const token = Math.floor(100 + Math.random() * 900);
+  document.getElementById('order-token-number').textContent = '#' + token;
+  overlay.classList.add('visible');
+  startOrderTimer();
+}
+
+function closeOrderConfirm() {
+  const overlay = document.getElementById('order-confirm-overlay');
+  overlay.classList.remove('visible');
+  if (orderTimerInterval) { clearInterval(orderTimerInterval); orderTimerInterval = null; }
+
+  // Show Track Order button
+  const trackBtn = document.getElementById('track-order-btn');
+  trackBtn.classList.add('visible');
+
+  // Shake immediately, then every 5 seconds
+  triggerTrackShake();
+  if (window._trackShakeInterval) clearInterval(window._trackShakeInterval);
+  window._trackShakeInterval = setInterval(triggerTrackShake, 5000);
+}
+
+function triggerTrackShake() {
+  const trackBtn = document.getElementById('track-order-btn');
+  trackBtn.classList.remove('shake');
+  void trackBtn.offsetWidth; // force reflow to restart animation
+  trackBtn.classList.add('shake');
+}
+
+function startOrderTimer() {
+  if (orderTimerInterval) { clearInterval(orderTimerInterval); }
+  let secondsLeft = TOTAL_SECONDS;
+  const display = document.getElementById('timer-display');
+  const circle = document.getElementById('timer-progress-circle');
+  circle.style.strokeDasharray = CIRCUMFERENCE;
+  circle.style.strokeDashoffset = 0;
+
+  function updateTimer() {
+    const mins = Math.floor(secondsLeft / 60);
+    const secs = secondsLeft % 60;
+    display.textContent = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+    const progress = (TOTAL_SECONDS - secondsLeft) / TOTAL_SECONDS;
+    circle.style.strokeDashoffset = CIRCUMFERENCE * progress;
+    if (secondsLeft <= 0) {
+      clearInterval(orderTimerInterval);
+      orderTimerInterval = null;
+      display.textContent = '00:00';
+      circle.style.strokeDashoffset = CIRCUMFERENCE;
+      document.getElementById('order-ready-subtext').style.display = 'none';
+      const banner = document.getElementById('order-ready-banner');
+      banner.classList.add('visible');
+    } else {
+      secondsLeft--;
+    }
+  }
+
+  updateTimer();
+  orderTimerInterval = setInterval(updateTimer, 1000);
+}
+
+function handleSearch() {
+  const query = document.getElementById('search-input').value.toLowerCase();
+  const grid = document.getElementById('menu-grid');
+  let allItems = [];
+  Object.values(menuData).forEach(cat => allItems = [...allItems, ...cat]);
+  const filtered = allItems.filter(i => i.name.toLowerCase().includes(query));
+  if (query === "") {
+    const activeItem = document.querySelector('.nav-item.active, .sub-item.active');
+    if (activeItem) {
+      const onclickAttr = activeItem.getAttribute('onclick');
+      const match = onclickAttr.match(/'([^']+)'/);
+      if (match) showSection(match[1], activeItem);
+    }
+    return;
+  }
+  grid.innerHTML = filtered.map(item => `
+    <div class="food-card">
+      <div class="cart-badge" id="badge-${item.id}">${cart[item.id] ? cart[item.id].qty : 0}</div>
+      <img src="${item.img}" alt="${item.name}">
+      <h4>${item.name}</h4>
+      <div class="price">&#8377;${item.price.toFixed(2)}</div>
+      <button class="add-initial" id="add-btn-${item.id}" onclick="addToCart('search', '${item.id}')" style="display: ${cart[item.id] ? 'none' : 'block'}">ADD</button>
+      <div class="qty-controls" id="qty-ctrl-${item.id}" style="display: ${cart[item.id] ? 'flex' : 'none'}">
+        <button class="btn-qty" onclick="updateQty('${item.id}', -1)">-</button>
+        <span id="qty-val-${item.id}">${cart[item.id] ? cart[item.id].qty : 0}</span>
+        <button class="btn-qty" onclick="updateQty('${item.id}', 1)">+</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function goToTrackOrder() {
+  window.location.href = 'Order_Track.html';
+}
+</script>
+</body>
+</html>

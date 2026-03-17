@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Track Your Order</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green:        #FFCE1B;
+      --green-mid:    #e6b800;
+      --green-light:  #FFD93D;
+      --green-pale:   #FFFBE6;
+      --green-dark:   #b38f00;
+      --pending-dot:  #CFD8DC;
+      --pending-text: #B0BEC5;
+      --pending-bg:   #F5F5F5;
+      --white:        #ffffff;
+      --text-dark:    #1A2E1B;
+      --text-muted:   #607D6B;
+      --shadow:       0 4px 24px rgba(0,0,0,0.10);
+      --shadow-card:  0 2px 16px rgba(255,206,27,0.08);
+    }
+
+    html, body {
+      min-height: 100vh;
+      font-family: 'Poppins', sans-serif;
+      background: #F0F7F1;
+    }
+
+    /* ───────────── BACKGROUND ───────────── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 0%, rgba(255,206,27,0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 90% 100%, rgba(255,206,27,0.10) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ───────────── PAGE LAYOUT ───────────── */
+    .page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 0 16px 48px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ───────────── HEADER ───────────── */
+    header {
+      width: 100%;
+      max-width: 480px;
+      background: linear-gradient(135deg, var(--green-dark) 0%, var(--green) 60%, var(--green-mid) 100%);
+      border-radius: 0 0 28px 28px;
+      padding: 18px 24px 28px;
+      box-shadow: 0 6px 32px rgba(179,143,0,0.28);
+      position: relative;
+      overflow: hidden;
+    }
+
+    header::after {
+      content: '';
+      position: absolute;
+      top: -40px; right: -40px;
+      width: 150px; height: 150px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+      pointer-events: none;
+    }
+
+    header::before {
+      content: '';
+      position: absolute;
+      bottom: -30px; left: -30px;
+      width: 100px; height: 100px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.04);
+      pointer-events: none;
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 22px;
+    }
+
+    /* ───────────── BACK BUTTON ───────────── */
+    .back-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 4px;
+      background: none;
+      border: none;
+      outline: none;
+    }
+
+    .back-btn svg {
+      display: block;
+    }
+
+    .header-title {
+      font-family: 'Nunito', sans-serif;
+      font-size: 20px;
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: 0.4px;
+    }
+
+    .cancel-btn {
+      font-size: 12px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.85);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: pointer;
+      padding: 6px 12px;
+      border: 1.5px solid rgba(255,255,255,0.3);
+      border-radius: 20px;
+      transition: background 0.2s, color 0.2s;
+      text-decoration: none;
+      background: none;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .cancel-btn:hover {
+      background: rgba(255,255,255,0.15);
+    }
+
+    /* META INFO */
+    .header-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .meta-block { display: flex; flex-direction: column; gap: 4px; }
+    .meta-block.right { text-align: right; align-items: flex-end; }
+
+    .meta-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.6);
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+    }
+
+    .meta-value {
+      font-family: 'Nunito', sans-serif;
+      font-size: 30px;
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: 1px;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .meta-value.order-id {
+      font-size: 26px;
+      letter-spacing: 2px;
+    }
+
+    .meta-value.urgent {
+      color: #FFCDD2;
+      animation: blink 1s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.55; }
+    }
+
+    /* ───────────── PROGRESS PILL ───────────── */
+    .progress-wrap {
+      width: 100%;
+      max-width: 480px;
+      margin: 20px 0 8px;
+      opacity: 0;
+      transform: translateY(10px);
+      animation: fadeUp 0.5s ease 0.3s forwards;
+    }
+
+    .progress-bar-bg {
+      height: 6px;
+      background: #FFF9C4;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--green-light), var(--green));
+      border-radius: 3px;
+      width: 0%;
+      transition: width 1s linear;
+    }
+
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-top: 6px;
+      letter-spacing: 0.3px;
+    }
+
+    /* ───────────── STEPS ───────────── */
+    .steps-wrapper {
+      width: 100%;
+      max-width: 480px;
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .step-row {
+      display: flex;
+      gap: 0;
+      align-items: stretch;
+      opacity: 0;
+      transform: translateX(-24px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .step-row.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    /* ---- timeline col ---- */
+    .timeline-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 48px;
+      flex-shrink: 0;
+      padding-top: 20px;
+    }
+
+    .dot-wrap {
+      position: relative;
+      width: 22px;
+      height: 22px;
+      flex-shrink: 0;
+    }
+
+    .dot {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      position: relative;
+      z-index: 2;
+      transition: background 0.5s, border 0.5s, box-shadow 0.5s;
+    }
+
+    .dot.done {
+      background: var(--green-light);
+      box-shadow: 0 0 0 4px rgba(255,206,27,0.18);
+    }
+
+    .dot.active {
+      background: var(--green);
+      box-shadow: 0 0 0 4px rgba(255,206,27,0.20);
+    }
+
+    .dot.pending {
+      background: var(--white);
+      border: 2.5px solid var(--pending-dot);
+    }
+
+    /* Ripple on active dot */
+    .dot.active::before,
+    .dot.active::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 2px solid var(--green);
+      animation: ripple 2s ease-out infinite;
+      opacity: 0;
+    }
+
+    .dot.active::after {
+      animation-delay: 1s;
+    }
+
+    @keyframes ripple {
+      0%   { transform: scale(1);   opacity: 0.75; }
+      100% { transform: scale(3.4); opacity: 0; }
+    }
+
+    /* checkmark inside done dot */
+    .dot.done::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2 6l3 3 5-5' stroke='%23fff' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: 12px 12px;
+      animation: none;
+      opacity: 1;
+      border: none;
+    }
+
+    .connector-line {
+      width: 2.5px;
+      flex: 1;
+      min-height: 18px;
+      border-radius: 2px;
+      margin: 4px 0;
+      transition: background 0.5s;
+    }
+
+    .connector-line.done    { background: var(--green-light); }
+    .connector-line.active  { background: linear-gradient(to bottom, var(--green-light), var(--pending-dot)); }
+    .connector-line.pending { background: var(--pending-dot); }
+    .connector-line.hidden  { visibility: hidden; }
+
+    /* ---- card col ---- */
+    .card-col {
+      flex: 1;
+      padding-bottom: 14px;
+    }
+
+    .step-card {
+      background: var(--white);
+      border-radius: 18px;
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: var(--shadow-card);
+      border: 1.5px solid transparent;
+      transition: border-color 0.4s, box-shadow 0.4s, transform 0.3s;
+      cursor: default;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .step-card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 4px;
+      border-radius: 18px 0 0 18px;
+      background: transparent;
+      transition: background 0.4s;
+    }
+
+    .step-card.active {
+      border-color: rgba(255,206,27,0.25);
+      box-shadow: 0 6px 28px rgba(255,206,27,0.14);
+      transform: translateX(3px);
+    }
+
+    .step-card.active::before {
+      background: var(--green);
+    }
+
+    .step-card.done::before {
+      background: var(--green-light);
+    }
+
+    /* Icon */
+    .step-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.4s;
+    }
+
+    .step-icon.done    { background: var(--green-pale); }
+    .step-icon.active  { background: var(--green-pale); }
+    .step-icon.pending { background: var(--pending-bg); }
+
+    .step-icon svg { transition: opacity 0.4s, stroke 0.4s; }
+    .step-icon.pending svg { opacity: 0.28; }
+    .step-icon.done svg, .step-icon.active svg { opacity: 1; }
+
+    /* Text */
+    .step-info { flex: 1; }
+
+    .step-title {
+      font-family: 'Nunito', sans-serif;
+      font-size: 15px;
+      font-weight: 800;
+      line-height: 1.2;
+      transition: color 0.4s;
+    }
+
+    .step-title.done    { color: var(--text-dark); }
+    .step-title.active  { color: var(--green-dark); }
+    .step-title.pending { color: var(--pending-text); }
+
+    .step-desc {
+      font-size: 12px;
+      font-weight: 500;
+      margin-top: 3px;
+      line-height: 1.4;
+      transition: color 0.4s;
+    }
+
+    .step-desc.done    { color: var(--text-muted); }
+    .step-desc.active  { color: var(--green-mid); }
+    .step-desc.pending { color: #CFD8DC; }
+
+    /* Badge */
+    .step-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      flex-shrink: 0;
+      opacity: 0;
+      transform: scale(0.8);
+      transition: opacity 0.3s, transform 0.3s;
+    }
+
+    .step-badge.done {
+      background: var(--green-pale);
+      color: var(--green-dark);
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .step-badge.active {
+      background: rgba(255,206,27,0.12);
+      color: var(--green-dark);
+      opacity: 1;
+      transform: scale(1);
+      animation: pulseBadge 2s ease-in-out infinite;
+    }
+
+    @keyframes pulseBadge {
+      0%, 100% { background: rgba(255,206,27,0.12); }
+      50%       { background: rgba(255,206,27,0.22); }
+    }
+
+    /* ───────────── SUCCESS OVERLAY ───────────── */
+    .success-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(179,143,0,0.55);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 200;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+
+    .success-overlay.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .success-sheet {
+      width: 100%;
+      max-width: 480px;
+      background: var(--white);
+      border-radius: 28px 28px 0 0;
+      padding: 32px 28px 44px;
+      text-align: center;
+      transform: translateY(100%);
+      transition: transform 0.6s cubic-bezier(0.34,1.56,0.64,1);
+      box-shadow: 0 -8px 40px rgba(0,0,0,0.18);
+    }
+
+    .success-overlay.show .success-sheet {
+      transform: translateY(0);
+    }
+
+    .success-icon-ring {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      background: var(--green-pale);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px;
+      position: relative;
+    }
+
+    .success-icon-ring::before {
+      content: '';
+      position: absolute;
+      inset: -6px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,206,27,0.3);
+      animation: successRing 2s ease-in-out infinite;
+    }
+
+    @keyframes successRing {
+      0%, 100% { transform: scale(1); opacity: 0.6; }
+      50%       { transform: scale(1.1); opacity: 0.2; }
+    }
+
+    .success-icon-ring svg { width: 38px; height: 38px; }
+
+    .success-title {
+      font-family: 'Nunito', sans-serif;
+      font-size: 28px;
+      font-weight: 900;
+      color: var(--green-dark);
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .success-sub {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 28px;
+    }
+
+    .success-pill {
+      display: inline-block;
+      background: var(--green-pale);
+      color: var(--green-dark);
+      font-size: 13px;
+      font-weight: 700;
+      padding: 10px 28px;
+      border-radius: 50px;
+      letter-spacing: 0.4px;
+    }
+
+    /* ───────────── ANIMATIONS ───────────── */
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes headerIn {
+      from { opacity: 0; transform: translateY(-16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    header {
+      animation: headerIn 0.5s ease 0.1s both;
+    }
+
+    /* ───────────── CANCEL POPUP ───────────── */
+    .cancel-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(3px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 300;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .cancel-overlay.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .cancel-popup {
+      background: #fff;
+      border-radius: 24px;
+      padding: 36px 28px 28px;
+      max-width: 320px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 12px 48px rgba(0,0,0,0.22);
+      transform: scale(0.88);
+      transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+    }
+
+    .cancel-overlay.show .cancel-popup {
+      transform: scale(1);
+    }
+
+    .cancel-popup-title {
+      font-family: 'Nunito', sans-serif;
+      font-size: 20px;
+      font-weight: 900;
+      color: #1A1A1A;
+      letter-spacing: 0.3px;
+      margin-bottom: 28px;
+      line-height: 1.3;
+    }
+
+    .cancel-popup-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .popup-btn {
+      flex: 1;
+      padding: 13px 0;
+      border-radius: 50px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      outline: none;
+      letter-spacing: 0.5px;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .popup-btn:active {
+      transform: scale(0.96);
+    }
+
+    .popup-btn.yes {
+      background: #E53935;
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(229,57,53,0.28);
+    }
+
+    .popup-btn.yes:hover {
+      box-shadow: 0 6px 22px rgba(229,57,53,0.38);
+    }
+
+    .popup-btn.no {
+      background: #F5F5F5;
+      color: #444;
+    }
+
+    .popup-btn.no:hover {
+      background: #EBEBEB;
+    }
+
+    /* ───────────── ORDER CANCELLED SCREEN ───────────── */
+    .cancelled-screen {
+      position: fixed;
+      inset: 0;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 400;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+
+    .cancelled-screen.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .cancelled-msg {
+      font-family: 'Nunito', sans-serif;
+      font-size: 28px;
+      font-weight: 900;
+      color: #E53935;
+      letter-spacing: 1px;
+      text-align: center;
+      padding: 0 24px;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-top">
+      <!-- BACK BUTTON -->
+      <button class="back-btn" aria-label="Go back" onclick="window.location.href='menu.html'">>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </button>
+      <div class="header-title">Track Order</div>
+      <button class="cancel-btn" id="cancel-btn">Cancel</button>
+    </div>
+
+    <div class="header-meta">
+      <div class="meta-block">
+        <div class="meta-label">Estimated Time</div>
+        <div class="meta-value" id="timer-display">15:00</div>
+      </div>
+      <div class="meta-block right">
+        <div class="meta-label">Order Number</div>
+        <div class="meta-value order-id" id="order-id">#000</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- PROGRESS BAR -->
+  <div class="progress-wrap">
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progress-fill"></div>
+    </div>
+    <div class="progress-label">
+      <span id="step-label-text">Order Placed</span>
+      <span id="pct-label">0%</span>
+    </div>
+  </div>
+
+  <!-- STEPS -->
+  <div class="steps-wrapper" id="steps-wrapper"></div>
+
+</div>
+
+<!-- SUCCESS OVERLAY -->
+<div class="success-overlay" id="success-overlay">
+  <div class="success-sheet">
+    <div class="success-icon-ring">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#FFCE1B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 6L9 17l-5-5"/>
+      </svg>
+    </div>
+    <div class="success-title">ORDER READY! 🎉</div>
+    <div class="success-sub">Your order is prepared and waiting.<br>Please pick it up at the counter.</div>
+    <div class="success-pill" id="success-order-id">#000</div>
+  </div>
+</div>
+
+<!-- CANCEL CONFIRMATION POPUP -->
+<div class="cancel-overlay" id="cancel-overlay">
+  <div class="cancel-popup">
+    <div class="cancel-popup-title">REALLY WANNA CANCEL ORDER ?</div>
+    <div class="cancel-popup-actions">
+      <button class="popup-btn yes" id="popup-yes">Yes</button>
+      <button class="popup-btn no" id="popup-no">No</button>
+    </div>
+  </div>
+</div>
+
+<!-- ORDER CANCELLED SCREEN -->
+<div class="cancelled-screen" id="cancelled-screen">
+  <div class="cancelled-msg">ORDER CANCELLED</div>
+</div>
+
+<script>
+  /* ─── CONFIG ─── */
+  const TOTAL_SEC   = 15 * 60;   // 15 minutes total
+  // Steps 0,1,2 each get 5 minutes (300s). Step 3 becomes active at 15:00 end.
+  const STEP_AT     = [0, 300, 600, 900]; // seconds at which each step becomes active
+
+  const STEPS = [
+    {
+      title: 'Order Placed',
+      desc:  'We have received your order.',
+      badgeDone: 'Done',
+      badgeActive: 'Placed',
+      icon: `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2.5"/>
+        <line x1="7" y1="8.5" x2="17" y2="8.5"/>
+        <line x1="7" y1="12.5" x2="14" y2="12.5"/>
+        <line x1="7" y1="16.5" x2="11" y2="16.5"/>
+      </svg>`
+    },
+    {
+      title: 'Order Confirmed',
+      desc:  'Your order has been confirmed.',
+      badgeDone: 'Done',
+      badgeActive: 'In Progress',
+      icon: `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2L4 6v6c0 4.4 3.4 8.5 8 9.9 4.6-1.4 8-5.5 8-9.9V6L12 2z"/>
+        <path d="M9 12l2 2 4-4"/>
+      </svg>`
+    },
+    {
+      title: 'Order Processed',
+      desc:  'We are preparing your order.',
+      badgeDone: 'Done',
+      badgeActive: 'Cooking',
+      icon: `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>`
+    },
+    {
+      title: 'Ready to Pick Up',
+      desc:  'Your order is ready for pickup.',
+      badgeDone: 'Ready!',
+      badgeActive: 'Ready!',
+      icon: `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 12V22H4V12"/>
+        <path d="M22 7H2v5h20V7z"/>
+        <path d="M12 22V7"/>
+        <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+        <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+      </svg>`
+    }
+  ];
+
+  /* ─── STATE ─── */
+  let elapsed = 0;
+  let activeStep = 0;
+  let finished = false;
+  
+  // Get current order from localStorage
+  const currentOrderId = localStorage.getItem("currentOrderId");
+  const allOrders = JSON.parse(localStorage.getItem("emeraldOrders") || "[]");
+  const currentOrder = allOrders.find(o => o.id == currentOrderId);
+  
+  // Generate order ID display
+  const orderId = currentOrder ? '#' + String(currentOrder.tableNumber).padStart(3, '0') : '#' + String(Math.floor(100 + Math.random() * 900));
+
+  document.getElementById('order-id').textContent   = orderId;
+  document.getElementById('success-order-id').textContent = orderId;
+
+  /* ─── BUILD DOM ─── */
+  function buildSteps() {
+    const wrapper = document.getElementById('steps-wrapper');
+    STEPS.forEach((s, i) => {
+      const isLast = i === STEPS.length - 1;
+
+      const row = document.createElement('div');
+      row.className = 'step-row';
+      row.id = 'row-' + i;
+
+      row.innerHTML = `
+        <div class="timeline-col">
+          <div class="dot-wrap">
+            <div class="dot pending" id="dot-${i}"></div>
+          </div>
+          <div class="connector-line pending ${isLast ? 'hidden' : ''}" id="line-${i}"></div>
+        </div>
+        <div class="card-col">
+          <div class="step-card" id="card-${i}">
+            <div class="step-icon pending" id="icon-${i}" style="color:#9E9E9E">${s.icon}</div>
+            <div class="step-info">
+              <div class="step-title pending" id="title-${i}">${s.title}</div>
+              <div class="step-desc pending" id="desc-${i}">${s.desc}</div>
+            </div>
+            <div class="step-badge" id="badge-${i}"></div>
+          </div>
+        </div>
+      `;
+
+      wrapper.appendChild(row);
+    });
+  }
+
+  /* ─── UPDATE VISUALS ─── */
+  function getState(i) {
+    if (finished && i === STEPS.length - 1) return 'active'; // last step active at finish
+    if (finished && i < STEPS.length - 1) return 'done';
+    if (i < activeStep) return 'done';
+    if (i === activeStep) return 'active';
+    return 'pending';
+  }
+
+  function updateVisuals() {
+    STEPS.forEach((s, i) => {
+      const state = getState(i);
+
+      const dot    = document.getElementById('dot-' + i);
+      const line   = document.getElementById('line-' + i);
+      const card   = document.getElementById('card-' + i);
+      const icon   = document.getElementById('icon-' + i);
+      const title  = document.getElementById('title-' + i);
+      const desc   = document.getElementById('desc-' + i);
+      const badge  = document.getElementById('badge-' + i);
+
+      // dot
+      dot.className = 'dot ' + state;
+
+      // line
+      if (line && !line.classList.contains('hidden')) {
+        const nextState = getState(i + 1);
+        const lineClass = (state === 'done') ? 'done' : (state === 'active' ? 'active' : 'pending');
+        line.className = 'connector-line ' + lineClass;
+      }
+
+      // card
+      card.className = 'step-card ' + (state !== 'pending' ? state : '');
+
+      // icon
+      icon.className = 'step-icon ' + state;
+      icon.style.color = (state === 'pending') ? '#9E9E9E' : '#FFCE1B';
+
+      // title / desc
+      title.className = 'step-title ' + state;
+      desc.className  = 'step-desc ' + state;
+
+      // badge
+      if (state === 'done') {
+        badge.textContent  = s.badgeDone;
+        badge.className    = 'step-badge done';
+      } else if (state === 'active') {
+        badge.textContent  = s.badgeActive;
+        badge.className    = 'step-badge active';
+      } else {
+        badge.textContent  = '';
+        badge.className    = 'step-badge';
+      }
+    });
+  }
+
+  /* ─── PROGRESS BAR ─── */
+  function updateProgress() {
+    const pct = Math.min(100, Math.round((elapsed / TOTAL_SEC) * 100));
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('pct-label').textContent = pct + '%';
+    const names = ['Order Placed','Order Confirmed','Order Processed','Ready to Pick Up'];
+    document.getElementById('step-label-text').textContent = finished ? 'Ready to Pick Up' : names[activeStep];
+  }
+
+  /* ─── TIMER ─── */
+  function formatTime(s) {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return String(m).padStart(2,'0') + ':' + String(sec).padStart(2,'0');
+  }
+
+  function updateTimer() {
+    const remaining = Math.max(0, TOTAL_SEC - elapsed);
+    const el = document.getElementById('timer-display');
+    el.textContent = formatTime(remaining);
+    if (remaining <= 60 && !finished) el.classList.add('urgent');
+    else el.classList.remove('urgent');
+  }
+
+  /* ─── STAGGERED ENTRANCE ─── */
+  function animateEntrance() {
+    document.querySelectorAll('.step-row').forEach((row, i) => {
+      setTimeout(() => row.classList.add('visible'), 350 + i * 140);
+    });
+  }
+
+  /* ─── SHOW SUCCESS ─── */
+  function showSuccess() {
+    setTimeout(() => {
+      document.getElementById('success-overlay').classList.add('show');
+    }, 600);
+  }
+
+  /* ─── TICK ─── */
+  function tick() {
+    if (finished) return;
+    
+    // Check real order status from localStorage
+    if (currentOrderId) {
+      const orders = JSON.parse(localStorage.getItem("emeraldOrders") || "[]");
+      const order = orders.find(o => o.id == currentOrderId);
+      
+      if (order && order.status === "Ready") {
+        // Order is ready, skip to final step
+        finished = true;
+        elapsed = TOTAL_SEC;
+        activeStep = 3;
+        updateVisuals();
+        updateTimer();
+        updateProgress();
+        showSuccess();
+        clearInterval(ticker);
+        return;
+      }
+    }
+    
+    elapsed++;
+
+    // Determine active step (steps 0→1 at 300s, 1→2 at 600s, 2→3 at 900s but 3 only at finish)
+    let newStep = 0;
+    for (let i = STEP_AT.length - 1; i >= 0; i--) {
+      if (elapsed >= STEP_AT[i]) { newStep = i; break; }
+    }
+    // Don't show step 3 (Ready to Pick Up) until fully finished
+    if (newStep === 3 && elapsed < TOTAL_SEC) newStep = 2;
+
+    if (newStep !== activeStep) {
+      activeStep = newStep;
+      updateVisuals();
+    }
+
+    updateTimer();
+    updateProgress();
+
+    if (elapsed >= TOTAL_SEC) {
+      finished = true;
+      activeStep = 3;
+      updateVisuals();
+      updateTimer();
+      updateProgress();
+      showSuccess();
+      clearInterval(ticker);
+    }
+  }
+
+  /* ─── CANCEL POPUP LOGIC ─── */
+  const cancelBtn     = document.getElementById('cancel-btn');
+  const cancelOverlay = document.getElementById('cancel-overlay');
+  const popupYes      = document.getElementById('popup-yes');
+  const popupNo       = document.getElementById('popup-no');
+  const cancelledScreen = document.getElementById('cancelled-screen');
+
+  cancelBtn.addEventListener('click', function() {
+    cancelOverlay.classList.add('show');
+  });
+
+  popupNo.addEventListener('click', function() {
+    cancelOverlay.classList.remove('show');
+  });
+
+  popupYes.addEventListener('click', function() {
+    // Cancel order in localStorage
+    if (currentOrderId) {
+      const orders = JSON.parse(localStorage.getItem("emeraldOrders") || "[]");
+      const orderIndex = orders.findIndex(o => o.id == currentOrderId);
+      
+      if (orderIndex !== -1) {
+        orders[orderIndex].status = "Cancelled";
+        localStorage.setItem("emeraldOrders", JSON.stringify(orders));
+      }
+    }
+    
+    cancelOverlay.classList.remove('show');
+    cancelledScreen.classList.add('show');
+    
+    // Redirect to menu after 2 seconds
+    setTimeout(() => {
+      window.location.href = 'menu.html';
+    }, 2000);
+  });
+
+  /* ─── INIT ─── */
+  buildSteps();
+  updateVisuals();
+  updateTimer();
+  updateProgress();
+  animateEntrance();
+
+  const ticker = setInterval(tick, 1000);
+</script>
+</body>
+</html>

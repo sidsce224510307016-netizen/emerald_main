@@ -288,6 +288,94 @@ body {
 }
 </style>
 </head>
+<script>
+/* 🔥 LIVE LISTENER */
+db.ref("orders").on("value", (snapshot) => {
+  const data = snapshot.val();
+  renderOrders(data);
+});
+
+/* 🧠 RENDER ORDERS */
+function renderOrders(data) {
+
+  const container = document.querySelector(".orders-container");
+  container.innerHTML = "";
+
+  if (!data) return;
+
+  for (let id in data) {
+    const order = data[id];
+
+    if (order.status !== "pending") continue;
+
+    container.innerHTML += `
+      <div class="order-card preparing">
+        <h2>${id}</h2>
+        <p>Total: ₹${order.total}</p>
+        <button onclick="markReady('${id}')">Mark Ready</button>
+      </div>
+    `;
+  }
+}
+
+/* 🔄 UPDATE STATUS */
+function markReady(id) {
+  db.ref("orders/" + id).update({
+    status: "ready"
+  });
+}
+<script>
+db.ref("orders").on("value", (snap) => {
+  const data = snap.val();
+  renderOrders(data);
+});
+
+function renderOrders(data) {
+  const container = document.querySelector(".orders-container");
+  container.innerHTML = "";
+
+  if (!data) return;
+
+  for (let id in data) {
+    const o = data[id];
+    if (o.status !== "pending") continue;
+
+    container.innerHTML += `
+      <div class="order-card preparing">
+        <h3>${id}</h3>
+        <p>Total: ₹${o.total}</p>
+        <button onclick="markReady('${id}')">Mark Ready</button>
+      </div>
+    `;
+  }
+}
+
+function markReady(id) {
+  db.ref("orders/" + id).update({ status: "ready" });
+}
+</script>
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyC_LUKzINx6H4XE7uWoCpeLSldpIp-DR80",
+  authDomain: "restro-4db49.firebaseapp.com",
+  databaseURL: "https://restro-4db49-default-rtdb.firebaseio.com",
+  projectId: "restro-4db49",
+  storageBucket: "restro-4db49.firebasestorage.app",
+  messagingSenderId: "860567729744",
+  appId: "1:860567729744:web:773f5a315af7340d950355",
+  measurementId: "G-D9CJCYZJF4"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 
 <body>
 

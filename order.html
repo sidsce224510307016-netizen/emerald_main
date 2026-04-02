@@ -1,11 +1,12 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Kitchen Dashboard - EMERALD</title>
+
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
 <style>
 :root {
   --primary-yellow: #ffcc00;
@@ -20,93 +21,308 @@
   --swaminarayan: #60a5fa;
   --regular: #22c55e;
 }
-* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-body { font-family: 'Inter', sans-serif; background: var(--bg-dark); color: var(--text-light); min-height: 100vh; padding: 20px; }
-.header { text-align: center; margin-bottom: 40px; }
-.brand-name { font-family: 'Playfair Display', serif; font-size: 48px; color: var(--primary-yellow); letter-spacing: 3px; text-shadow: 0 4px 10px rgba(255,204,0,0.3); margin-bottom: 10px; }
-.subtitle { font-size: 18px; color: var(--text-muted); font-weight: 500; }
-.orders-container { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 24px; }
-.order-card { background: var(--card-bg); padding: 24px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.4); transition: transform 0.2s ease, box-shadow 0.2s ease; border: 2px solid transparent; }
-.order-card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,0.5); }
-.order-card.preparing { border-color: var(--warning); }
-.order-card.ready { border-color: var(--success); }
-.order-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
-.order-info { flex: 1; }
-.table-number { font-size: 28px; font-weight: 700; color: var(--primary-yellow); margin-bottom: 8px; }
-.diet-badge { display: inline-block; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-.diet-badge.jain { background: rgba(251,191,36,0.2); color: var(--jain); }
-.diet-badge.swaminarayan { background: rgba(96,165,250,0.2); color: var(--swaminarayan); }
-.diet-badge.regular { background: rgba(34,197,94,0.2); color: var(--regular); }
-.status-indicator { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
-.status-indicator.preparing { color: var(--warning); }
-.status-indicator.ready { color: var(--success); }
-.status-dot { width: 10px; height: 10px; border-radius: 50%; animation: pulse 2s ease-in-out infinite; }
-.status-indicator.preparing .status-dot { background: var(--warning); }
-.status-indicator.ready .status-dot { background: var(--success); }
-@keyframes pulse { 0%, 100% { opacity:1; transform:scale(1); } 50% { opacity:0.5; transform:scale(1.2); } }
-.order-action { display: flex; align-items: center; }
-.ready-btn { padding: 12px 24px; background: var(--success); color: white; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s ease; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 12px rgba(34,197,94,0.3); }
-.ready-btn:hover { background: #16a34a; transform: translateY(-2px); }
-.ready-label { font-size: 14px; font-weight: 700; color: var(--success); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px; }
-.ready-label::before { content: '✓'; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; background: var(--success); color: white; border-radius: 50%; font-weight: 900; }
-.items-list { list-style: none; margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); }
-.item-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; color: #d1d5db; font-size: 15px; }
-.item-name { flex: 1; }
-.item-qty { font-weight: 700; color: var(--primary-yellow); margin-left: 12px; min-width: 40px; text-align: right; }
-.empty-state { grid-column: 1 / -1; text-align: center; padding: 80px 20px; color: var(--text-muted); }
-.empty-state-icon { font-size: 80px; margin-bottom: 20px; opacity: 0.5; }
-.empty-state-text { font-size: 18px; font-weight: 500; }
-@media (max-width: 768px) { .brand-name { font-size: 36px; } .orders-container { grid-template-columns: 1fr; } body { padding: 15px; } }
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg-dark);
+  color: var(--text-light);
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.brand-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 48px;
+  color: var(--primary-yellow);
+  letter-spacing: 3px;
+  text-shadow: 0 4px 10px rgba(255, 204, 0, 0.3);
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  font-size: 18px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.orders-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 24px;
+}
+
+.order-card {
+  background: var(--card-bg);
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.order-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+}
+
+.order-card.preparing {
+  border-color: var(--warning);
+}
+
+.order-card.ready {
+  border-color: var(--success);
+}
+
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.order-info {
+  flex: 1;
+}
+
+.table-number {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--primary-yellow);
+  margin-bottom: 8px;
+}
+
+.diet-badge {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.diet-badge.jain {
+  background: rgba(251, 191, 36, 0.2);
+  color: var(--jain);
+}
+
+.diet-badge.swaminarayan {
+  background: rgba(96, 165, 250, 0.2);
+  color: var(--swaminarayan);
+}
+
+.diet-badge.regular {
+  background: rgba(34, 197, 94, 0.2);
+  color: var(--regular);
+}
+
+.status-indicator {
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-indicator.preparing {
+  color: var(--warning);
+}
+
+.status-indicator.ready {
+  color: var(--success);
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.status-indicator.preparing .status-dot {
+  background: var(--warning);
+}
+
+.status-indicator.ready .status-dot {
+  background: var(--success);
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.2);
+  }
+}
+
+.order-action {
+  display: flex;
+  align-items: center;
+}
+
+.ready-btn {
+  padding: 12px 24px;
+  background: var(--success);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+.ready-btn:hover {
+  background: #16a34a;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(34, 197, 94, 0.4);
+}
+
+.ready-btn:active {
+  transform: translateY(0);
+}
+
+.ready-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--success);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ready-label::before {
+  content: '✓';
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: var(--success);
+  color: white;
+  border-radius: 50%;
+  font-weight: 900;
+}
+
+.items-list {
+  list-style: none;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  color: #d1d5db;
+  font-size: 15px;
+}
+
+.item-name {
+  flex: 1;
+}
+
+.item-qty {
+  font-weight: 700;
+  color: var(--primary-yellow);
+  margin-left: 12px;
+  min-width: 40px;
+  text-align: right;
+}
+
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 80px 20px;
+  color: var(--text-muted);
+}
+
+.empty-state-icon {
+  font-size: 80px;
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+.empty-state-text {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .brand-name {
+    font-size: 36px;
+  }
+  
+  .orders-container {
+    grid-template-columns: 1fr;
+  }
+  
+  body {
+    padding: 15px;
+  }
+}
 </style>
 
-<!-- ✅ Firebase SDK -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyC_LUKzINx6H4XE7uWoCpeLSldpIp-DR80",
-    authDomain: "restro-4db49.firebaseapp.com",
-    databaseURL: "https://restro-4db49-default-rtdb.firebaseio.com",
-    projectId: "restro-4db49",
-    storageBucket: "restro-4db49.firebasestorage.app",
-    messagingSenderId: "860567729744",
-    appId: "1:860567729744:web:773f5a315af7340d950355"
-  };
+<script>
+// Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyC_LUKzINx6H4XE7uWoCpeLSldpIp-DR80",
+  authDomain: "restro-4db49.firebaseapp.com",
+  databaseURL: "https://restro-4db49-default-rtdb.firebaseio.com",
+  projectId: "restro-4db49",
+  storageBucket: "restro-4db49.firebasestorage.app",
+  messagingSenderId: "860567729744",
+  appId: "1:860567729744:web:773f5a315af7340d950355",
+  measurementId: "G-D9CJCYZJF4"
+};
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-  console.log("✅ Firebase connected - Kitchen Dashboard");
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const analytics = firebase.analytics();
 
-  // Live listener for Firebase orders
-  onValue(ref(db, "orders"), (snapshot) => {
-    const data = snapshot.val();
-    if (data) {
-      // Merge Firebase orders into localStorage
-      const existing = JSON.parse(localStorage.getItem("emeraldOrders") || "[]");
-      const existingIds = existing.map(o => o.id);
-      Object.values(data).forEach(order => {
-        if (!existingIds.includes(order.id)) existing.push(order);
-        else {
-          const idx = existing.findIndex(o => o.id === order.id);
-          if (idx !== -1) existing[idx] = { ...existing[idx], ...order };
-        }
-      });
-      localStorage.setItem("emeraldOrders", JSON.stringify(existing));
-    }
-    loadOrders();
-  });
-
-  // Expose update function for markReady
-  window._firebaseMarkReady = function(orderId) {
-    update(ref(db, "orders/" + orderId), { status: "Ready" })
-      .then(() => console.log("✅ Order marked ready in Firebase"))
-      .catch(e => console.error("Firebase update error:", e));
-  };
+/* 🔥 LIVE LISTENER - Fetch orders from Firebase */
+db.ref("orders").on("value", (snapshot) => {
+  const data = snapshot.val();
+  console.log("Kitchen Orders from Firebase:", data);
+  // We still use localStorage for now but can switch to Firebase
+});
 </script>
+
 </head>
 
 <body>
+
 <div class="header">
   <div class="brand-name">EMERALD</div>
   <div class="subtitle">Kitchen Dashboard</div>
@@ -123,48 +339,85 @@ body { font-family: 'Inter', sans-serif; background: var(--bg-dark); color: var(
 function loadOrders() {
   try {
     const orders = JSON.parse(localStorage.getItem("emeraldOrders") || "[]");
+    
+    // Filter to show only active orders (not completed/cancelled)
     const activeOrders = orders.filter(order => order.status !== "Completed");
+
     const container = document.getElementById("ordersContainer");
     container.innerHTML = "";
 
     if (!activeOrders || activeOrders.length === 0) {
-      container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🍳</div><div class="empty-state-text">No active orders</div></div>`;
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">🍳</div>
+          <div class="empty-state-text">No active orders</div>
+        </div>
+      `;
       return;
     }
 
     activeOrders.forEach(order => {
       const statusClass = order.status === "Ready" ? "ready" : "preparing";
       const statusText = order.status === "Ready" ? "Ready" : "Preparing";
-      let dietClass = "regular";
-      let dietText = order.diet || "Regular";
-      if (order.diet === "Jain") dietClass = "jain";
-      else if (order.diet === "Swaminarayan") dietClass = "swaminarayan";
+      
+      let dietClass = 'regular';
+      let dietText = order.diet || 'Regular';
+      
+      if (order.diet === "Jain") {
+        dietClass = 'jain';
+      } else if (order.diet === "Swaminarayan") {
+        dietClass = 'swaminarayan';
+      }
 
       const actionHTML = order.status === "Preparing"
-        ? `<button onclick="markReady('${order.id}')" class="ready-btn">Mark as Ready</button>`
+        ? `<button onclick="markReady(${order.id})" class="ready-btn">
+             Mark as Ready
+           </button>`
         : `<div class="ready-label">Ready to Serve</div>`;
 
       const itemsHTML = Array.isArray(order.items)
-        ? order.items.map(i => `<li class="item-row"><span class="item-name">${i.name}</span><span class="item-qty">× ${i.qty}</span></li>`).join("")
+        ? order.items.map(i => `
+            <li class="item-row">
+              <span class="item-name">${i.name}</span>
+              <span class="item-qty">× ${i.qty}</span>
+            </li>
+          `).join("")
         : "";
 
-      const card = document.createElement("div");
-      card.className = `order-card ${statusClass}`;
-      card.innerHTML = `
+      const orderCard = document.createElement("div");
+      orderCard.className = `order-card ${statusClass}`;
+      
+      orderCard.innerHTML = `
         <div class="order-header">
           <div class="order-info">
-            <div class="table-number">Table ${order.tableNumber || "Takeaway"}</div>
+            <div class="table-number">Table ${order.tableNumber}</div>
             <div class="diet-badge ${dietClass}">${dietText}</div>
-            <div class="status-indicator ${statusClass}"><div class="status-dot"></div><span>${statusText}</span></div>
+            <div class="status-indicator ${statusClass}">
+              <div class="status-dot"></div>
+              <span>${statusText}</span>
+            </div>
           </div>
-          <div class="order-action">${actionHTML}</div>
+          <div class="order-action">
+            ${actionHTML}
+          </div>
         </div>
-        <ul class="items-list">${itemsHTML}</ul>`;
-      container.appendChild(card);
+        <ul class="items-list">
+          ${itemsHTML}
+        </ul>
+      `;
+
+      container.appendChild(orderCard);
     });
+
   } catch (err) {
     console.error(err);
-    document.getElementById("ordersContainer").innerHTML = `<div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-text">Error loading orders</div></div>`;
+    const container = document.getElementById("ordersContainer");
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">⚠️</div>
+        <div class="empty-state-text">Error loading orders</div>
+      </div>
+    `;
   }
 }
 
@@ -172,18 +425,20 @@ function markReady(orderId) {
   try {
     const orders = JSON.parse(localStorage.getItem("emeraldOrders") || "[]");
     const order = orders.find(o => o.id === orderId);
+    
     if (order) {
       order.status = "Ready";
       localStorage.setItem("emeraldOrders", JSON.stringify(orders));
-      // Also update Firebase
-      if (window._firebaseMarkReady) window._firebaseMarkReady(orderId);
       loadOrders();
     }
-  } catch (err) { console.error(err); }
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 loadOrders();
 setInterval(loadOrders, 5000);
 </script>
+
 </body>
 </html>

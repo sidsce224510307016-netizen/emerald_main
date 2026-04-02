@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -701,17 +702,6 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const analytics = firebase.analytics();
-
-/* 🔥 LIVE ORDER TRACKING */
-const orderId = localStorage.getItem("orderId");
-if (orderId) {
-  db.ref("orders/" + orderId).on("value", (snap) => {
-    const o = snap.val();
-    if (o && o.status === "ready") {
-      console.log("Order is ready!");
-    }
-  });
-}
 </script>
 
 </head>
@@ -851,17 +841,46 @@ if (orderId) {
   let elapsed = 0;
   let activeStep = 0;
   let finished = false;
+  let firebaseOrderListener = null;
   
-  // Get current order from localStorage
-  const currentOrderId = localStorage.getItem("currentOrderId");
-  const allOrders = JSON.parse(localStorage.getItem("emeraldOrders") || "[]");
-  const currentOrder = allOrders.find(o => o.id == currentOrderId);
+  // Get current order ID from localStorage (just the ID, not the order data)
+  const currentOrderId = localStorage.getItem("currentOrderId") || localStorage.getItem("orderId");
   
-  // Generate order ID display
-  const orderId = currentOrder ? '#' + String(currentOrder.tableNumber).padStart(3, '0') : '#' + String(Math.floor(100 + Math.random() * 900));
+  // Display order ID immediately
+  const displayOrderId = currentOrderId ? '#' + currentOrderId.slice(-6).toUpperCase() : '#' + String(Math.floor(100 + Math.random() * 900));
+  document.getElementById('order-id').textContent   = displayOrderId;
+  document.getElementById('success-order-id').textContent = displayOrderId;
 
-  document.getElementById('order-id').textContent   = orderId;
-  document.getElementById('success-order-id').textContent = orderId;
+  // 🔥 LIVE FIREBASE LISTENER — watches real-time status changes
+  if (currentOrderId) {
+    firebaseOrderListener = db.ref("orders/" + currentOrderId).on("value", (snap) => {
+      const order = snap.val();
+      if (!order) return;
+
+      // Update display order ID with customer name if available
+      if (order.customerName) {
+        const label = '#' + currentOrderId.slice(-6).toUpperCase();
+        document.getElementById('order-id').textContent = label;
+        document.getElementById('success-order-id').textContent = label;
+      }
+
+      const status = (order.status || "").toLowerCase();
+
+      if ((status === "ready") && !finished) {
+        // Kitchen marked it ready — jump to final step immediately
+        finished = true;
+        elapsed = TOTAL_SEC;
+        activeStep = 3;
+        updateVisuals();
+        updateTimer();
+        updateProgress();
+        showSuccess();
+        if (typeof ticker !== 'undefined') clearInterval(ticker);
+      } else if (status === "cancelled" || status === "completed") {
+        if (typeof ticker !== 'undefined') clearInterval(ticker);
+      }
+    });
+  }
 
   /* ─── BUILD DOM ─── */
   function buildSteps() {
@@ -994,25 +1013,6 @@ if (orderId) {
   function tick() {
     if (finished) return;
     
-    // Check real order status from localStorage
-    if (currentOrderId) {
-      const orders = JSON.parse(localStorage.getItem("emeraldOrders") || "[]");
-      const order = orders.find(o => o.id == currentOrderId);
-      
-      if (order && order.status === "Ready") {
-        // Order is ready, skip to final step
-        finished = true;
-        elapsed = TOTAL_SEC;
-        activeStep = 3;
-        updateVisuals();
-        updateTimer();
-        updateProgress();
-        showSuccess();
-        clearInterval(ticker);
-        return;
-      }
-    }
-    
     elapsed++;
 
     // Determine active step (steps 0→1 at 300s, 1→2 at 600s, 2→3 at 900s but 3 only at finish)
@@ -1058,14 +1058,12 @@ if (orderId) {
   });
 
   popupYes.addEventListener('click', function() {
-    // Cancel order in localStorage
+    // Cancel order in Firebase
     if (currentOrderId) {
-      const orders = JSON.parse(localStorage.getItem("emeraldOrders") || "[]");
-      const orderIndex = orders.findIndex(o => o.id == currentOrderId);
-      
-      if (orderIndex !== -1) {
-        orders[orderIndex].status = "Cancelled";
-        localStorage.setItem("emeraldOrders", JSON.stringify(orders));
+      db.ref("orders/" + currentOrderId).update({ status: "Cancelled" }).catch(console.error);
+      // Also clean up Firebase listener
+      if (firebaseOrderListener) {
+        db.ref("orders/" + currentOrderId).off("value", firebaseOrderListener);
       }
     }
     

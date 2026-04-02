@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -310,13 +311,6 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const analytics = firebase.analytics();
-
-/* 🔥 LIVE LISTENER - Fetch orders from Firebase */
-db.ref("orders").on("value", (snapshot) => {
-  const data = snapshot.val();
-  console.log("Kitchen Orders from Firebase:", data);
-  // We still use localStorage for now but can switch to Firebase
-});
 </script>
 
 </head>
@@ -336,108 +330,102 @@ db.ref("orders").on("value", (snapshot) => {
 </div>
 
 <script>
-function loadOrders() {
-  try {
-    const orders = JSON.parse(localStorage.getItem("emeraldOrders") || "[]");
-    
-    // Filter to show only active orders (not completed/cancelled)
-    const activeOrders = orders.filter(order => order.status !== "Completed");
+/* 🔥 LIVE FIREBASE LISTENER FOR KITCHEN */
+db.ref("orders").on("value", (snapshot) => {
+  const data = snapshot.val();
+  renderOrders(data);
+});
 
-    const container = document.getElementById("ordersContainer");
-    container.innerHTML = "";
+/* 🧠 RENDER ORDERS FROM FIREBASE */
+function renderOrders(data) {
+  const container = document.getElementById("ordersContainer");
+  container.innerHTML = "";
 
-    if (!activeOrders || activeOrders.length === 0) {
-      container.innerHTML = `
-        <div class="empty-state">
-          <div class="empty-state-icon">🍳</div>
-          <div class="empty-state-text">No active orders</div>
-        </div>
-      `;
-      return;
-    }
-
-    activeOrders.forEach(order => {
-      const statusClass = order.status === "Ready" ? "ready" : "preparing";
-      const statusText = order.status === "Ready" ? "Ready" : "Preparing";
-      
-      let dietClass = 'regular';
-      let dietText = order.diet || 'Regular';
-      
-      if (order.diet === "Jain") {
-        dietClass = 'jain';
-      } else if (order.diet === "Swaminarayan") {
-        dietClass = 'swaminarayan';
-      }
-
-      const actionHTML = order.status === "Preparing"
-        ? `<button onclick="markReady(${order.id})" class="ready-btn">
-             Mark as Ready
-           </button>`
-        : `<div class="ready-label">Ready to Serve</div>`;
-
-      const itemsHTML = Array.isArray(order.items)
-        ? order.items.map(i => `
-            <li class="item-row">
-              <span class="item-name">${i.name}</span>
-              <span class="item-qty">× ${i.qty}</span>
-            </li>
-          `).join("")
-        : "";
-
-      const orderCard = document.createElement("div");
-      orderCard.className = `order-card ${statusClass}`;
-      
-      orderCard.innerHTML = `
-        <div class="order-header">
-          <div class="order-info">
-            <div class="table-number">Table ${order.tableNumber}</div>
-            <div class="diet-badge ${dietClass}">${dietText}</div>
-            <div class="status-indicator ${statusClass}">
-              <div class="status-dot"></div>
-              <span>${statusText}</span>
-            </div>
-          </div>
-          <div class="order-action">
-            ${actionHTML}
-          </div>
-        </div>
-        <ul class="items-list">
-          ${itemsHTML}
-        </ul>
-      `;
-
-      container.appendChild(orderCard);
-    });
-
-  } catch (err) {
-    console.error(err);
-    const container = document.getElementById("ordersContainer");
+  if (!data) {
     container.innerHTML = `
       <div class="empty-state">
-        <div class="empty-state-icon">⚠️</div>
-        <div class="empty-state-text">Error loading orders</div>
+        <div class="empty-state-icon">🍳</div>
+        <div class="empty-state-text">No active orders</div>
       </div>
     `;
+    return;
   }
-}
 
-function markReady(orderId) {
-  try {
-    const orders = JSON.parse(localStorage.getItem("emeraldOrders") || "[]");
-    const order = orders.find(o => o.id === orderId);
-    
-    if (order) {
-      order.status = "Ready";
-      localStorage.setItem("emeraldOrders", JSON.stringify(orders));
-      loadOrders();
+  // Convert data to array and filter active orders
+  const orders = Object.values(data).filter(order => order.status !== "Completed" && order.status !== "Cancelled");
+
+  if (orders.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">🍳</div>
+        <div class="empty-state-text">No active orders</div>
+      </div>
+    `;
+    return;
+  }
+
+  orders.forEach(order => {
+    const statusClass = order.status === "Ready" ? "ready" : "preparing";
+    const statusText = order.status === "Ready" ? "Ready" : "Preparing";
+
+    let dietClass = 'regular';
+    let dietText = order.diet || 'Regular';
+
+    if (order.diet === "Jain") {
+      dietClass = 'jain';
+    } else if (order.diet === "Swaminarayan") {
+      dietClass = 'swaminarayan';
     }
-  } catch (err) {
-    console.error(err);
-  }
+
+    const actionHTML = order.status === "Preparing"
+      ? `<button onclick="markReady('${order.id}')" class="ready-btn">Mark as Ready</button>`
+      : `<div class="ready-label">✓ Ready to Serve</div>`;
+
+    const itemsHTML = Array.isArray(order.items)
+      ? order.items.map(i => `
+          <li class="item-row">
+            <span class="item-name">${i.name}</span>
+            <span class="item-qty">× ${i.qty}</span>
+          </li>
+        `).join("")
+      : "";
+
+    const orderCard = document.createElement("div");
+    orderCard.className = `order-card ${statusClass}`;
+
+    orderCard.innerHTML = `
+      <div class="order-header">
+        <div class="order-info">
+          <div class="table-number">Table ${order.tableNumber || 1}</div>
+          <div class="diet-badge ${dietClass}">${dietText}</div>
+          <div class="status-indicator ${statusClass}">
+            <div class="status-dot"></div>
+            <span>${statusText}</span>
+          </div>
+        </div>
+        <div class="order-action">
+          ${actionHTML}
+        </div>
+      </div>
+      <ul class="items-list">
+        ${itemsHTML}
+      </ul>
+    `;
+
+    container.appendChild(orderCard);
+  });
 }
 
-loadOrders();
-setInterval(loadOrders, 5000);
+/* 🔄 UPDATE STATUS IN FIREBASE */
+function markReady(orderId) {
+  db.ref("orders/" + orderId).update({
+    status: "ready"
+  }).then(() => {
+    console.log("Order marked as ready:", orderId);
+  }).catch((error) => {
+    console.error("Error updating order:", error);
+  });
+}
 </script>
 
 </body>

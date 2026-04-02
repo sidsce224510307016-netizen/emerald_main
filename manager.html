@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -291,11 +292,15 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const analytics = firebase.analytics();
 
-/* 📊 LIVE DATA FOR MANAGER */
-db.ref("orders").on("value", (snapshot) => {
-  const data = snapshot.val();
-  console.log("Manager Dashboard Orders:", data);
-  // Currently using localStorage, but Firebase connection is active
+/* 📊 LIVE DATA FOR MANAGER - Listen to tables and orders from Firebase */
+db.ref("tables").on("value", (snapshot) => {
+  const tablesData = snapshot.val();
+  loadManagerData(tablesData);
+});
+
+db.ref("queue").on("value", (snapshot) => {
+  const queueData = snapshot.val();
+  // Will be loaded along with tables
 });
 </script>
 
@@ -319,42 +324,77 @@ db.ref("orders").on("value", (snapshot) => {
 </div>
 
 <script>
-function loadManagerData() {
-  const tables = JSON.parse(localStorage.getItem("emeraldTables") || "[]");
-  const queue = JSON.parse(localStorage.getItem("emeraldQueue") || "[]");
-  
-  // Initialize tables if empty
-  if (tables.length === 0) {
-    for (let i = 1; i <= 10; i++) {
-      tables.push({
-        number: i,
-        capacity: i <= 4 ? 2 : i <= 8 ? 4 : 6,
-        occupied: false,
-        current: null
-      });
+/* 📊 MANAGER DASHBOARD - FIREBASE SYNCED */
+let allTables = [];
+let allQueue = [];
+
+// Initialize default tables in Firebase if not exists
+function initializeTables() {
+  db.ref("tables").once("value", (snapshot) => {
+    if (!snapshot.exists()) {
+      const defaultTables = [];
+      for (let i = 1; i <= 10; i++) {
+        defaultTables.push({
+          number: i,
+          capacity: i <= 4 ? 2 : i <= 8 ? 4 : 6,
+          occupied: false,
+          current: null
+        });
+      }
+      db.ref("tables").set(defaultTables);
     }
-    localStorage.setItem("emeraldTables", JSON.stringify(tables));
+  });
+
+  db.ref("queue").once("value", (snapshot) => {
+    if (!snapshot.exists()) {
+      db.ref("queue").set([]);
+    }
+  });
+}
+
+// Load manager data from Firebase
+function loadManagerData(tablesData) {
+  if (tablesData) {
+    allTables = Object.values(tablesData);
   }
 
-  const data = { tables, queue };
+  db.ref("queue").once("value", (snapshot) => {
+    const queueData = snapshot.val();
+    allQueue = queueData ? Object.values(queueData) : [];
 
+    renderManagerDashboard();
+  });
+}
+
+// Render the manager dashboard
+function renderManagerDashboard() {
   const tablesDiv = document.getElementById("tables");
   const queueDiv = document.getElementById("queue");
 
   tablesDiv.innerHTML = "";
   queueDiv.innerHTML = "";
 
-  data.tables.forEach(t => {
+  if (allTables.length === 0) {
+    tablesDiv.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">🪑</div>
+        <div>No tables configured</div>
+      </div>
+    `;
+    return;
+  }
+
+  allTables.forEach(t => {
     const occupiedClass = t.occupied ? 'occupied' : '';
     const statusClass = t.occupied ? 'occupied' : 'free';
     const statusText = t.occupied ? 'Occupied' : 'Free';
-    
+
     let customerHTML = '';
     if (t.current) {
       const minutesSince = Math.floor((Date.now() - t.current.since) / 60000);
       customerHTML = `
         <div class="customer-details">
-          <div class="customer-name">${t.current.name}</div>
+          <div class="customer-name">${t.current.name || 'Customer'}</div>
           <div class="customer-meta">
             <span>👥 ${t.current.people} ${t.current.people === 1 ? 'Person' : 'People'}</span>
             <span>⏱️ ${minutesSince} min</span>
@@ -383,7 +423,8 @@ function loadManagerData() {
     `;
   });
 
-  if (data.queue.length === 0) {
+  // Render queue
+  if (allQueue.length === 0) {
     queueDiv.innerHTML = `
       <div class="empty-state">
         <div class="empty-state-icon">📋</div>
@@ -391,12 +432,12 @@ function loadManagerData() {
       </div>
     `;
   } else {
-    data.queue.forEach(q => {
-      const waitingMinutes = Math.floor((Date.now() - q.time) / 60000);
+    allQueue.forEach(q => {
+      const waitingMinutes = Math.floor((Date.now() - (q.time || Date.now())) / 60000);
       queueDiv.innerHTML += `
         <div class="queue-card">
           <div class="queue-info">
-            <div class="queue-name">${q.name}</div>
+            <div class="queue-name">${q.name || 'Customer'}</div>
             <div class="queue-meta">
               <span>👥 ${q.people} ${q.people === 1 ? 'Person' : 'People'}</span>
               <span>⏱️ Waiting ${waitingMinutes} min</span>
@@ -408,43 +449,63 @@ function loadManagerData() {
   }
 }
 
+/* 🔄 FREE TABLE - UPDATE IN FIREBASE */
 function freeTable(tableNumber) {
-  const tables = JSON.parse(localStorage.getItem("emeraldTables") || "[]");
-  const table = tables.find(t => t.number === tableNumber);
-  
+  const table = allTables.find(t => t.number === tableNumber);
+
   if (table) {
-    table.occupied = false;
-    table.current = null;
-    localStorage.setItem("emeraldTables", JSON.stringify(tables));
-    
-    // Check if someone is waiting in queue
-    const queue = JSON.parse(localStorage.getItem("emeraldQueue") || "[]");
-    if (queue.length > 0) {
-      const nextCustomer = queue.shift(); // Remove first from queue
-      
-      // Assign to freed table if capacity matches
-      if (table.capacity >= nextCustomer.people) {
-        table.occupied = true;
-        table.current = {
-          name: nextCustomer.name,
-          people: nextCustomer.people,
-          since: Date.now(),
-          orderId: nextCustomer.orderId
-        };
-        localStorage.setItem("emeraldTables", JSON.stringify(tables));
-      } else {
-        queue.unshift(nextCustomer); // Put back if doesn't fit
+    // First, get the current queue
+    db.ref("queue").once("value", (snapshot) => {
+      let queue = snapshot.val() ? Object.values(snapshot.val()) : [];
+
+      // Mark table as free
+      db.ref("tables/" + allTables.indexOf(table)).update({
+        occupied: false,
+        current: null
+      });
+
+      // Check if someone is waiting in queue
+      if (queue.length > 0) {
+        const nextCustomer = queue.shift();
+
+        // Assign to freed table if capacity matches
+        if (table.capacity >= nextCustomer.people) {
+          db.ref("tables/" + allTables.indexOf(table)).update({
+            occupied: true,
+            current: {
+              name: nextCustomer.name,
+              people: nextCustomer.people,
+              since: Date.now(),
+              orderId: nextCustomer.orderId
+            }
+          });
+          db.ref("queue").set(queue);
+        } else {
+          // Put back at front of queue if doesn't fit
+          queue.unshift(nextCustomer);
+          db.ref("queue").set(queue);
+        }
       }
-      
-      localStorage.setItem("emeraldQueue", JSON.stringify(queue));
-    }
-    
-    loadManagerData();
+    });
   }
 }
 
-loadManagerData();
-setInterval(loadManagerData, 5000);
+/* ➕ ADD TO QUEUE - For testing, can be triggered from menu */
+function addToQueue(name, people) {
+  db.ref("queue").once("value", (snapshot) => {
+    let queue = snapshot.val() ? Object.values(snapshot.val()) : [];
+    queue.push({
+      name: name,
+      people: parseInt(people),
+      time: Date.now(),
+      orderId: "ORD" + Date.now()
+    });
+    db.ref("queue").set(queue);
+  });
+}
+
+// Initialize on load
+initializeTables();
 </script>
 
 </body>

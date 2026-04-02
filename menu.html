@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -396,28 +395,31 @@ body {
   animation: trackShake 0.6s ease;
 }
 </style>
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyC_LUKzINx6H4XE7uWoCpeLSldpIp-DR80",
-    authDomain: "restro-4db49.firebaseapp.com",
-    databaseURL: "https://restro-4db49-default-rtdb.firebaseio.com",
-    projectId: "restro-4db49",
-    storageBucket: "restro-4db49.firebasestorage.app",
-    messagingSenderId: "860567729744",
-    appId: "1:860567729744:web:773f5a315af7340d950355"
-  };
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-  // Expose to global scope for the main script
-  window._db = db;
-  window._dbRef = ref;
-  window._dbSet = set;
-  console.log("✅ Firebase Realtime Database connected!");
+<script>
+// Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyC_LUKzINx6H4XE7uWoCpeLSldpIp-DR80",
+  authDomain: "restro-4db49.firebaseapp.com",
+  databaseURL: "https://restro-4db49-default-rtdb.firebaseio.com",
+  projectId: "restro-4db49",
+  storageBucket: "restro-4db49.firebasestorage.app",
+  messagingSenderId: "860567729744",
+  appId: "1:860567729744:web:773f5a315af7340d950355",
+  measurementId: "G-D9CJCYZJF4"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const analytics = firebase.analytics();
 </script>
+
 </head>
 
 <body>
@@ -1020,22 +1022,31 @@ const TOTAL_SECONDS = 15 * 60;
 const CIRCUMFERENCE = 2 * Math.PI * 54;
 
 function processPayment() {
+  triggerHaptic();
 
   const orderId = "ORD" + Date.now();
+  const currentOrderInfo = JSON.parse(localStorage.getItem("currentOrderInfo") || "{}");
 
   const order = {
     id: orderId,
-    items: cart,
-    total: totalPrice,
+    tableNumber: currentOrderInfo.people || 1,
+    customerName: currentOrderInfo.name || "Customer",
+    items: Object.values(cart),
+    total: Object.values(cart).reduce((sum, item) => sum + (item.price * item.qty), 0),
     status: "pending",
+    diet: "Regular",
     createdAt: new Date().toISOString()
   };
 
-  if (window._db && window._dbRef && window._dbSet) { window._dbSet(window._dbRef(window._db, "orders/" + orderId), order).then(() => console.log("Order saved to Firebase")).catch(e => console.error("Firebase error:", e)); }
-
-  localStorage.setItem("orderId", orderId);
-
-  alert("Order Placed Successfully: " + orderId);
+  db.ref("orders/" + orderId).set(order).then(() => {
+    localStorage.setItem("orderId", orderId);
+    localStorage.setItem("currentOrderId", orderId);
+    alert("Order Placed Successfully: " + orderId);
+    showOrderConfirm();
+  }).catch((error) => {
+    console.error("Error placing order:", error);
+    alert("Error placing order. Please try again.");
+  });
 }
 
 function showOrderConfirm() {
@@ -1133,7 +1144,7 @@ function handleSearch() {
 }
 
 function goToTrackOrder() {
-  window.location.href = 'Order_Track.html';
+  window.location.href = 'track.html';
 }
 </script>
 </body>

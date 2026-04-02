@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -677,25 +678,14 @@
       text-transform: uppercase;
     }
   </style>
-</head>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
+
 <script>
-const orderId = localStorage.getItem("orderId");
-
-db.ref("orders/" + orderId).on("value", (snap) => {
-  const o = snap.val();
-  if (!o) return;
-
-  if (o.status === "ready") {
-    alert("Your order is ready!");
-  }
-});
-</script>
-// Import the functions you need from the SDKs you need
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyC_LUKzINx6H4XE7uWoCpeLSldpIp-DR80",
   authDomain: "restro-4db49.firebaseapp.com",
@@ -708,8 +698,24 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const analytics = firebase.analytics();
+
+/* 🔥 LIVE ORDER TRACKING */
+const orderId = localStorage.getItem("orderId");
+if (orderId) {
+  db.ref("orders/" + orderId).on("value", (snap) => {
+    const o = snap.val();
+    if (o && o.status === "ready") {
+      console.log("Order is ready!");
+    }
+  });
+}
+</script>
+
+</head>
+
 <body>
 
 <div class="page">

@@ -293,15 +293,22 @@ const db = firebase.database();
 const analytics = firebase.analytics();
 
 /* 📊 LIVE DATA FOR MANAGER - Listen to tables and orders from Firebase */
-db.ref("tables").on("value", (snapshot) => {
-  const tablesData = snapshot.val();
-  loadManagerData(tablesData);
-});
+function setupListeners() {
+  db.ref("tables").on("value", () => refreshDashboard());
+  db.ref("queue").on("value", () => refreshDashboard());
+}
 
-db.ref("queue").on("value", (snapshot) => {
-  const queueData = snapshot.val();
-  // Will be loaded along with tables
-});
+function refreshDashboard() {
+  db.ref("tables").once("value", (tSnap) => {
+    const tablesData = tSnap.val();
+    allTables = tablesData ? Object.values(tablesData) : [];
+    db.ref("queue").once("value", (qSnap) => {
+      const queueData = qSnap.val();
+      allQueue = queueData ? Object.values(queueData) : [];
+      renderManagerDashboard();
+    });
+  });
+}
 </script>
 
 </head>
@@ -349,20 +356,6 @@ function initializeTables() {
     if (!snapshot.exists()) {
       db.ref("queue").set([]);
     }
-  });
-}
-
-// Load manager data from Firebase
-function loadManagerData(tablesData) {
-  if (tablesData) {
-    allTables = Object.values(tablesData);
-  }
-
-  db.ref("queue").once("value", (snapshot) => {
-    const queueData = snapshot.val();
-    allQueue = queueData ? Object.values(queueData) : [];
-
-    renderManagerDashboard();
   });
 }
 
@@ -451,43 +444,40 @@ function renderManagerDashboard() {
 
 /* 🔄 FREE TABLE - UPDATE IN FIREBASE */
 function freeTable(tableNumber) {
+  const tableIndex = tableNumber - 1; // Firebase stores tables as 0-indexed array
   const table = allTables.find(t => t.number === tableNumber);
 
-  if (table) {
-    // First, get the current queue
-    db.ref("queue").once("value", (snapshot) => {
-      let queue = snapshot.val() ? Object.values(snapshot.val()) : [];
+  if (!table) return;
 
-      // Mark table as free
-      db.ref("tables/" + allTables.indexOf(table)).update({
-        occupied: false,
-        current: null
-      });
+  db.ref("queue").once("value", (snapshot) => {
+    let queue = snapshot.val() ? Object.values(snapshot.val()) : [];
 
-      // Check if someone is waiting in queue
-      if (queue.length > 0) {
-        const nextCustomer = queue.shift();
+    if (queue.length > 0) {
+      const nextCustomer = queue.shift();
 
-        // Assign to freed table if capacity matches
-        if (table.capacity >= nextCustomer.people) {
-          db.ref("tables/" + allTables.indexOf(table)).update({
-            occupied: true,
-            current: {
-              name: nextCustomer.name,
-              people: nextCustomer.people,
-              since: Date.now(),
-              orderId: nextCustomer.orderId
-            }
-          });
-          db.ref("queue").set(queue);
-        } else {
-          // Put back at front of queue if doesn't fit
-          queue.unshift(nextCustomer);
-          db.ref("queue").set(queue);
-        }
+      if (table.capacity >= nextCustomer.people) {
+        // Assign next customer directly to this table
+        db.ref("tables/" + tableIndex).update({
+          occupied: true,
+          current: {
+            name: nextCustomer.name,
+            people: nextCustomer.people,
+            since: Date.now(),
+            orderId: nextCustomer.orderId
+          }
+        });
+        db.ref("queue").set(queue);
+      } else {
+        // Doesn't fit — free the table and put customer back
+        queue.unshift(nextCustomer);
+        db.ref("tables/" + tableIndex).update({ occupied: false, current: null });
+        db.ref("queue").set(queue);
       }
-    });
-  }
+    } else {
+      // No queue — just free the table
+      db.ref("tables/" + tableIndex).update({ occupied: false, current: null });
+    }
+  });
 }
 
 /* ➕ ADD TO QUEUE - For testing, can be triggered from menu */
@@ -506,6 +496,7 @@ function addToQueue(name, people) {
 
 // Initialize on load
 initializeTables();
+setupListeners();
 </script>
 
 </body>

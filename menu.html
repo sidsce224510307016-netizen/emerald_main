@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -394,45 +396,29 @@ body {
   animation: trackShake 0.6s ease;
 }
 </style>
-</head>
-function processPayment() {
-  const orderId = "ORD" + Date.now();
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-  const order = {
-    id: orderId,
-    items: cart,
-    total: totalPrice,
-    status: "pending",
-    createdAt: Date.now()
+  const firebaseConfig = {
+    apiKey: "AIzaSyC_LUKzINx6H4XE7uWoCpeLSldpIp-DR80",
+    authDomain: "restro-4db49.firebaseapp.com",
+    databaseURL: "https://restro-4db49-default-rtdb.firebaseio.com",
+    projectId: "restro-4db49",
+    storageBucket: "restro-4db49.firebasestorage.app",
+    messagingSenderId: "860567729744",
+    appId: "1:860567729744:web:773f5a315af7340d950355"
   };
 
-  db.ref("orders/" + orderId).set(order);
-  localStorage.setItem("orderId", orderId);
-
-  alert("Order placed: " + orderId);
-}
-
-// Import the functions you need from the SDKs you need
-
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyC_LUKzINx6H4XE7uWoCpeLSldpIp-DR80",
-  authDomain: "restro-4db49.firebaseapp.com",
-  databaseURL: "https://restro-4db49-default-rtdb.firebaseio.com",
-  projectId: "restro-4db49",
-  storageBucket: "restro-4db49.firebasestorage.app",
-  messagingSenderId: "860567729744",
-  appId: "1:860567729744:web:773f5a315af7340d950355",
-  measurementId: "G-D9CJCYZJF4"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  // Expose to global scope for the main script
+  window._db = db;
+  window._dbRef = ref;
+  window._dbSet = set;
+  console.log("✅ Firebase Realtime Database connected!");
+</script>
+</head>
 
 <body>
 
@@ -1045,7 +1031,7 @@ function processPayment() {
     createdAt: new Date().toISOString()
   };
 
-  db.ref("orders/" + orderId).set(order);
+  if (window._db && window._dbRef && window._dbSet) { window._dbSet(window._dbRef(window._db, "orders/" + orderId), order).then(() => console.log("Order saved to Firebase")).catch(e => console.error("Firebase error:", e)); }
 
   localStorage.setItem("orderId", orderId);
 

@@ -292,23 +292,18 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const analytics = firebase.analytics();
 
-/* 📊 LIVE DATA FOR MANAGER - Listen to tables and orders from Firebase */
-function setupListeners() {
-  db.ref("tables").on("value", () => refreshDashboard());
-  db.ref("queue").on("value", () => refreshDashboard());
-}
+/* 📊 LIVE DATA FOR MANAGER */
+db.ref("tables").on("value", (snapshot) => {
+  const tablesData = snapshot.val();
+  if (tablesData) allTables = Array.isArray(tablesData) ? tablesData : Object.values(tablesData);
+  renderManagerDashboard();
+});
 
-function refreshDashboard() {
-  db.ref("tables").once("value", (tSnap) => {
-    const tablesData = tSnap.val();
-    allTables = tablesData ? Object.values(tablesData) : [];
-    db.ref("queue").once("value", (qSnap) => {
-      const queueData = qSnap.val();
-      allQueue = queueData ? Object.values(queueData) : [];
-      renderManagerDashboard();
-    });
-  });
-}
+db.ref("queue").on("value", (snapshot) => {
+  const queueData = snapshot.val();
+  allQueue = queueData ? Object.values(queueData) : [];
+  renderManagerDashboard();
+});
 </script>
 
 </head>
@@ -444,39 +439,49 @@ function renderManagerDashboard() {
 
 /* 🔄 FREE TABLE - UPDATE IN FIREBASE */
 function freeTable(tableNumber) {
-  const tableIndex = tableNumber - 1; // Firebase stores tables as 0-indexed array
-  const table = allTables.find(t => t.number === tableNumber);
+  // Read fresh snapshot to get actual Firebase keys
+  db.ref("tables").once("value", (snapshot) => {
+    const raw = snapshot.val();
+    if (!raw) return;
 
-  if (!table) return;
-
-  db.ref("queue").once("value", (snapshot) => {
-    let queue = snapshot.val() ? Object.values(snapshot.val()) : [];
-
-    if (queue.length > 0) {
-      const nextCustomer = queue.shift();
-
-      if (table.capacity >= nextCustomer.people) {
-        // Assign next customer directly to this table
-        db.ref("tables/" + tableIndex).update({
-          occupied: true,
-          current: {
-            name: nextCustomer.name,
-            people: nextCustomer.people,
-            since: Date.now(),
-            orderId: nextCustomer.orderId
-          }
-        });
-        db.ref("queue").set(queue);
-      } else {
-        // Doesn't fit — free the table and put customer back
-        queue.unshift(nextCustomer);
-        db.ref("tables/" + tableIndex).update({ occupied: false, current: null });
-        db.ref("queue").set(queue);
-      }
+    // Firebase may store as array or object — find the key whose value has matching number
+    let tableKey = null;
+    if (Array.isArray(raw)) {
+      tableKey = tableNumber - 1; // 0-indexed array
     } else {
-      // No queue — just free the table
-      db.ref("tables/" + tableIndex).update({ occupied: false, current: null });
+      Object.entries(raw).forEach(([k, v]) => {
+        if (v.number === tableNumber) tableKey = k;
+      });
     }
+    if (tableKey === null) return;
+
+    const table = raw[tableKey];
+
+    // Mark table as free
+    db.ref("tables/" + tableKey).update({ occupied: false, current: null });
+
+    // Check queue
+    db.ref("queue").once("value", (qSnap) => {
+      let queue = qSnap.val() ? Object.values(qSnap.val()) : [];
+      if (queue.length > 0) {
+        const nextCustomer = queue.shift();
+        if ((table.capacity || 4) >= nextCustomer.people) {
+          db.ref("tables/" + tableKey).update({
+            occupied: true,
+            current: {
+              name: nextCustomer.name,
+              people: nextCustomer.people,
+              since: Date.now(),
+              orderId: nextCustomer.orderId
+            }
+          });
+          db.ref("queue").set(queue);
+        } else {
+          queue.unshift(nextCustomer);
+          db.ref("queue").set(queue);
+        }
+      }
+    });
   });
 }
 
@@ -496,7 +501,6 @@ function addToQueue(name, people) {
 
 // Initialize on load
 initializeTables();
-setupListeners();
 </script>
 
 </body>

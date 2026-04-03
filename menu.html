@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1026,26 +1027,91 @@ function processPayment() {
 
   const orderId = "ORD" + Date.now();
   const currentOrderInfo = JSON.parse(localStorage.getItem("currentOrderInfo") || "{}");
+  const orderType = currentOrderInfo.orderType || "takeaway";
+  const customerName = currentOrderInfo.name || "Customer";
+  const peopleCount = parseInt(currentOrderInfo.people) || 1;
 
   const order = {
     id: orderId,
-    tableNumber: currentOrderInfo.people || 1,
-    customerName: currentOrderInfo.name || "Customer",
+    tableNumber: null,          // will be set by assignTable() for dine-in
+    customerName: customerName,
+    people: peopleCount,
     items: Object.values(cart),
     total: Object.values(cart).reduce((sum, item) => sum + (item.price * item.qty), 0),
-    status: "pending",
+    status: "Preparing",        // ← unified status used by kitchen & track
     diet: "Regular",
+    orderType: orderType,
     createdAt: new Date().toISOString()
   };
 
+  // Save order to Firebase
   db.ref("orders/" + orderId).set(order).then(() => {
-    localStorage.setItem("orderId", orderId);
     localStorage.setItem("currentOrderId", orderId);
-    alert("Order Placed Successfully: " + orderId);
+
+    // Handle table assignment for dine-in
+    if (orderType === "dinein") {
+      assignTable(customerName, peopleCount, orderId);
+    }
+
     showOrderConfirm();
   }).catch((error) => {
     console.error("Error placing order:", error);
     alert("Error placing order. Please try again.");
+  });
+}
+
+/* 🪑 TABLE ASSIGNMENT FUNCTIONS */
+function assignTable(name, people, orderId) {
+  db.ref("tables").once("value", (snapshot) => {
+    let tables = snapshot.val() ? Object.values(snapshot.val()) : [];
+
+    // Initialize tables if empty
+    if (tables.length === 0) {
+      for (let i = 1; i <= 10; i++) {
+        tables.push({
+          number: i,
+          capacity: i <= 4 ? 2 : i <= 8 ? 4 : 6,
+          occupied: false,
+          current: null
+        });
+      }
+      db.ref("tables").set(tables);
+    }
+
+    // Find available table with sufficient capacity
+    const availableTable = tables.find(t => !t.occupied && t.capacity >= people);
+
+    if (availableTable) {
+      // Assign table directly
+      const tableIndex = tables.findIndex(t => t.number === availableTable.number);
+      db.ref("tables/" + tableIndex).update({
+        occupied: true,
+        current: {
+          name: name,
+          people: people,
+          since: Date.now(),
+          orderId: orderId
+        }
+      });
+      // Write tableNumber back to the order so kitchen & track can show it
+      db.ref("orders/" + orderId).update({ tableNumber: availableTable.number });
+    } else {
+      // Add to queue if no table available
+      addToQueue(name, people, orderId);
+    }
+  });
+}
+
+function addToQueue(name, people, orderId) {
+  db.ref("queue").once("value", (snapshot) => {
+    let queue = snapshot.val() ? Object.values(snapshot.val()) : [];
+    queue.push({
+      name: name,
+      people: people,
+      time: Date.now(),
+      orderId: orderId
+    });
+    db.ref("queue").set(queue);
   });
 }
 

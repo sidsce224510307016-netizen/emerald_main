@@ -702,6 +702,9 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const analytics = firebase.analytics();
+
+/* 🔥 LIVE ORDER TRACKING - Multi-device sync via Firebase */
+// The order status listener is now integrated in the tick() function
 </script>
 
 </head>
@@ -841,45 +844,30 @@ const analytics = firebase.analytics();
   let elapsed = 0;
   let activeStep = 0;
   let finished = false;
-  let firebaseOrderListener = null;
   
-  // Get current order ID from localStorage (just the ID, not the order data)
-  const currentOrderId = localStorage.getItem("currentOrderId") || localStorage.getItem("orderId");
+  // Get current order ID from localStorage (set when order was placed)
+  const currentOrderId = localStorage.getItem("currentOrderId");
   
-  // Display order ID immediately
-  const displayOrderId = currentOrderId ? '#' + currentOrderId.slice(-6).toUpperCase() : '#' + String(Math.floor(100 + Math.random() * 900));
-  document.getElementById('order-id').textContent   = displayOrderId;
-  document.getElementById('success-order-id').textContent = displayOrderId;
+  // Show a placeholder until Firebase loads the order
+  document.getElementById('order-id').textContent = '…';
+  document.getElementById('success-order-id').textContent = '…';
 
-  // 🔥 LIVE FIREBASE LISTENER — watches real-time status changes
+  // Load order details from Firebase and update header
   if (currentOrderId) {
-    firebaseOrderListener = db.ref("orders/" + currentOrderId).on("value", (snap) => {
+    db.ref("orders/" + currentOrderId).once("value", (snap) => {
       const order = snap.val();
-      if (!order) return;
-
-      // Update display order ID with customer name if available
-      if (order.customerName) {
-        const label = '#' + currentOrderId.slice(-6).toUpperCase();
-        document.getElementById('order-id').textContent = label;
-        document.getElementById('success-order-id').textContent = label;
-      }
-
-      const status = (order.status || "").toLowerCase();
-
-      if ((status === "ready") && !finished) {
-        // Kitchen marked it ready — jump to final step immediately
-        finished = true;
-        elapsed = TOTAL_SEC;
-        activeStep = 3;
-        updateVisuals();
-        updateTimer();
-        updateProgress();
-        showSuccess();
-        if (typeof ticker !== 'undefined') clearInterval(ticker);
-      } else if (status === "cancelled" || status === "completed") {
-        if (typeof ticker !== 'undefined') clearInterval(ticker);
+      if (order) {
+        const displayId = order.orderType === 'dinein'
+          ? 'T-' + String(order.tableNumber || '?').padStart(2, '0')
+          : '#' + currentOrderId.slice(-4).toUpperCase();
+        document.getElementById('order-id').textContent = displayId;
+        document.getElementById('success-order-id').textContent = displayId;
       }
     });
+  } else {
+    const fallback = '#' + String(Math.floor(100 + Math.random() * 900));
+    document.getElementById('order-id').textContent = fallback;
+    document.getElementById('success-order-id').textContent = fallback;
   }
 
   /* ─── BUILD DOM ─── */
@@ -1009,10 +997,27 @@ const analytics = firebase.analytics();
     }, 600);
   }
 
+  /* ─── FIREBASE REAL-TIME LISTENER — jumps to Ready when kitchen marks it ─── */
+  if (currentOrderId) {
+    db.ref("orders/" + currentOrderId).on("value", (snap) => {
+      const order = snap.val();
+      if (order && order.status === "Ready" && !finished) {
+        finished = true;
+        elapsed = TOTAL_SEC;
+        activeStep = 3;
+        updateVisuals();
+        updateTimer();
+        updateProgress();
+        showSuccess();
+        clearInterval(ticker);
+      }
+    });
+  }
+
   /* ─── TICK ─── */
   function tick() {
     if (finished) return;
-    
+
     elapsed++;
 
     // Determine active step (steps 0→1 at 300s, 1→2 at 600s, 2→3 at 900s but 3 only at finish)
@@ -1058,21 +1063,17 @@ const analytics = firebase.analytics();
   });
 
   popupYes.addEventListener('click', function() {
-    // Cancel order in Firebase
+    // Cancel order in Firebase so kitchen sees it too
     if (currentOrderId) {
-      db.ref("orders/" + currentOrderId).update({ status: "Cancelled" }).catch(console.error);
-      // Also clean up Firebase listener
-      if (firebaseOrderListener) {
-        db.ref("orders/" + currentOrderId).off("value", firebaseOrderListener);
-      }
+      db.ref("orders/" + currentOrderId).update({ status: "Cancelled" });
     }
     
     cancelOverlay.classList.remove('show');
     cancelledScreen.classList.add('show');
     
-    // Redirect to menu after 2 seconds
+    // Redirect to index after 2 seconds
     setTimeout(() => {
-      window.location.href = 'menu.html';
+      window.location.href = 'index.html';
     }, 2000);
   });
 

@@ -351,8 +351,10 @@ function renderOrders(data) {
     return;
   }
 
-  // Convert data to array and filter active orders
-  const orders = Object.values(data).filter(order => order.status !== "Completed" && order.status !== "Cancelled" && order.status !== "Served");
+  // Convert data to array and filter active orders (exclude Completed and Cancelled)
+  const orders = Object.values(data).filter(order =>
+    order.status !== "Completed" && order.status !== "Cancelled"
+  );
 
   if (orders.length === 0) {
     container.innerHTML = `
@@ -365,9 +367,9 @@ function renderOrders(data) {
   }
 
   orders.forEach(order => {
-    const isReady = order.status === "Ready" || order.status === "ready";
+    const isReady = order.status === "Ready";
     const statusClass = isReady ? "ready" : "preparing";
-    const statusText = isReady ? "Ready" : "Preparing";
+    const statusText = isReady ? "Ready to Serve" : "Preparing";
 
     let dietClass = 'regular';
     let dietText = order.diet || 'Regular';
@@ -380,7 +382,7 @@ function renderOrders(data) {
 
     const actionHTML = !isReady
       ? `<button onclick="markReady('${order.id}')" class="ready-btn">Mark as Ready</button>`
-      : `<div class="ready-label">Ready to Serve</div>`;
+      : `<div class="ready-label">Order Ready</div>`;
 
     const itemsHTML = Array.isArray(order.items)
       ? order.items.map(i => `
@@ -397,7 +399,8 @@ function renderOrders(data) {
     orderCard.innerHTML = `
       <div class="order-header">
         <div class="order-info">
-          <div class="table-number">Table ${order.tableNumber || 1}</div>
+          <div class="table-number">${order.orderType === 'dinein' ? 'Table ' + (order.tableNumber || '—') : 'Takeaway'}</div>
+          <div style="font-size:13px; color:#9ca3af; margin-bottom:6px;">${order.customerName || ''}</div>
           <div class="diet-badge ${dietClass}">${dietText}</div>
           <div class="status-indicator ${statusClass}">
             <div class="status-dot"></div>
@@ -420,9 +423,9 @@ function renderOrders(data) {
 /* 🔄 UPDATE STATUS IN FIREBASE */
 function markReady(orderId) {
   db.ref("orders/" + orderId).update({
-    status: "Ready"
+    status: "Ready"             // ← capital R — matches track.html & kitchen filter
   }).then(() => {
-    console.log("Order marked as ready:", orderId);
+    console.log("Order marked as Ready:", orderId);
   }).catch((error) => {
     console.error("Error updating order:", error);
   });

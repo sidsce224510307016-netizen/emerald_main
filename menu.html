@@ -1119,8 +1119,13 @@ function showOrderConfirm() {
   const overlay = document.getElementById('order-confirm-overlay');
   document.getElementById('order-ready-subtext').style.display = 'block';
   document.getElementById('order-ready-banner').classList.remove('visible');
-  const token = Math.floor(100 + Math.random() * 900);
-  document.getElementById('order-token-number').textContent = '#' + token;
+
+  // ✅ Use the real Firebase order ID saved just before calling this function
+  const realId = localStorage.getItem("currentOrderId") || "—";
+  // Show last 8 chars so it fits the UI nicely (full key is long)
+  const displayId = realId.startsWith("ORD") ? realId.slice(-8).toUpperCase() : realId;
+  document.getElementById('order-token-number').textContent = displayId;
+
   overlay.classList.add('visible');
   startOrderTimer();
 }
@@ -1210,7 +1215,7 @@ function handleSearch() {
 }
 
 function goToTrackOrder() {
-  window.location.href = 'Track.html';
+  window.location.href = 'track.html';
 }
 </script>
 </body>

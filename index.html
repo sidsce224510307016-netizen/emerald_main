@@ -1,380 +1,614 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>EMERALD</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>EMERALD – Table QR Codes</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- QR Code library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
-  :root {
-    --primary-yellow: #ffcc00;
-    --primary-dark: #cc9900;   
-    --card-bg: #f7f7f7;
+:root {
+  --yellow: #ffcc00;
+  --yellow-dark: #cc9900;
+  --bg: #0f172a;
+  --card: #1e293b;
+  --border: rgba(255,204,0,0.2);
+  --muted: #94a3b8;
+  --text: #f1f5f9;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 30px 20px 60px;
+}
+
+/* ── HEADER ── */
+.header { text-align:center; margin-bottom: 50px; }
+.brand {
+  font-family: 'Playfair Display', serif;
+  font-size: 52px;
+  color: var(--yellow);
+  letter-spacing: 4px;
+  text-shadow: 0 4px 20px rgba(255,204,0,0.3);
+  margin-bottom: 8px;
+}
+.header-sub { color: var(--muted); font-size: 16px; font-weight: 500; }
+
+/* ── BASE URL SETTER ── */
+.url-bar {
+  max-width: 700px;
+  margin: 0 auto 50px;
+  background: var(--card);
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid var(--border);
+}
+.url-bar label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+.url-input-row { display: flex; gap: 10px; }
+.url-input {
+  flex: 1;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: var(--text);
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.url-input:focus { border-color: var(--yellow); }
+.url-input::placeholder { color: var(--muted); }
+.gen-btn {
+  padding: 12px 24px;
+  background: var(--yellow);
+  color: #111;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.gen-btn:hover { background: var(--yellow-dark); color: #fff; }
+.url-hint { font-size: 12px; color: var(--muted); margin-top: 8px; }
+
+/* ── PRINT ALL BUTTON ── */
+.top-actions {
+  max-width: 1200px;
+  margin: 0 auto 30px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+.print-all-btn {
+  padding: 12px 28px;
+  background: transparent;
+  border: 1.5px solid var(--yellow);
+  color: var(--yellow);
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.print-all-btn:hover { background: rgba(255,204,0,0.1); }
+.print-all-btn svg { width:16px; height:16px; }
+
+/* ── TABLE GRID ── */
+.tables-grid {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.table-qr-card {
+  background: var(--card);
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.table-qr-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+  border-color: rgba(255,204,0,0.5);
+}
+
+.card-top {
+  background: linear-gradient(135deg, #1a2744 0%, #1e293b 100%);
+  padding: 18px 18px 12px;
+  text-align: center;
+}
+.table-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.table-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 38px;
+  color: var(--yellow);
+  line-height: 1;
+}
+
+.qr-wrap {
+  padding: 18px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #fff;
+}
+.qr-wrap canvas, .qr-wrap img { display: block; }
+
+.card-bottom {
+  padding: 14px 18px;
+  display: flex;
+  gap: 8px;
+}
+.card-btn {
+  flex: 1;
+  padding: 9px 0;
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+.card-btn svg { width:13px; height:13px; flex-shrink:0; }
+.btn-print {
+  background: rgba(255,204,0,0.12);
+  color: var(--yellow);
+  border: 1px solid rgba(255,204,0,0.3);
+}
+.btn-print:hover { background: rgba(255,204,0,0.2); }
+.btn-open {
+  background: rgba(255,255,255,0.06);
+  color: var(--muted);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.btn-open:hover { color: var(--text); background: rgba(255,255,255,0.1); }
+
+/* ── PRINT STYLES ── */
+@media print {
+  body > *                { display: none !important; }
+  #print-sheet            { display: block !important; }
+}
+
+#print-sheet {
+  display: none;
+}
+
+@media print {
+  #print-sheet {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    padding: 0;
+    background: white;
   }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-  body {
-    font-family: 'Inter', sans-serif;
-    background: url("https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=1920") center/cover no-repeat fixed;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-  }
-
-  body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.65); 
-    backdrop-filter: blur(4px);    
-    z-index: 0;
-  }
-
-  .app-shell {
-    position: relative;
-    z-index: 2; 
-    width: 100%;
-    max-width: 480px;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    padding: 20px; 
-  }
-
-  .header {
-    text-align: center;
-    padding: 40px 0;
-  }
-
-  .brand-name {
-    font-family: 'Playfair Display', serif;
-    font-size: 64px; 
-    color: #fff;
-    letter-spacing: 3px; 
-    text-shadow: 0 4px 10px rgba(0,0,0,0.3);
-  }
-
-  .card {
-    background: var(--card-bg);
-    border-radius: 28px;        
-    padding: 35px 25px;
-    box-shadow: 0 25px 60px rgba(0,0,0,0.45); 
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 100px; 
-  }
-
-  .card h2 {
-    text-align: center;
-    margin-bottom: 30px;
-    font-weight: 500;
-    color: #111; 
-  }
-
-  .option {
-    display: flex;
-    align-items: center;
-    gap: 18px; 
-    padding: 18px;
-    margin-bottom: 20px;
-    border-radius: 16px;
-    cursor: pointer;
-    background: #ffffff;
-    border: 1px solid #e0e0e0; 
-    position: relative;
-    top: 0;
-    box-shadow: 0 6px 0px #d6d6d6, 0 8px 15px rgba(0,0,0,0.1);
-    transition: all 0.1s ease;
-  }
-
-  .option:active {
-    top: 4px;
-    box-shadow: 0 2px 0px #d6d6d6, 0 4px 8px rgba(0,0,0,0.1);
-  }
-
-  .option.selected {
-    background: var(--primary-yellow);
-    border-color: #e6b800;             
-    box-shadow: 0 6px 0px var(--primary-dark), 0 8px 20px rgba(255, 204, 0, 0.3);
-    top: -2px; 
-  }
-
-  .arrow-toggle {
-    margin-left: auto;
-    padding: 5px;
-    transition: transform 0.3s ease;
-    display: none;
-  }
-
-  .option.selected .arrow-toggle {
-    display: block;
-  }
-
-  .arrow-toggle.rotated {
-    transform: rotate(180deg);
-  }
-
-  #dinein-form {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), margin-bottom 0.4s ease, padding 0.4s ease;
-    background: #fff;
-    border-radius: 16px;
-    margin-bottom: 0;
-    border: 0 solid #e0e0e0;
-  }
-
-  #dinein-form.active {
-    max-height: 200px;
-    margin-bottom: 20px;
-    border: 1px solid #e0e0e0;
-    padding: 15px;
-  }
-
-  .input-group {
-    margin-bottom: 10px;
-  }
-
-  .input-group input {
-    width: 100%;
-    padding: 12px;
-    border-radius: 10px;
+  .print-cell {
     border: 1px solid #ddd;
-    font-family: 'Inter', sans-serif;
-    font-size: 14px;
-    outline: none;
-  }
-
-  .input-group input:focus {
-    border-color: var(--primary-dark);
-  }
-
-  .icon-box {
-    width: 48px;
-    height: 48px;
-    background: #f0f0f0; 
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
-
-  .option.selected .icon-box { background: rgba(255, 255, 255, 0.6); }
-
-  .icon-box svg {
-    width: 24px;
-    height: 24px;
-    stroke: #111;
-    stroke-width: 2;
-    fill: none;
-  }
-
-  .option-text h3 { font-size: 16px; color: #111; }
-  .option-text p { font-size: 13px; color: #555; } 
-
-  .footer-action {
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    max-width: 480px;
-    padding: 20px;
-    background: linear-gradient(transparent, rgba(0,0,0,0.4));
-    z-index: 10;
-  }
-
-  .btn {
-    width: 100%;
-    padding: 20px;
-    border-radius: 40px;
-    border: none;
-    font-size: 18px;
-    font-weight: 700;
-    background: #e0e0e0;
-    color: #999;        
-    cursor: not-allowed;
-    box-shadow: 0 4px 0px #bcbcbc; 
-    position: relative;
-    top: 0;
-    transition: all 0.3s ease;
-  }
-
-  .btn.active {
-    background: var(--primary-yellow); 
-    color: #111;
-    cursor: pointer;
-    box-shadow: 0 6px 0px var(--primary-dark), 0 10px 20px rgba(255, 204, 0, 0.4);
-  }
-
-  .btn.active:active {
-    top: 4px;
-    box-shadow: 0 2px 0px var(--primary-dark);
-  }
-
-  .hours {
+    padding: 20px 16px;
     text-align: center;
-    color: #000000;
+    page-break-inside: avoid;
+  }
+  .print-cell-brand {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    letter-spacing: 4px;
+    font-weight: 700;
+    color: #111;
+    margin-bottom: 4px;
+  }
+  .print-cell-table {
     font-size: 13px;
-    opacity: 0.8;
-    margin-top: 20px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #666;
+    margin-bottom: 12px;
   }
-
-  @media (max-width: 480px) {
-    .brand-name { font-size: 48px; } 
-    .app-shell { padding: 15px; }
+  .print-cell-num {
+    font-size: 36px;
+    font-weight: 900;
+    color: #111;
+    margin-bottom: 12px;
   }
-</style>
-
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
-
-<script>
-// Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyC_LUKzINx6H4XE7uWoCpeLSldpIp-DR80",
-  authDomain: "restro-4db49.firebaseapp.com",
-  databaseURL: "https://restro-4db49-default-rtdb.firebaseio.com",
-  projectId: "restro-4db49",
-  storageBucket: "restro-4db49.firebasestorage.app",
-  messagingSenderId: "860567729744",
-  appId: "1:860567729744:web:773f5a315af7340d950355",
-  measurementId: "G-D9CJCYZJF4"
-};
-
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-const analytics = firebase.analytics();
-</script>
-
-</head>
-
-<body>
-
-<div class="app-shell">
-  <header class="header">
-    <div class="brand-name">EMERALD</div>
-  </header>
-
-  <main class="card">
-    <h2>Select Order Mode</h2>
-
-    <div class="option" data-type="dinein" id="dinein-option">
-      <div class="icon-box">
-        <svg viewBox="0 0 24 24"><path d="M18 8c0 3.31-2.69 6-6 6M18 8V3M14 8V3M22 8V3M18 21v-7"/><path d="M2 15c0 3.87 3.13 7 7 7s7-3.13 7-7-3.13-7-7-7-7 3.13-7 7zM9 8V2"/></svg>
-      </div>
-      <div class="option-text">
-        <h3>Dine In</h3>
-        <p>Enjoy at our restaurant</p>
-      </div>
-      <div class="arrow-toggle" id="arrowToggle">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-      </div>
-    </div>
-
-    <div id="dinein-form">
-      <div class="input-group">
-        <input type="text" id="userName" placeholder="Your Name">
-      </div>
-      <div class="input-group">
-        <input type="number" id="userCount" placeholder="Number of People">
-      </div>
-    </div>
-
-    <div class="option" data-type="takeaway">
-      <div class="icon-box">
-        <svg viewBox="0 0 24 24"><path d="M6 7h12l-1 14H7L6 7z"/><path d="M9 7V5a3 3 0 016 0v2"/></svg>
-      </div>
-      <div class="option-text">
-        <h3>Takeaway</h3>
-        <p>Pick up your order</p>
-      </div>
-    </div>
-
-    <div class="hours">Open daily: 12:00 PM - 11:00 PM</div>
-  </main>
-
-  <footer class="footer-action">
-    <button class="btn" id="viewMenuBtn">View Menu →</button>
-  </footer>
-</div>
-
-<script>
-const options = document.querySelectorAll(".option");
-const btn = document.getElementById("viewMenuBtn");
-const dineinForm = document.getElementById("dinein-form");
-const nameInput = document.getElementById("userName");
-const countInput = document.getElementById("userCount");
-const arrowToggle = document.getElementById("arrowToggle");
-let selected = null;
-
-function validateForm() {
-  if (selected === "takeaway") {
-    btn.classList.add("active");
-  } else if (selected === "dinein") {
-    if (nameInput.value.trim() !== "" && countInput.value.trim() !== "") {
-      btn.classList.add("active");
-    } else {
-      btn.classList.remove("active");
-    }
-  } else {
-    btn.classList.remove("active");
+  .print-cell-qr { margin: 0 auto 10px; }
+  .print-cell-url {
+    font-size: 9px;
+    color: #999;
+    word-break: break-all;
   }
 }
 
-options.forEach(option => {
-  option.addEventListener("click", (e) => {
-    if (option.id === "dinein-option" && selected === "dinein" && e.target.closest('#arrowToggle')) {
-        dineinForm.classList.toggle("active");
-        arrowToggle.classList.toggle("rotated");
-        return;
-    }
+/* ── TAKEAWAY SECTION ── */
+.section-divider {
+  max-width: 1200px;
+  margin: 0 auto 24px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.section-divider-line { flex: 1; height: 1px; background: var(--border); }
+.section-divider-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--muted);
+}
 
-    if (window.navigator && window.navigator.vibrate) {
-      window.navigator.vibrate(15);
-    }
+.takeaway-card {
+  max-width: 1200px;
+  margin: 0 auto 40px;
+  background: var(--card);
+  border-radius: 20px;
+  border: 1px solid rgba(255,204,0,0.35);
+  overflow: hidden;
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+}
+.takeaway-info {
+  flex: 1;
+  padding: 28px 28px 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.takeaway-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,204,0,0.12);
+  border: 1px solid rgba(255,204,0,0.35);
+  color: var(--yellow);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  margin-bottom: 14px;
+  width: fit-content;
+}
+.takeaway-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 26px;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+.takeaway-sub {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+.takeaway-url-tag {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 12px;
+  color: var(--muted);
+  font-family: monospace;
+  word-break: break-all;
+  margin-bottom: 18px;
+}
+.takeaway-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.takeaway-btn {
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.takeaway-btn svg { width: 14px; height: 14px; }
+.tbtn-print {
+  background: rgba(255,204,0,0.12);
+  color: var(--yellow);
+  border: 1px solid rgba(255,204,0,0.35);
+}
+.tbtn-print:hover { background: rgba(255,204,0,0.22); }
+.tbtn-test {
+  background: rgba(255,255,255,0.06);
+  color: var(--muted);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.tbtn-test:hover { color: var(--text); background: rgba(255,255,255,0.1); }
 
-    options.forEach(o => o.classList.remove("selected"));
-    option.classList.add("selected");
-    selected = option.dataset.type;
+.takeaway-qr-panel {
+  background: linear-gradient(135deg, #1a2744 0%, #1e293b 100%);
+  padding: 28px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border-left: 1px solid rgba(255,204,0,0.15);
+}
+.takeaway-qr-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--muted);
+}
+.takeaway-qr-wrap {
+  background: #fff;
+  padding: 10px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-    if (selected === "dinein") {
-      dineinForm.classList.add("active");
-      arrowToggle.classList.remove("rotated");
-    } else {
-      dineinForm.classList.remove("active");
-    }
+@media (max-width: 600px) {
+  .takeaway-card { flex-direction: column; }
+  .takeaway-qr-panel { border-left: none; border-top: 1px solid rgba(255,204,0,0.15); }
+}
+</style>
+</head>
+<body>
 
-    validateForm();
-  });
+<div class="header">
+  <div class="brand">EMERALD</div>
+  <div class="header-sub">Table QR Code Generator · 23 Tables</div>
+</div>
+
+<!-- URL Input -->
+<div class="url-bar">
+  <label>Your Menu URL (where menu.html is hosted)</label>
+  <div class="url-input-row">
+    <input type="text" class="url-input" id="baseUrl"
+      placeholder="e.g. https://yourdomain.com/menu.html"
+      value="">
+    <button class="gen-btn" onclick="generateAll()">Generate QRs</button>
+  </div>
+  <div class="url-hint">
+    💡 Each QR will link to <code>menu.html?table=1</code>, <code>menu.html?table=2</code>, etc.
+    If running locally, use <code>file:///path/to/menu.html</code> or your server URL.
+  </div>
+</div>
+
+<div class="top-actions">
+  <button class="print-all-btn" onclick="printAll()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>
+    </svg>
+    Print All QR Codes
+  </button>
+</div>
+
+<!-- ── TAKEAWAY QR ── -->
+<div class="section-divider">
+  <div class="section-divider-line"></div>
+  <div class="section-divider-label">🛍️ Takeaway</div>
+  <div class="section-divider-line"></div>
+</div>
+
+<div class="takeaway-card" id="takeaway-card">
+  <div class="takeaway-info">
+    <div class="takeaway-badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      Takeaway Counter
+    </div>
+    <div class="takeaway-title">Takeaway QR Code</div>
+    <div class="takeaway-sub">Place this QR at your takeaway counter or entrance. Customers scan it, enter their name, and order directly from their phone for pickup.</div>
+    <div class="takeaway-url-tag" id="takeaway-url-display">Generate QRs above to see the takeaway URL</div>
+    <div class="takeaway-actions">
+      <button class="takeaway-btn tbtn-print" onclick="printTakeaway()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Print Takeaway QR
+      </button>
+      <button class="takeaway-btn tbtn-test" id="takeaway-test-btn" onclick="testTakeaway()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Test Link
+      </button>
+    </div>
+  </div>
+  <div class="takeaway-qr-panel">
+    <div class="takeaway-qr-label">Scan to Order</div>
+    <div class="takeaway-qr-wrap" id="takeaway-qr-wrap">
+      <div style="width:160px;height:160px;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;text-align:center;padding:10px;">Generate QRs first</div>
+    </div>
+    <div class="takeaway-qr-label" style="color:var(--yellow)">🛍️ Takeaway</div>
+  </div>
+</div>
+
+<!-- ── DINE-IN TABLES ── -->
+<div class="section-divider">
+  <div class="section-divider-line"></div>
+  <div class="section-divider-label">🪑 Dine-In Tables</div>
+  <div class="section-divider-line"></div>
+</div>
+
+<div class="tables-grid" id="tablesGrid"></div>
+
+<!-- Hidden print sheet populated before window.print() -->
+<div id="print-sheet"></div>
+
+<script>
+const TOTAL_TABLES = 23;
+let currentBaseUrl = '';
+
+/* ── Auto-detect URL on load ── */
+window.addEventListener('DOMContentLoaded', () => {
+  const auto = window.location.href.replace('index.html', 'menu.html').split('?')[0];
+  document.getElementById('baseUrl').value = auto.endsWith('menu.html') ? auto : auto.replace(/\/?$/, '/menu.html');
+  generateAll();
 });
 
-nameInput.addEventListener("input", validateForm);
-countInput.addEventListener("input", validateForm);
-
-btn.addEventListener("click", () => {
-  if (btn.classList.contains("active")) {
-    // Save order info to localStorage
-    const orderInfo = {
-      orderType: selected,
-      name: selected === "dinein" ? nameInput.value.trim() : "Takeaway Customer",
-      people: selected === "dinein" ? parseInt(countInput.value) : 1,
-      timestamp: Date.now()
-    };
-    
-    localStorage.setItem("currentOrderInfo", JSON.stringify(orderInfo));
-    window.location.href = "menu.html"; 
+/* ── Generate all QR cards ── */
+function generateAll() {
+  currentBaseUrl = document.getElementById('baseUrl').value.trim();
+  if (!currentBaseUrl) { alert('Please enter the menu URL first.'); return; }
+  if (!currentBaseUrl.includes('menu.html')) {
+    alert('URL should point to menu.html');
+    return;
   }
-});
-</script>
 
+  // ── Generate Takeaway QR ──
+  const takeawayUrl = currentBaseUrl + '?type=takeaway';
+  document.getElementById('takeaway-url-display').textContent = takeawayUrl;
+  document.getElementById('takeaway-test-btn').onclick = () => window.open(takeawayUrl, '_blank');
+
+  const takeawayWrap = document.getElementById('takeaway-qr-wrap');
+  takeawayWrap.innerHTML = '';
+  new QRCode(takeawayWrap, {
+    text: takeawayUrl,
+    width: 160,
+    height: 160,
+    colorDark: '#000000',
+    colorLight: '#ffffff',
+    correctLevel: QRCode.CorrectLevel.H
+  });
+
+  // ── Generate Dine-In QRs ──
+  const grid = document.getElementById('tablesGrid');
+  grid.innerHTML = '';
+
+  for (let t = 1; t <= TOTAL_TABLES; t++) {
+    const url = currentBaseUrl + '?table=' + t;
+
+    const card = document.createElement('div');
+    card.className = 'table-qr-card';
+    card.id = 'card-' + t;
+    card.innerHTML = `
+      <div class="card-top">
+        <div class="table-label">Table</div>
+        <div class="table-num">${t}</div>
+      </div>
+      <div class="qr-wrap" id="qr-${t}"></div>
+      <div class="card-bottom">
+        <button class="card-btn btn-print" onclick="printSingle(${t})">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Print
+        </button>
+        <button class="card-btn btn-open" onclick="window.open('${url}','_blank')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Test
+        </button>
+      </div>
+    `;
+    grid.appendChild(card);
+
+    new QRCode(document.getElementById('qr-' + t), {
+      text: url,
+      width: 160,
+      height: 160,
+      colorDark: '#000000',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.H
+    });
+  }
+}
+
+/* ── Print Takeaway QR ── */
+function printTakeaway() {
+  if (!currentBaseUrl) { alert('Generate QR codes first.'); return; }
+  const url = currentBaseUrl + '?type=takeaway';
+  const qrEl = document.getElementById('takeaway-qr-wrap');
+  const img = qrEl.querySelector('img') || qrEl.querySelector('canvas');
+  const qrSrc = img ? (img.tagName === 'CANVAS' ? img.toDataURL() : img.src) : '';
+
+  const sheet = document.getElementById('print-sheet');
+  sheet.innerHTML = `
+    <div class="print-cell" style="grid-column:1/-1; max-width:280px; margin:0 auto;">
+      <div class="print-cell-brand">EMERALD</div>
+      <div class="print-cell-table">Scan to Order – Takeaway</div>
+      <div class="print-cell-num">🛍️ Takeaway</div>
+      <div class="print-cell-qr"><img src="${qrSrc}" width="200" height="200" style="display:block;margin:0 auto;"></div>
+      <div class="print-cell-url">${url}</div>
+    </div>
+  `;
+  window.print();
+}
+
+function testTakeaway() {
+  if (!currentBaseUrl) { alert('Generate QR codes first.'); return; }
+  window.open(currentBaseUrl + '?type=takeaway', '_blank');
+}
+
+/* ── Print a single QR card ── */
+function printSingle(tableNum) {
+  const url = currentBaseUrl + '?table=' + tableNum;
+  const qrEl = document.getElementById('qr-' + tableNum);
+  const img = qrEl.querySelector('img') || qrEl.querySelector('canvas');
+  const qrSrc = img ? (img.tagName === 'CANVAS' ? img.toDataURL() : img.src) : '';
+
+  const sheet = document.getElementById('print-sheet');
+  sheet.innerHTML = `
+    <div class="print-cell" style="grid-column:1/-1; max-width:280px; margin:0 auto;">
+      <div class="print-cell-brand">EMERALD</div>
+      <div class="print-cell-table">Scan to Order</div>
+      <div class="print-cell-num">Table ${tableNum}</div>
+      <div class="print-cell-qr"><img src="${qrSrc}" width="200" height="200" style="display:block;margin:0 auto;"></div>
+      <div class="print-cell-url">${url}</div>
+    </div>
+  `;
+  window.print();
+}
+
+/* ── Print ALL QRs (3-up layout) ── */
+function printAll() {
+  if (!currentBaseUrl) { alert('Generate QR codes first.'); return; }
+
+  const sheet = document.getElementById('print-sheet');
+  let cells = '';
+
+  for (let t = 1; t <= TOTAL_TABLES; t++) {
+    const url = currentBaseUrl + '?table=' + t;
+    const qrEl = document.getElementById('qr-' + t);
+    const img = qrEl ? (qrEl.querySelector('img') || qrEl.querySelector('canvas')) : null;
+    const qrSrc = img ? (img.tagName === 'CANVAS' ? img.toDataURL() : img.src) : '';
+
+    cells += `
+      <div class="print-cell">
+        <div class="print-cell-brand">EMERALD</div>
+        <div class="print-cell-table">Scan to Order</div>
+        <div class="print-cell-num">Table ${t}</div>
+        <div class="print-cell-qr"><img src="${qrSrc}" width="160" height="160" style="display:block;margin:0 auto;"></div>
+        <div class="print-cell-url">${url}</div>
+      </div>
+    `;
+  }
+  sheet.innerHTML = cells;
+  window.print();
+}
+</script>
 </body>
 </html>

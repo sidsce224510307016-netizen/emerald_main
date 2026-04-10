@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -393,82 +395,6 @@ body {
 #track-order-btn.shake {
   animation: trackShake 0.6s ease;
 }
-
-/* --- NAME ENTRY POPUP --- */
-#name-popup-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.65);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 9500;
-  backdrop-filter: blur(4px);
-}
-#name-popup-overlay.visible { display: flex; }
-.name-popup-box {
-  background: #fff;
-  border-radius: 24px;
-  padding: 36px 28px 28px;
-  text-align: center;
-  width: 88%;
-  max-width: 340px;
-  box-shadow: 0 24px 60px rgba(0,0,0,0.35);
-  animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-.name-popup-icon { font-size: 44px; margin-bottom: 10px; }
-.name-popup-title {
-  font-family: 'Playfair Display', serif;
-  font-size: 22px;
-  color: #111;
-  margin-bottom: 6px;
-}
-.name-popup-sub {
-  font-size: 13px;
-  color: #888;
-  margin-bottom: 22px;
-  line-height: 1.5;
-}
-.name-popup-input {
-  width: 100%;
-  padding: 14px 16px;
-  border: 2px solid #e0e0e0;
-  border-radius: 12px;
-  font-size: 15px;
-  font-family: 'Inter', sans-serif;
-  outline: none;
-  transition: border-color 0.2s;
-  margin-bottom: 16px;
-  box-sizing: border-box;
-}
-.name-popup-input:focus { border-color: #ffcc00; }
-.name-popup-btn {
-  width: 100%;
-  padding: 15px;
-  background: #ffcc00;
-  color: #111;
-  border: none;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.2s;
-  font-family: 'Inter', sans-serif;
-}
-.name-popup-btn:hover { background: #e6b800; }
-.name-popup-btn:disabled { background: #e0e0e0; color: #aaa; cursor: not-allowed; }
-.name-popup-table-tag {
-  display: inline-block;
-  background: #fff8e1;
-  border: 1.5px solid #ffcc00;
-  color: #111;
-  font-size: 12px;
-  font-weight: 700;
-  padding: 4px 12px;
-  border-radius: 20px;
-  margin-bottom: 18px;
-  letter-spacing: 0.5px;
-}
 </style>
 
 <!-- Firebase SDK -->
@@ -479,14 +405,14 @@ body {
 <script>
 // Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyCCdNd2Arh9u7dCBouUGL95Gmk2o8G9SDk",
-  authDomain: "emerlad-213c0.firebaseapp.com",
-  databaseURL: "https://emerlad-213c0-default-rtdb.firebaseio.com",
-  projectId: "emerlad-213c0",
-  storageBucket: "emerlad-213c0.firebasestorage.app",
-  messagingSenderId: "773704600274",
-  appId: "1:773704600274:web:01a362fccfe4db96633b0b",
-  measurementId: "G-HLR1W64K41"
+  apiKey: "AIzaSyC_LUKzINx6H4XE7uWoCpeLSldpIp-DR80",
+  authDomain: "restro-4db49.firebaseapp.com",
+  databaseURL: "https://restro-4db49-default-rtdb.firebaseio.com",
+  projectId: "restro-4db49",
+  storageBucket: "restro-4db49.firebasestorage.app",
+  messagingSenderId: "860567729744",
+  appId: "1:860567729744:web:773f5a315af7340d950355",
+  measurementId: "G-D9CJCYZJF4"
 };
 
 // Initialize Firebase
@@ -595,38 +521,12 @@ const analytics = firebase.analytics();
 <div class="main-content">
   <div class="hero-header">
     <h1 id="section-name">Starters</h1>
-    <div style="display:flex;align-items:center;gap:8px;">
-      <div id="table-indicator" style="display:none;background:#ffcc00;color:#111;font-weight:800;font-size:12px;padding:5px 12px;border-radius:20px;letter-spacing:0.5px;"></div>
-      <div class="search-container">
-        <input type="text" id="search-input" placeholder="Search item..." oninput="handleSearch()">
-        <button class="search-icon-btn" onclick="toggleSearch()">🔍</button>
-      </div>
+    <div class="search-container">
+      <input type="text" id="search-input" placeholder="Search item..." oninput="handleSearch()">
+      <button class="search-icon-btn" onclick="toggleSearch()">🔍</button>
     </div>
   </div>
   <div class="menu-container"><div class="items-grid" id="menu-grid"></div></div>
-</div>
-
-<!-- Name Entry Popup -->
-<div id="name-popup-overlay">
-  <div class="name-popup-box">
-    <div class="name-popup-icon">👋</div>
-    <div class="name-popup-title">Welcome to Emerald</div>
-    <div id="name-popup-table-tag" class="name-popup-table-tag">Table —</div>
-    <div class="name-popup-sub">Please enter your name so we can personalise your experience.</div>
-    <input
-      type="text"
-      id="name-popup-input"
-      class="name-popup-input"
-      placeholder="Your name…"
-      maxlength="40"
-      oninput="document.getElementById('name-popup-confirm').disabled = this.value.trim().length === 0"
-      onkeydown="if(event.key==='Enter') confirmName()"
-      autocomplete="off"
-    />
-    <button id="name-popup-confirm" class="name-popup-btn" onclick="confirmName()" disabled>
-      Let's Order 🍽️
-    </button>
-  </div>
 </div>
 
 <div class="cart-bar" id="cart-bar" onclick="toggleCart()">
@@ -641,20 +541,7 @@ const analytics = firebase.analytics();
       <h3>Your Basket</h3>
       <button onclick="toggleCart()" style="background:none; border:none; color:#999; font-size:20px">✕</button>
     </div>
-    <!-- Table badge (shown dynamically) -->
-    <div id="cart-table-badge" style="background:#fff8e1;border:1.5px solid #ffcc00;border-radius:10px;padding:8px 14px;margin-bottom:14px;display:none;align-items:center;gap:8px;font-size:13px;font-weight:700;color:#111;">
-      <span>🪑</span><span id="cart-table-label">Table —</span>
-    </div>
     <div id="cart-items-list"></div>
-    <!-- Diet Preference -->
-    <div style="margin-top:14px;">
-      <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:8px;">Diet Preference</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <button id="diet-regular" onclick="selectDiet('Regular')" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #22c55e;background:#f0fdf4;color:#16a34a;font-weight:700;font-size:12px;cursor:pointer;">✓ Regular</button>
-        <button id="diet-jain"    onclick="selectDiet('Jain')"    style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #e0e0e0;background:#fff;color:#555;font-weight:700;font-size:12px;cursor:pointer;">Jain</button>
-        <button id="diet-swami"   onclick="selectDiet('Swaminarayan')" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #e0e0e0;background:#fff;color:#555;font-weight:700;font-size:12px;cursor:pointer;">Swaminarayan</button>
-      </div>
-    </div>
     <div style="background: #f9f9f9; padding: 15px; border-radius: 12px; margin-top: 15px;">
       <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 20px;">
         <span>Total</span><span id="cart-total-price-popup">₹0.00</span>
@@ -956,76 +843,14 @@ const menuData = {
 };
 
 let cart = {};
-window._selectedDiet = "Regular";
-
-function selectDiet(diet) {
-  window._selectedDiet = diet;
-  ['regular','jain','swami'].forEach(id => {
-    const btn = document.getElementById('diet-' + id);
-    if (btn) {
-      btn.style.border = '1.5px solid #e0e0e0';
-      btn.style.background = '#fff';
-      btn.style.color = '#555';
-    }
-  });
-  const map = { Regular:'regular', Jain:'jain', Swaminarayan:'swami' };
-  const colors = { Regular:['#22c55e','#f0fdf4','#16a34a'], Jain:['#f59e0b','#fffbeb','#b45309'], Swaminarayan:['#3b82f6','#eff6ff','#1d4ed8'] };
-  const k = map[diet]; const c = colors[diet];
-  const btn = document.getElementById('diet-' + k);
-  if (btn) { btn.style.border='1.5px solid '+c[0]; btn.style.background=c[1]; btn.style.color=c[2]; }
-}
-
-window._customerName = '';
-window._orderType = 'dinein'; // default
 
 window.onload = () => {
-  const urlParams = new URLSearchParams(window.location.search);
-  const tableNum  = urlParams.get('table');
-  const orderType = urlParams.get('type'); // 'takeaway' or null
-
-  // Detect takeaway
-  if (orderType === 'takeaway') {
-    window._orderType = 'takeaway';
-    const indicator = document.getElementById('table-indicator');
-    if (indicator) { indicator.textContent = '🛍️ Takeaway'; indicator.style.display = 'block'; }
-    // Update name popup tag
-    const tag = document.getElementById('name-popup-table-tag');
-    if (tag) tag.textContent = '🛍️ Takeaway Order';
-  } else if (tableNum) {
-    window._orderType = 'dinein';
-    const indicator = document.getElementById('table-indicator');
-    if (indicator) { indicator.textContent = 'Table ' + tableNum; indicator.style.display = 'block'; }
-    const tag = document.getElementById('name-popup-table-tag');
-    if (tag) tag.textContent = 'Table ' + tableNum;
-  } else {
-    console.warn('No table number or order type in URL. Scan the QR code.');
-  }
-
   setTimeout(() => {
     document.getElementById('intro-wrapper').classList.add('exit');
-    setTimeout(() => {
-      document.getElementById('name-popup-overlay').classList.add('visible');
-      setTimeout(() => {
-        const inp = document.getElementById('name-popup-input');
-        if (inp) inp.focus();
-      }, 150);
-    }, 600);
+    const firstSubItem = document.querySelector('.sub-item');
+    showSection('starters', firstSubItem);
   }, 5500);
 };
-
-function confirmName() {
-  const inp = document.getElementById('name-popup-input');
-  const name = inp ? inp.value.trim() : '';
-  if (!name) return;
-  window._customerName = name;
-
-  // Hide popup
-  document.getElementById('name-popup-overlay').classList.remove('visible');
-
-  // Now load the menu
-  const firstSubItem = document.querySelector('.sub-item');
-  showSection('starters', firstSubItem);
-}
 
 function moveIndicator(el) {
   const indicator = document.getElementById('nav-indicator');
@@ -1184,20 +1009,7 @@ function syncCartUI() {
 
 function toggleCart() {
   const p = document.getElementById('cart-popup');
-  const isOpen = p.style.display === 'flex';
-  p.style.display = isOpen ? 'none' : 'flex';
-
-  if (!isOpen) {
-    // Show table badge in cart
-    const urlParams = new URLSearchParams(window.location.search);
-    const tableNum = urlParams.get('table');
-    const badge = document.getElementById('cart-table-badge');
-    const label = document.getElementById('cart-table-label');
-    if (tableNum && badge && label) {
-      label.textContent = 'Table ' + tableNum;
-      badge.style.display = 'flex';
-    }
-  }
+  p.style.display = (p.style.display === 'flex') ? 'none' : 'flex';
 }
 
 function toggleSearch() {
@@ -1213,35 +1025,35 @@ const CIRCUMFERENCE = 2 * Math.PI * 54;
 function processPayment() {
   triggerHaptic();
 
-  const urlParams   = new URLSearchParams(window.location.search);
-  const tableNum    = parseInt(urlParams.get('table')) || null;
-  const orderType   = window._orderType || 'dinein';
-
-  // For dine-in, table number is required
-  if (orderType === 'dinein' && !tableNum) {
-    alert("Table number not found.\nPlease scan the QR code on your table again.");
-    return;
-  }
-
-  const selectedDiet  = window._selectedDiet || "Regular";
-  const orderId       = "ORD" + Date.now();
-  const customerName  = window._customerName || (tableNum ? "Table " + tableNum : "Takeaway");
+  const orderId = "ORD" + Date.now();
+  const currentOrderInfo = JSON.parse(localStorage.getItem("currentOrderInfo") || "{}");
+  const orderType = currentOrderInfo.orderType || "takeaway";
+  const customerName = currentOrderInfo.name || "Customer";
+  const peopleCount = parseInt(currentOrderInfo.people) || 1;
 
   const order = {
     id: orderId,
-    tableNumber: orderType === 'takeaway' ? 'Takeaway' : tableNum,
+    tableNumber: peopleCount,
     customerName: customerName,
-    people: 1,
     items: Object.values(cart),
     total: Object.values(cart).reduce((sum, item) => sum + (item.price * item.qty), 0),
-    status: "Preparing",
-    diet: selectedDiet,
+    status: "pending",
+    diet: "Regular",
     orderType: orderType,
     createdAt: new Date().toISOString()
   };
 
+  // Save order to Firebase
   db.ref("orders/" + orderId).set(order).then(() => {
+    localStorage.setItem("orderId", orderId);
     localStorage.setItem("currentOrderId", orderId);
+
+    // Handle table assignment for dine-in
+    if (orderType === "dinein") {
+      assignTable(customerName, peopleCount, orderId);
+    }
+
+    alert("Order Placed Successfully: " + orderId);
     showOrderConfirm();
   }).catch((error) => {
     console.error("Error placing order:", error);
@@ -1249,18 +1061,64 @@ function processPayment() {
   });
 }
 
+/* 🪑 TABLE ASSIGNMENT FUNCTIONS */
+function assignTable(name, people, orderId) {
+  db.ref("tables").once("value", (snapshot) => {
+    let tables = snapshot.val() ? Object.values(snapshot.val()) : [];
+
+    // Initialize tables if empty
+    if (tables.length === 0) {
+      for (let i = 1; i <= 10; i++) {
+        tables.push({
+          number: i,
+          capacity: i <= 4 ? 2 : i <= 8 ? 4 : 6,
+          occupied: false,
+          current: null
+        });
+      }
+      db.ref("tables").set(tables);
+    }
+
+    // Find available table with sufficient capacity
+    const availableTable = tables.find(t => !t.occupied && t.capacity >= people);
+
+    if (availableTable) {
+      // Assign table directly
+      db.ref("tables/" + (availableTable.number - 1)).update({
+        occupied: true,
+        current: {
+          name: name,
+          people: people,
+          since: Date.now(),
+          orderId: orderId
+        }
+      });
+    } else {
+      // Add to queue if no table available
+      addToQueue(name, people, orderId);
+    }
+  });
+}
+
+function addToQueue(name, people, orderId) {
+  db.ref("queue").once("value", (snapshot) => {
+    let queue = snapshot.val() ? Object.values(snapshot.val()) : [];
+    queue.push({
+      name: name,
+      people: people,
+      time: Date.now(),
+      orderId: orderId
+    });
+    db.ref("queue").set(queue);
+  });
+}
+
 function showOrderConfirm() {
   const overlay = document.getElementById('order-confirm-overlay');
   document.getElementById('order-ready-subtext').style.display = 'block';
   document.getElementById('order-ready-banner').classList.remove('visible');
-
-  // Show table number or Takeaway label
-  const urlParams = new URLSearchParams(window.location.search);
-  const tableNum  = urlParams.get('table') || '?';
-  const orderType = window._orderType || 'dinein';
-  document.getElementById('order-token-number').textContent =
-    orderType === 'takeaway' ? '🛍️ Takeaway' : 'Table ' + tableNum;
-
+  const token = Math.floor(100 + Math.random() * 900);
+  document.getElementById('order-token-number').textContent = '#' + token;
   overlay.classList.add('visible');
   startOrderTimer();
 }

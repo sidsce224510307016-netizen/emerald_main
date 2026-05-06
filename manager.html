@@ -3,520 +3,1412 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Manager Dashboard - EMERALD</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Raleway:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<title>EMERALD — Operations</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Mono:wght@300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyC_LUKzINx6H4XE7uWoCpeLSldpIp-DR80",
+  authDomain: "restro-4db49.firebaseapp.com",
+  databaseURL: "https://restro-4db49-default-rtdb.firebaseio.com",
+  projectId: "restro-4db49",
+  storageBucket: "restro-4db49.firebasestorage.app",
+  messagingSenderId: "860567729744",
+  appId: "1:860567729744:web:773f5a315af7340d950355",
+  measurementId: "G-D9CJCYZJF4"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const analytics = firebase.analytics();
+db.ref("tables").on("value", (snap) => {
+  const d = snap.val();
+  if (d) allTables = Array.isArray(d) ? d : Object.values(d);
+  renderManagerDashboard();
+});
+db.ref("queue").on("value", (snap) => {
+  const d = snap.val();
+  allQueue = d ? Object.values(d) : [];
+  renderManagerDashboard();
+});
+</script>
+
 <style>
-/* ======== CUSTOM FONTS: Telegraf (headers) + Elegant Display (content) ======== */
-@font-face {
-  font-family: 'Telegraf';
-  src: url('https://fonts.cdnfonts.com/css/telegraf') format('woff2');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Elegant Display';
-  src: url('https://fonts.cdnfonts.com/css/editorial-new') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-</style>
-<!-- Fallback CDN imports for Telegraf & Elegant Display -->
-<link href="https://fonts.cdnfonts.com/css/telegraf" rel="stylesheet">
-<link href="https://fonts.cdnfonts.com/css/pp-editorial-new" rel="stylesheet">
-<style>
+/* ─────────────────────────────────────────
+   DESIGN TOKENS
+───────────────────────────────────────── */
 :root {
-  --primary-yellow: #EDAB18;
-  --primary-dark: #c4880e;
-  --card-bg: rgba(200, 200, 200, 0.07);
-  --card-border: rgba(180, 180, 180, 0.18);
-  --card-glow: rgba(160, 160, 160, 0.12);
-  --bg-dark: #000000;
-  --text-light: #e8e8e8;
-  --text-muted: #7a7a7a;
-  --success: #22c55e;
-  --danger: #ef4444;
-  --warning: #f59e0b;
-  --blue: #3b82f6;
-  --glass-blur: blur(16px);
-  --glass-bg: rgba(210, 210, 210, 0.08);
-  --glass-border: rgba(190, 190, 190, 0.20);
-}
-* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  --gold:        #C9A84C;
+  --gold-light:  #E2C47A;
+  --gold-dim:    rgba(201,168,76,0.18);
+  --gold-glow:   rgba(201,168,76,0.08);
+  --ink:         #06060A;
+  --surface-0:   #0B0B0F;
+  --surface-1:   rgba(255,255,255,0.032);
+  --surface-2:   rgba(255,255,255,0.055);
+  --surface-3:   rgba(255,255,255,0.08);
+  --border-0:    rgba(255,255,255,0.06);
+  --border-1:    rgba(255,255,255,0.10);
+  --border-gold: rgba(201,168,76,0.22);
+  --text-primary: #F0EDE6;
+  --text-secondary: #8A8880;
+  --text-tertiary: #52504E;
+  --success:     #4CAF7D;
+  --success-dim: rgba(76,175,125,0.12);
+  --danger:      #E05252;
+  --danger-dim:  rgba(224,82,82,0.12);
+  --blue:        #6B9FD4;
+  --blue-dim:    rgba(107,159,212,0.12);
+  --amber:       #D4954B;
+  --amber-dim:   rgba(212,149,75,0.12);
 
-/* ======== ANIMATED BACKGROUND ======== */
+  --radius-sm:   8px;
+  --radius-md:   14px;
+  --radius-lg:   20px;
+  --radius-xl:   28px;
+
+  --blur-glass:  blur(24px) saturate(1.4);
+  --transition:  0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body:    'Inter', system-ui, sans-serif;
+  --font-mono:    'DM Mono', monospace;
+}
+
+/* ─────────────────────────────────────────
+   RESET + BASE
+───────────────────────────────────────── */
+*, *::before, *::after {
+  margin: 0; padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+html { scroll-behavior: smooth; }
 body {
-  font-family: 'Raleway', sans-serif;
-  background: #000000;
-  color: var(--text-light);
+  font-family: var(--font-body);
+  background: var(--ink);
+  color: var(--text-primary);
   min-height: 100vh;
-  padding: 20px;
   overflow-x: hidden;
-  position: relative;
+  -webkit-font-smoothing: antialiased;
 }
+button { cursor: pointer; font-family: inherit; }
+input { font-family: inherit; }
 
-/* ======== LIVE WALLPAPER BACKGROUND ======== */
-/* Each orb is its own element animated with transform — GPU-smooth, no gradient jumps */
-
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -10;
-  background: #060606;
-}
-
-/* Orb container */
-.bg-live-layer {
-  position: fixed;
-  inset: 0;
-  z-index: -5;
+/* ─────────────────────────────────────────
+   LIVE BACKGROUND — GPU ORB SYSTEM
+───────────────────────────────────────── */
+.bg-canvas {
+  position: fixed; inset: 0;
+  z-index: 0;
   overflow: hidden;
   pointer-events: none;
 }
-
-/* Base orb shape */
-.bg-orb {
+.bg-canvas::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: var(--ink);
+}
+/* Grain overlay */
+.bg-canvas::after {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity: 1;
+  mix-blend-mode: overlay;
+}
+.orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(80px);
   will-change: transform;
-  mix-blend-mode: screen;
+  filter: blur(90px);
+}
+.orb-1 {
+  width: 80vw; height: 80vw;
+  top: -30%; left: -20%;
+  background: radial-gradient(circle at 40% 40%,
+    rgba(201,168,76,0.12) 0%,
+    rgba(140,120,60,0.06) 40%,
+    transparent 70%);
+  animation: float1 26s ease-in-out infinite alternate;
+}
+.orb-2 {
+  width: 65vw; height: 65vw;
+  bottom: -25%; right: -15%;
+  background: radial-gradient(circle at 60% 60%,
+    rgba(180,180,180,0.11) 0%,
+    rgba(100,100,100,0.05) 45%,
+    transparent 70%);
+  animation: float2 32s ease-in-out infinite alternate;
+}
+.orb-3 {
+  width: 50vw; height: 50vw;
+  top: 40%; left: 35%;
+  background: radial-gradient(circle at 50% 50%,
+    rgba(150,150,150,0.07) 0%,
+    rgba(80,80,80,0.03) 50%,
+    transparent 70%);
+  animation: float3 20s ease-in-out infinite alternate;
+}
+.orb-4 {
+  width: 40vw; height: 40vw;
+  top: 0%; right: 10%;
+  background: radial-gradient(circle,
+    rgba(201,168,76,0.07) 0%,
+    transparent 65%);
+  animation: float4 28s ease-in-out infinite alternate;
+}
+.orb-5 {
+  width: 55vw; height: 55vw;
+  bottom: 0%; left: 10%;
+  background: radial-gradient(circle,
+    rgba(120,120,120,0.08) 0%,
+    transparent 65%);
+  animation: float5 36s ease-in-out infinite alternate;
+}
+@keyframes float1 {
+  0%   { transform: translate(0,0) scale(1); }
+  30%  { transform: translate(12vw,8vh) scale(1.06); }
+  70%  { transform: translate(5vw,22vh) scale(0.96); }
+  100% { transform: translate(20vw,6vh) scale(1.04); }
+}
+@keyframes float2 {
+  0%   { transform: translate(0,0) scale(1); }
+  35%  { transform: translate(-14vw,-10vh) scale(1.08); }
+  65%  { transform: translate(-6vw,-24vh) scale(0.94); }
+  100% { transform: translate(-18vw,-8vh) scale(1.05); }
+}
+@keyframes float3 {
+  0%   { transform: translate(0,0) scale(1); }
+  50%  { transform: translate(-10vw,14vh) scale(1.1); }
+  100% { transform: translate(8vw,-12vh) scale(0.92); }
+}
+@keyframes float4 {
+  0%   { transform: translate(0,0) scale(1); }
+  45%  { transform: translate(-8vw,16vh) scale(1.06); }
+  100% { transform: translate(6vw,28vh) scale(0.95); }
+}
+@keyframes float5 {
+  0%   { transform: translate(0,0) scale(1); }
+  40%  { transform: translate(16vw,-12vh) scale(1.07); }
+  75%  { transform: translate(8vw,-22vh) scale(0.97); }
+  100% { transform: translate(20vw,-10vh) scale(1.03); }
 }
 
-/* Orb 1 — large, top-left, slow drift */
-.bg-orb-1 {
-  width: 75vw;
-  height: 75vw;
-  top: -20%;
-  left: -15%;
-  background: radial-gradient(circle, rgba(180,180,180,0.28) 0%, rgba(100,100,100,0.10) 50%, transparent 75%);
-  animation: orbDrift1 22s ease-in-out infinite alternate;
-}
-@keyframes orbDrift1 {
-  0%   { transform: translate(0%,    0%)   scale(1.00); }
-  33%  { transform: translate(18%,  12%)   scale(1.08); }
-  66%  { transform: translate(8%,   30%)   scale(0.95); }
-  100% { transform: translate(28%,  10%)   scale(1.05); }
+/* ─────────────────────────────────────────
+   LAYOUT SHELL
+───────────────────────────────────────── */
+.shell {
+  position: relative; z-index: 1;
+  display: flex;
+  min-height: 100vh;
 }
 
-/* Orb 2 — medium, bottom-right */
-.bg-orb-2 {
-  width: 60vw;
-  height: 60vw;
-  bottom: -15%;
-  right: -10%;
-  background: radial-gradient(circle, rgba(150,150,150,0.22) 0%, rgba(80,80,80,0.08) 55%, transparent 75%);
-  animation: orbDrift2 28s ease-in-out infinite alternate;
+/* ─────────────────────────────────────────
+   SIDEBAR
+───────────────────────────────────────── */
+.sidebar {
+  width: 72px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 0;
+  background: rgba(10,10,14,0.7);
+  backdrop-filter: blur(20px);
+  border-right: 1px solid var(--border-0);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  gap: 8px;
+  z-index: 100;
 }
-@keyframes orbDrift2 {
-  0%   { transform: translate(0%,    0%)   scale(1.00); }
-  40%  { transform: translate(-22%, -14%)  scale(1.10); }
-  70%  { transform: translate(-10%, -28%)  scale(0.92); }
-  100% { transform: translate(-30%, -8%)   scale(1.06); }
-}
-
-/* Orb 3 — smaller, mid-screen, faster */
-.bg-orb-3 {
-  width: 45vw;
-  height: 45vw;
-  top: 35%;
-  left: 30%;
-  background: radial-gradient(circle, rgba(130,130,130,0.18) 0%, rgba(70,70,70,0.06) 55%, transparent 75%);
-  animation: orbDrift3 18s ease-in-out infinite alternate;
-}
-@keyframes orbDrift3 {
-  0%   { transform: translate(0%,   0%)   scale(1.00); }
-  50%  { transform: translate(-20%, 20%)  scale(1.12); }
-  100% { transform: translate(15%, -18%) scale(0.90); }
-}
-
-/* Orb 4 — subtle top-right accent */
-.bg-orb-4 {
-  width: 40vw;
-  height: 40vw;
-  top: -5%;
-  right: 5%;
-  background: radial-gradient(circle, rgba(120,120,120,0.15) 0%, rgba(60,60,60,0.05) 55%, transparent 75%);
-  animation: orbDrift4 24s ease-in-out infinite alternate;
-}
-@keyframes orbDrift4 {
-  0%   { transform: translate(0%,  0%)  scale(1.00); }
-  45%  { transform: translate(-12%, 22%) scale(1.07); }
-  100% { transform: translate(10%, 35%) scale(0.94); }
-}
-
-/* Orb 5 — bottom-left accent */
-.bg-orb-5 {
-  width: 50vw;
-  height: 50vw;
-  bottom: -10%;
-  left: 5%;
-  background: radial-gradient(circle, rgba(140,140,140,0.16) 0%, rgba(75,75,75,0.06) 55%, transparent 75%);
-  animation: orbDrift5 32s ease-in-out infinite alternate;
-}
-@keyframes orbDrift5 {
-  0%   { transform: translate(0%,  0%)   scale(1.00); }
-  35%  { transform: translate(20%, -16%) scale(1.09); }
-  70%  { transform: translate(10%, -30%) scale(0.96); }
-  100% { transform: translate(25%, -12%) scale(1.04); }
-}
-
-/* ======== HEADER ======== */
-.header { text-align: center; margin-bottom: 40px; }
-.brand-name {
-  font-family: 'Telegraf', 'Cormorant Garamond', serif;
-  font-size: 58px;
-  font-weight: 700;
-  color: var(--primary-yellow);
-  letter-spacing: 8px;
-  text-shadow: 0 0 30px rgba(255,204,0,0.25), 0 4px 20px rgba(255,204,0,0.15);
-  margin-bottom: 6px;
-}
-.subtitle {
-  font-family: 'Lato', sans-serif;
-  font-size: 13px;
-  font-weight: 300;
-  color: var(--text-muted);
-  letter-spacing: 4px;
-  text-transform: uppercase;
-}
-
-/* ======== GLASS PANEL BASE ======== */
-.glass {
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
-  border-radius: 16px;
-}
-
-/* ======== SECTION HEADER ======== */
-.dashboard-container { max-width: 1200px; margin: 0 auto; }
-.section-header {
-  font-family: 'Telegraf', 'Raleway', sans-serif;
-  font-size: 13px;
-  font-weight: 700;
+.sidebar-logo {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 400;
   letter-spacing: 3px;
+  color: var(--gold);
   text-transform: uppercase;
-  margin-bottom: 20px;
-  color: var(--text-muted);
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  margin-bottom: 32px;
+  opacity: 0.9;
+}
+.sidebar-divider {
+  width: 24px; height: 1px;
+  background: var(--border-0);
+  margin: 12px 0;
+}
+.nav-item {
+  width: 44px; height: 44px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--text-tertiary);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px;
+  transition: var(--transition);
+  position: relative;
+}
+.nav-item:hover {
+  background: var(--surface-2);
+  color: var(--text-secondary);
+}
+.nav-item.active {
+  background: var(--gold-dim);
+  color: var(--gold);
+  border: 1px solid var(--border-gold);
+}
+.nav-item .tooltip {
+  position: absolute;
+  left: calc(100% + 12px);
+  background: rgba(15,15,18,0.95);
+  border: 1px solid var(--border-1);
+  color: var(--text-primary);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: var(--transition);
+  z-index: 200;
+}
+.nav-item:hover .tooltip {
+  opacity: 1;
+  transform: translateX(0);
+}
+.sidebar-spacer { flex: 1; }
+.sidebar-time {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-tertiary);
+  letter-spacing: 1px;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+/* ─────────────────────────────────────────
+   MAIN CONTENT AREA
+───────────────────────────────────────── */
+.main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─────────────────────────────────────────
+   TOP BAR
+───────────────────────────────────────── */
+.topbar {
   display: flex;
   align-items: center;
-  gap: 12px;
+  padding: 0 40px;
+  height: 68px;
+  border-bottom: 1px solid var(--border-0);
+  background: rgba(6,6,10,0.6);
+  backdrop-filter: blur(20px);
+  position: sticky; top: 0;
+  z-index: 50;
+  gap: 24px;
+  flex-shrink: 0;
 }
-.section-header::before {
-  content: '';
-  width: 28px;
-  height: 1px;
-  background: linear-gradient(90deg, var(--primary-yellow), transparent);
+.topbar-brand {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 300;
+  letter-spacing: 10px;
+  color: var(--gold);
+  text-transform: uppercase;
+  flex-shrink: 0;
 }
-.section-header::after {
-  content: '';
+.topbar-sep {
+  width: 1px; height: 24px;
+  background: var(--border-0);
+  flex-shrink: 0;
+}
+.topbar-context {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-weight: 400;
+}
+.topbar-right {
+  margin-left: auto;
+  display: flex; align-items: center; gap: 16px;
+}
+.live-indicator {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 10px;
+  color: var(--text-tertiary);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+.live-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 8px var(--success);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.85); }
+}
+.topbar-date {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-tertiary);
+  letter-spacing: 0.5px;
+}
+
+/* ─────────────────────────────────────────
+   PAGE CONTENT
+───────────────────────────────────────── */
+.page-content {
+  padding: 40px 40px 60px;
   flex: 1;
-  height: 1px;
-  background: linear-gradient(90deg, rgba(160,210,235,0.1), transparent);
+}
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ─────────────────────────────────────────
+   SECTION LABEL
+───────────────────────────────────────── */
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.section-label-text {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+.section-label-line {
+  flex: 1; height: 1px;
+  background: linear-gradient(90deg, var(--border-0) 0%, transparent 100%);
+}
+.section-label-count {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-tertiary);
+  background: var(--surface-1);
+  border: 1px solid var(--border-0);
+  padding: 2px 8px;
+  border-radius: 20px;
 }
 
-/* ======== TABLE CARDS (GLASSMORPHISM) ======== */
-.tables-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-bottom: 50px; }
+/* ─────────────────────────────────────────
+   SUMMARY BAR (live stats strip)
+───────────────────────────────────────── */
+.summary-strip {
+  display: flex;
+  gap: 1px;
+  background: var(--border-0);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: 32px;
+  border: 1px solid var(--border-0);
+}
+.strip-item {
+  flex: 1;
+  padding: 18px 24px;
+  background: var(--surface-0);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: var(--transition);
+}
+.strip-item:hover { background: var(--surface-1); }
+.strip-label {
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+.strip-value {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 300;
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+}
+.strip-value.accent { color: var(--gold); }
+.strip-value.green { color: var(--success); }
+.strip-value.red { color: var(--danger); }
 
+/* ─────────────────────────────────────────
+   TABLE GRID
+───────────────────────────────────────── */
+.tables-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 48px;
+}
+
+/* ─────────────────────────────────────────
+   TABLE CARD
+───────────────────────────────────────── */
 .table-card {
-  background: rgba(210, 210, 210, 0.07);
-  backdrop-filter: blur(18px) saturate(1.2);
-  -webkit-backdrop-filter: blur(18px) saturate(1.2);
-  padding: 24px;
-  border-radius: 18px;
-  border: 1px solid rgba(190, 190, 190, 0.16);
-  box-shadow:
-    0 4px 24px rgba(0,0,0,0.6),
-    inset 0 1px 0 rgba(230, 230, 230, 0.09);
-  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease, background 0.3s ease;
+  background: var(--surface-1);
+  border: 1px solid var(--border-0);
+  border-radius: var(--radius-lg);
+  padding: 0;
+  overflow: hidden;
+  transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition), background var(--transition);
+  position: relative;
+}
+.table-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 60%);
+  pointer-events: none;
 }
 .table-card:hover {
-  transform: translateY(-4px) scale(1.012);
-  background: rgba(210, 210, 210, 0.11);
-  border-color: rgba(210, 210, 210, 0.30);
-  box-shadow:
-    0 8px 40px rgba(0,0,0,0.65),
-    0 0 28px rgba(180, 180, 180, 0.08),
-    0 0 60px rgba(160, 160, 160, 0.04),
-    inset 0 1px 0 rgba(220, 220, 220, 0.10);
+  transform: translateY(-2px);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.5), 0 0 0 1px var(--border-1);
+  background: var(--surface-2);
 }
 .table-card.occupied {
-  border-color: rgba(237, 171, 24, 0.20);
-  background: rgba(237, 171, 24, 0.04);
+  border-color: var(--border-gold);
+  background: rgba(201,168,76,0.03);
 }
 .table-card.occupied:hover {
-  border-color: rgba(237, 171, 24, 0.38);
-  box-shadow:
-    0 8px 40px rgba(0,0,0,0.65),
-    0 0 30px rgba(237, 171, 24, 0.09),
-    inset 0 1px 0 rgba(237, 200, 100, 0.07);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.5), 0 0 24px rgba(201,168,76,0.06), 0 0 0 1px var(--border-gold);
 }
 
-.table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-.table-number {
-  font-family: 'Telegraf', 'Cormorant Garamond', serif;
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--primary-yellow);
-  letter-spacing: 1px;
+/* Card top strip — accent bar */
+.card-accent-bar {
+  height: 2px;
+  background: var(--border-0);
+  transition: var(--transition);
 }
-.status-badge { padding: 5px 12px; border-radius: 20px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; font-family: 'Lato', sans-serif; }
-.status-badge.free { background: rgba(34,197,94,0.12); color: var(--success); border: 1px solid rgba(34,197,94,0.2); }
-.status-badge.occupied { background: rgba(239,68,68,0.12); color: var(--danger); border: 1px solid rgba(239,68,68,0.2); }
+.table-card.occupied .card-accent-bar {
+  background: linear-gradient(90deg, var(--gold) 0%, var(--gold-light) 50%, transparent 100%);
+}
+.table-card.free .card-accent-bar {
+  background: linear-gradient(90deg, var(--success) 0%, rgba(76,175,125,0.3) 50%, transparent 100%);
+}
 
-.table-info { margin-bottom: 16px; }
-.info-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
-.info-label { color: var(--text-muted); font-family: 'Lato', sans-serif; font-weight: 300; }
-.info-value { color: var(--text-light); font-weight: 600; font-family: 'Elegant Display', 'Raleway', sans-serif; }
+.card-body { padding: 22px 24px; }
 
-.customer-details {
-  background: rgba(255,204,0,0.06);
-  padding: 14px 16px;
-  border-radius: 12px;
+/* Card header row */
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 18px;
+}
+.table-num-block {}
+.table-numeral {
+  font-family: var(--font-display);
+  font-size: 38px;
+  font-weight: 300;
+  font-style: italic;
+  color: var(--text-primary);
+  line-height: 1;
+  margin-bottom: 2px;
+}
+.table-label {
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+.status-pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+.status-pill.free {
+  background: var(--success-dim);
+  color: var(--success);
+  border: 1px solid rgba(76,175,125,0.2);
+}
+.status-pill.occupied {
+  background: var(--amber-dim);
+  color: var(--amber);
+  border: 1px solid rgba(212,149,75,0.25);
+}
+.status-pip {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.status-pill.occupied .status-pip {
+  animation: pulse-dot 1.8s ease-in-out infinite;
+  box-shadow: 0 0 6px currentColor;
+}
+
+/* Card meta info */
+.card-meta {
+  display: flex;
+  gap: 20px;
+  padding: 14px 0;
+  border-top: 1px solid var(--border-0);
+  border-bottom: 1px solid var(--border-0);
   margin-bottom: 16px;
-  border-left: 2px solid rgba(255,204,0,0.35);
-  backdrop-filter: blur(8px);
 }
-.customer-name {
-  font-family: 'Elegant Display', 'Raleway', sans-serif;
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text-light);
-  margin-bottom: 8px;
+.meta-item {}
+.meta-key {
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin-bottom: 3px;
 }
-.customer-meta { display: flex; gap: 16px; font-size: 12px; color: var(--text-muted); font-family: 'Lato', sans-serif; }
+.meta-val {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-primary);
+  font-weight: 300;
+}
 
-.btn-row { display: flex; gap: 10px; }
-.free-btn {
-  flex: 1; padding: 11px;
-  background: rgba(239,68,68,0.15);
-  color: #fc8585;
-  border: 1px solid rgba(239,68,68,0.25);
-  border-radius: 10px;
-  font-size: 12px;
-  font-family: 'Raleway', sans-serif;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+/* Customer block */
+.customer-block {
+  margin-bottom: 18px;
+  padding: 14px 16px;
+  background: var(--gold-glow);
+  border: 1px solid var(--border-gold);
+  border-radius: var(--radius-md);
+  position: relative;
+  overflow: hidden;
 }
-.free-btn:hover { background: rgba(239,68,68,0.28); border-color: rgba(239,68,68,0.45); color: #ff9090; }
-.bill-btn {
-  flex: 1; padding: 11px;
-  background: rgba(255,204,0,0.15);
-  color: var(--primary-yellow);
-  border: 1px solid rgba(255,204,0,0.3);
-  border-radius: 10px;
-  font-size: 12px;
-  font-family: 'Raleway', sans-serif;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-transform: uppercase;
+.customer-block::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 2px;
+  background: linear-gradient(180deg, var(--gold) 0%, transparent 100%);
+}
+.cust-name {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  letter-spacing: 0.3px;
+}
+.cust-tags {
+  display: flex;
+  gap: 16px;
+}
+.cust-tag {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 300;
+}
+.cust-tag-icon { font-size: 12px; opacity: 0.7; }
+
+/* Action buttons */
+.card-actions {
+  display: flex;
+  gap: 8px;
+}
+.btn-primary {
+  flex: 1;
+  padding: 11px 16px;
+  background: var(--gold-dim);
+  color: var(--gold-light);
+  border: 1px solid var(--border-gold);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 500;
   letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: var(--transition);
   display: flex; align-items: center; justify-content: center; gap: 6px;
 }
-.bill-btn:hover { background: rgba(255,204,0,0.25); border-color: rgba(255,204,0,0.5); }
+.btn-primary:hover {
+  background: rgba(201,168,76,0.26);
+  border-color: rgba(201,168,76,0.4);
+  color: var(--gold-light);
+}
+.btn-ghost {
+  padding: 11px 14px;
+  background: transparent;
+  color: var(--text-tertiary);
+  border: 1px solid var(--border-0);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: var(--transition);
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+}
+.btn-ghost:hover {
+  background: var(--danger-dim);
+  border-color: rgba(224,82,82,0.25);
+  color: var(--danger);
+}
 
-/* ======== QUEUE SECTION ======== */
-.queue-section { margin-top: 40px; }
-.queue-list { display: flex; flex-direction: column; gap: 16px; }
+/* ─────────────────────────────────────────
+   QUEUE SECTION
+───────────────────────────────────────── */
+.queue-section { margin-top: 12px; }
+.queue-list { display: flex; flex-direction: column; gap: 10px; }
 .queue-card {
-  background: rgba(200, 200, 200, 0.05);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  padding: 20px;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 20px;
+  padding: 18px 24px;
+  background: var(--surface-1);
+  border: 1px solid var(--border-0);
+  border-radius: var(--radius-md);
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+.queue-card::after {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 2px;
+  background: linear-gradient(180deg, var(--amber) 0%, transparent 100%);
+}
+.queue-card:hover {
+  background: var(--surface-2);
+  border-color: var(--border-1);
+}
+.queue-position {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-tertiary);
+  min-width: 24px;
+}
+.queue-name {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+.queue-meta {
+  display: flex;
+  gap: 16px;
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-weight: 300;
+}
+.queue-wait {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--amber);
+  background: var(--amber-dim);
+  border: 1px solid rgba(212,149,75,0.2);
+  padding: 4px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+/* Empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 20px;
+  color: var(--text-tertiary);
+  text-align: center;
+}
+.empty-glyph {
+  font-size: 32px;
+  margin-bottom: 16px;
+  opacity: 0.3;
+}
+.empty-label {
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-weight: 400;
+}
+
+/* ─────────────────────────────────────────
+   BILL MODAL
+───────────────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(4,4,8,0.82);
+  backdrop-filter: blur(12px);
+  z-index: 9000;
+  display: none;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px 20px;
+  overflow-y: auto;
+}
+.modal-overlay.active { display: flex; }
+
+.bill-modal {
+  background: rgba(12,12,16,0.96);
+  border: 1px solid var(--border-1);
+  border-radius: var(--radius-xl);
+  width: 100%;
+  max-width: 640px;
+  margin: auto;
+  box-shadow: 0 40px 100px rgba(0,0,0,0.9), 0 0 0 1px var(--border-0);
+  overflow: hidden;
+  animation: modal-enter 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes modal-enter {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.modal-header {
+  padding: 28px 32px 24px;
+  border-bottom: 1px solid var(--border-0);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.modal-title-block {}
+.modal-eyebrow {
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 6px;
+}
+.modal-title {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 300;
+  color: var(--text-primary);
+  letter-spacing: 0.5px;
+  line-height: 1.1;
+}
+.modal-subtitle {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-top: 6px;
+  font-weight: 300;
+  letter-spacing: 0.3px;
+}
+.modal-close {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  border: 1px solid var(--border-0);
+  color: var(--text-tertiary);
+  font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  transition: var(--transition);
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+.modal-close:hover {
+  background: var(--danger-dim);
+  border-color: rgba(224,82,82,0.25);
+  color: var(--danger);
+}
+
+.modal-body { padding: 28px 32px; }
+.modal-footer {
+  padding: 20px 32px 28px;
+  border-top: 1px solid var(--border-0);
+  display: flex;
+  gap: 10px;
+}
+
+/* Search section */
+.field-label {
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin-bottom: 10px;
+  display: block;
+}
+.search-input {
+  width: 100%;
+  background: var(--surface-1);
+  border: 1px solid var(--border-0);
+  color: var(--text-primary);
+  padding: 11px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  outline: none;
+  transition: var(--transition);
+  font-weight: 300;
+}
+.search-input::placeholder { color: var(--text-tertiary); }
+.search-input:focus {
+  border-color: var(--border-gold);
+  background: var(--surface-2);
+  box-shadow: 0 0 0 3px var(--gold-glow);
+}
+.search-results {
+  display: none;
+  margin-top: 6px;
+  background: rgba(8,8,12,0.98);
+  border: 1px solid var(--border-1);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  max-height: 200px;
+  overflow-y: auto;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.6);
+}
+.result-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border: 1px solid rgba(180, 180, 180, 0.11);
-  border-left: 3px solid rgba(245, 158, 11, 0.5);
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border-0);
+  cursor: pointer;
+  transition: background var(--transition);
 }
-.queue-info { flex: 1; }
-.queue-name {
-  font-family: 'Elegant Display', 'Raleway', sans-serif;
-  font-size: 17px;
-  font-weight: 700;
-  color: var(--text-light);
-  margin-bottom: 8px;
+.result-item:last-child { border-bottom: none; }
+.result-item:hover { background: var(--gold-glow); }
+.result-name { font-size: 13px; color: var(--text-primary); font-weight: 300; }
+.result-price {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--gold);
+  font-weight: 300;
 }
-.queue-meta { display: flex; gap: 20px; font-size: 13px; color: var(--text-muted); font-family: 'Lato', sans-serif; }
-.empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); font-size: 15px; font-family: 'Lato', sans-serif; }
-.empty-state-icon { font-size: 64px; margin-bottom: 16px; opacity: 0.3; }
+.search-results::-webkit-scrollbar { width: 4px; }
+.search-results::-webkit-scrollbar-track { background: transparent; }
+.search-results::-webkit-scrollbar-thumb { background: var(--border-1); border-radius: 2px; }
 
-/* ======== BILL MODAL ======== */
-.modal-overlay {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,0.75);
-  backdrop-filter: blur(6px);
-  z-index: 9000;
-  display: none; justify-content: center; align-items: flex-start; padding: 20px; overflow-y: auto;
-}
-.modal-overlay.active { display: flex; }
-.bill-modal {
-  background: rgba(12, 12, 12, 0.90);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(180, 180, 180, 0.14);
-  border-radius: 20px;
-  width: 100%; max-width: 680px;
-  margin: auto;
-  box-shadow: 0 30px 80px rgba(0,0,0,0.85), 0 0 60px rgba(150,150,150,0.04);
-  overflow: hidden;
-}
-.bill-modal-header {
-  background: rgba(30, 30, 30, 0.6);
-  padding: 24px 28px;
-  display: flex; justify-content: space-between; align-items: center;
-  border-bottom: 1px solid rgba(180, 180, 180, 0.09);
-}
-.bill-modal-title {
-  font-family: 'Telegraf', 'Cormorant Garamond', serif;
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--primary-yellow);
-  letter-spacing: 1px;
-}
-.bill-modal-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 4px; font-family: 'Lato', sans-serif; letter-spacing: 0.5px; }
-.close-btn {
-  background: rgba(200,200,200,0.07);
-  border: 1px solid rgba(180,180,180,0.13);
-  color: var(--text-muted);
-  width: 36px; height: 36px;
-  border-radius: 50%;
-  font-size: 16px; cursor: pointer;
-  transition: all 0.2s;
-  display: flex; align-items: center; justify-content: center;
-}
-.close-btn:hover { background: rgba(200,200,200,0.14); color: white; }
-.bill-modal-body { padding: 24px 28px; }
-
-/* Add Items Section */
-.add-items-section { margin-bottom: 24px; }
-.add-items-title {
-  font-size: 11px;
-  font-weight: 700;
-  font-family: 'Lato', sans-serif;
-  color: var(--text-muted);
+/* Bill table */
+.bill-section-label {
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 2.5px;
   text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin: 24px 0 12px;
+}
+.bill-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.bill-table thead tr {
+  border-bottom: 1px solid var(--border-0);
+}
+.bill-table th {
+  text-align: left;
+  font-size: 9px;
+  font-weight: 500;
   letter-spacing: 2px;
-  margin-bottom: 12px;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  padding: 8px 10px;
 }
-.menu-search-row { display: flex; gap: 10px; margin-bottom: 10px; }
-.menu-search-input {
-  flex: 1;
-  background: rgba(200,200,200,0.05);
-  border: 1px solid rgba(180,180,180,0.12);
-  color: white;
-  padding: 10px 14px;
-  border-radius: 10px;
-  font-size: 14px;
-  font-family: 'Raleway', sans-serif;
-  outline: none;
-}
-.menu-search-input::placeholder { color: var(--text-muted); }
-.menu-search-input:focus { border-color: rgba(237,171,24,0.4); background: rgba(200,200,200,0.08); }
-.menu-results { max-height: 180px; overflow-y: auto; border-radius: 10px; background: rgba(10,10,10,0.90); border: 1px solid rgba(180,180,180,0.10); backdrop-filter: blur(12px); }
-.menu-result-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); cursor: pointer; transition: background 0.15s; }
-.menu-result-item:hover { background: rgba(255,204,0,0.07); }
-.menu-result-item:last-child { border-bottom: none; }
-.menu-result-name { font-size: 14px; color: var(--text-light); font-family: 'Elegant Display', 'Raleway', sans-serif; }
-.menu-result-price { font-size: 13px; color: var(--primary-yellow); font-weight: 700; font-family: 'DM Mono', monospace; }
-
-/* Bill Items Table */
-.bill-items-section { margin-bottom: 20px; }
-.bill-table { width: 100%; border-collapse: collapse; }
-.bill-table thead tr { border-bottom: 1px solid rgba(180,180,180,0.10); }
-.bill-table th { text-align: left; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); padding: 8px 10px; font-family: 'Lato', sans-serif; }
 .bill-table th:last-child { text-align: right; }
-.bill-table tbody tr { border-bottom: 1px solid rgba(180,180,180,0.05); }
-.bill-table tbody tr:hover { background: rgba(200,200,200,0.04); }
-.bill-table td { padding: 10px 10px; font-size: 14px; vertical-align: middle; font-family: 'Elegant Display', 'Raleway', sans-serif; }
+.bill-table tbody tr {
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+.bill-table tbody tr:hover { background: var(--surface-1); }
+.bill-table td {
+  padding: 10px 10px;
+  font-size: 13px;
+  vertical-align: middle;
+  font-weight: 300;
+  color: var(--text-primary);
+}
 .bill-table td:last-child { text-align: right; }
-.item-name-editable { background: transparent; border: none; border-bottom: 1px dashed rgba(180,180,180,0.18); color: white; font-size: 14px; font-family: 'Elegant Display', 'Raleway', sans-serif; width: 100%; outline: none; padding: 2px 4px; }
-.item-name-editable:focus { border-bottom-color: rgba(237,171,24,0.5); }
-.qty-cell { display: flex; align-items: center; gap: 6px; }
-.qty-btn { background: rgba(200,200,200,0.07); border: 1px solid rgba(180,180,180,0.10); color: white; width: 24px; height: 24px; border-radius: 6px; font-size: 14px; cursor: pointer; transition: background 0.15s; display: flex; align-items: center; justify-content: center; }
-.qty-btn:hover { background: rgba(237,171,24,0.16); border-color: rgba(237,171,24,0.28); }
-.qty-val { font-weight: 700; min-width: 24px; text-align: center; font-family: 'DM Mono', monospace; }
-.price-editable { background: transparent; border: none; border-bottom: 1px dashed rgba(180,180,180,0.18); color: var(--primary-yellow); font-size: 14px; font-weight: 600; font-family: 'DM Mono', monospace; width: 70px; outline: none; text-align: right; padding: 2px 4px; }
-.price-editable:focus { border-bottom-color: rgba(237,171,24,0.5); }
-.remove-item-btn { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 16px; padding: 4px; border-radius: 4px; transition: background 0.15s; opacity: 0.6; }
-.remove-item-btn:hover { background: rgba(239,68,68,0.12); opacity: 1; }
-.empty-bill-msg { text-align: center; color: var(--text-muted); padding: 30px; font-size: 14px; font-family: 'Lato', sans-serif; }
-
-/* Totals */
-.bill-totals { background: rgba(200,200,200,0.04); border: 1px solid rgba(180,180,180,0.09); border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; }
-.total-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; }
-.total-label { font-size: 13px; color: var(--text-muted); font-family: 'Lato', sans-serif; }
-.total-value { font-size: 14px; font-weight: 600; color: var(--text-light); font-family: 'DM Mono', monospace; }
-.divider { border: none; border-top: 1px solid rgba(180,180,180,0.09); margin: 8px 0; }
-.grand-total-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0 4px; }
-.grand-total-label { font-size: 16px; font-weight: 700; color: var(--text-light); font-family: 'Telegraf', 'Raleway', sans-serif; letter-spacing: 2px; }
-.grand-total-value { font-size: 22px; font-weight: 800; color: var(--primary-yellow); font-family: 'DM Mono', monospace; }
-
-/* Discount Row */
-.discount-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
-.discount-label { font-size: 13px; color: var(--text-muted); min-width: 80px; font-family: 'Lato', sans-serif; }
-.discount-input {
-  background: rgba(200,200,200,0.05);
-  border: 1px solid rgba(180,180,180,0.12);
-  color: white;
-  padding: 6px 10px;
-  border-radius: 8px;
+.item-input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid transparent;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: var(--font-body);
+  font-weight: 300;
+  width: 100%;
+  outline: none;
+  padding: 2px 4px;
+  transition: var(--transition);
+}
+.item-input:focus {
+  border-bottom-color: var(--border-gold);
+}
+.qty-row {
+  display: flex; align-items: center; gap: 6px;
+}
+.qty-btn {
+  width: 22px; height: 22px;
+  border-radius: 4px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-0);
+  color: var(--text-secondary);
+  font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+  transition: var(--transition);
+}
+.qty-btn:hover {
+  background: var(--gold-dim);
+  border-color: var(--border-gold);
+  color: var(--gold);
+}
+.qty-num {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  min-width: 22px;
+  text-align: center;
+  font-weight: 300;
+}
+.price-input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid transparent;
+  color: var(--gold);
+  font-size: 13px;
+  font-family: var(--font-mono);
+  font-weight: 300;
+  width: 70px;
+  text-align: right;
+  outline: none;
+  padding: 2px 4px;
+  transition: var(--transition);
+}
+.price-input:focus { border-bottom-color: var(--border-gold); }
+.row-del {
+  background: none; border: none;
+  color: var(--text-tertiary);
   font-size: 14px;
-  font-family: 'DM Mono', monospace;
-  width: 90px;
+  padding: 4px;
+  border-radius: 4px;
+  transition: var(--transition);
+  opacity: 0.5;
+}
+.row-del:hover { color: var(--danger); opacity: 1; background: var(--danger-dim); }
+.empty-bill {
+  padding: 32px;
+  text-align: center;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+
+/* Bill totals */
+.totals-block {
+  margin-top: 20px;
+  padding: 18px 20px;
+  background: var(--surface-1);
+  border: 1px solid var(--border-0);
+  border-radius: var(--radius-md);
+}
+.total-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+}
+.total-key {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-weight: 400;
+  letter-spacing: 0.5px;
+}
+.total-val {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-primary);
+  font-weight: 300;
+}
+.totals-sep {
+  border: none;
+  border-top: 1px solid var(--border-0);
+  margin: 10px 0;
+}
+.grand-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 6px 0 0;
+}
+.grand-key {
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+.grand-val {
+  font-family: var(--font-mono);
+  font-size: 26px;
+  font-weight: 300;
+  color: var(--gold-light);
+  letter-spacing: -0.5px;
+}
+
+/* Discount row */
+.discount-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+}
+.disc-toggle {
+  display: flex;
+  background: var(--surface-2);
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--border-0);
+}
+.disc-toggle button {
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: var(--transition);
+  color: var(--text-tertiary);
+  background: transparent;
+  font-family: var(--font-mono);
+  letter-spacing: 0.5px;
+}
+.disc-toggle button.active {
+  background: var(--gold-dim);
+  color: var(--gold);
+}
+.disc-input {
+  background: var(--surface-1);
+  border: 1px solid var(--border-0);
+  color: var(--text-primary);
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: var(--font-mono);
+  font-weight: 300;
+  width: 80px;
   outline: none;
   text-align: center;
 }
-.discount-input:focus { border-color: rgba(237,171,24,0.4); }
-.discount-toggle { display: flex; background: rgba(200,200,200,0.06); border-radius: 8px; overflow: hidden; border: 1px solid rgba(180,180,180,0.10); }
-.discount-toggle button { padding: 6px 14px; font-size: 13px; font-weight: 700; border: none; cursor: pointer; transition: all 0.2s; color: var(--text-muted); background: transparent; font-family: 'DM Mono', monospace; }
-.discount-toggle button.active { background: rgba(237,171,24,0.18); color: var(--primary-yellow); }
+.disc-input:focus { border-color: var(--border-gold); }
+.disc-result {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--danger);
+  font-weight: 300;
+  margin-left: auto;
+}
 
-/* Modal Footer */
-.bill-modal-footer { padding: 16px 28px 28px; display: flex; gap: 12px; }
-.print-btn {
-  flex: 1; padding: 16px;
-  background: linear-gradient(135deg, rgba(237,171,24,0.20), rgba(200,140,10,0.12));
-  color: var(--primary-yellow);
-  border: 1px solid rgba(237,171,24,0.32);
-  border-radius: 12px;
-  font-size: 15px;
-  font-weight: 700;
-  font-family: 'Raleway', sans-serif;
-  letter-spacing: 1px;
-  cursor: pointer;
-  transition: all 0.2s ease;
+/* Modal footer buttons */
+.btn-modal-primary {
+  flex: 1;
+  padding: 15px 20px;
+  background: var(--gold-dim);
+  color: var(--gold-light);
+  border: 1px solid var(--border-gold);
+  border-radius: var(--radius-md);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  transition: var(--transition);
   display: flex; align-items: center; justify-content: center; gap: 8px;
-  box-shadow: 0 4px 0 rgba(150,100,0,0.25);
-  position: relative; top: 0;
 }
-.print-btn:active { top: 4px; box-shadow: 0 1px 0 rgba(150,100,0,0.25); }
-.print-btn:hover { background: linear-gradient(135deg, rgba(237,171,24,0.30), rgba(200,140,10,0.20)); border-color: rgba(237,171,24,0.52); }
-.save-btn {
-  padding: 16px 24px;
-  background: rgba(200,200,200,0.06);
-  color: var(--text-muted);
-  border: 1px solid rgba(180,180,180,0.10);
-  border-radius: 12px;
-  font-size: 14px;
-  font-weight: 600;
-  font-family: 'Raleway', sans-serif;
-  cursor: pointer;
-  transition: all 0.2s ease;
+.btn-modal-primary:hover {
+  background: rgba(201,168,76,0.26);
+  border-color: rgba(201,168,76,0.45);
+  box-shadow: 0 4px 20px rgba(201,168,76,0.1);
 }
-.save-btn:hover { background: rgba(200,200,200,0.12); color: white; }
+.btn-modal-secondary {
+  padding: 15px 20px;
+  background: var(--surface-1);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-0);
+  border-radius: var(--radius-md);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  transition: var(--transition);
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn-modal-secondary:hover {
+  background: var(--surface-2);
+  color: var(--text-primary);
+  border-color: var(--border-1);
+}
 
-/* ======== PRINT LAYOUT ======== */
+/* ─────────────────────────────────────────
+   HISTORY TAB
+───────────────────────────────────────── */
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 28px;
+}
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface-1);
+  border: 1px solid var(--border-0);
+  border-radius: var(--radius-sm);
+  padding: 0 12px;
+}
+.filter-group-label {
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+.date-input {
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 300;
+  padding: 10px 0;
+  outline: none;
+  cursor: pointer;
+}
+.date-input::-webkit-calendar-picker-indicator { filter: invert(0.4); cursor: pointer; }
+.filter-btn {
+  padding: 9px 16px;
+  background: var(--gold-dim);
+  color: var(--gold);
+  border: 1px solid var(--border-gold);
+  border-radius: var(--radius-sm);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  transition: var(--transition);
+}
+.filter-btn:hover { background: rgba(201,168,76,0.26); }
+.filter-btn.muted {
+  background: var(--surface-1);
+  color: var(--text-secondary);
+  border-color: var(--border-0);
+}
+.filter-btn.muted:hover {
+  background: var(--surface-2);
+  color: var(--text-primary);
+}
+
+/* Stat cards row */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 28px;
+}
+.stat-card {
+  background: var(--surface-1);
+  border: 1px solid var(--border-0);
+  border-radius: var(--radius-md);
+  padding: 20px 22px;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+.stat-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 1px;
+  background: var(--border-0);
+}
+.stat-card:hover { background: var(--surface-2); }
+.stat-card.gold-accent { border-color: var(--border-gold); }
+.stat-card.gold-accent::after { background: linear-gradient(90deg, var(--gold), transparent); }
+.stat-card.green-accent { border-color: rgba(76,175,125,0.2); }
+.stat-card.green-accent::after { background: linear-gradient(90deg, var(--success), transparent); }
+.stat-card.blue-accent { border-color: rgba(107,159,212,0.2); }
+.stat-card.blue-accent::after { background: linear-gradient(90deg, var(--blue), transparent); }
+.stat-card.amber-accent { border-color: rgba(212,149,75,0.2); }
+.stat-card.amber-accent::after { background: linear-gradient(90deg, var(--amber), transparent); }
+.stat-key {
+  font-size: 9px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+.stat-num {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 300;
+  letter-spacing: -0.5px;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+.stat-num.gold { color: var(--gold); }
+.stat-num.green { color: var(--success); }
+.stat-num.blue { color: var(--blue); }
+.stat-num.amber { color: var(--amber); }
+.stat-sub {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  font-weight: 300;
+}
+
+/* History table */
+.hist-table-wrap {
+  background: var(--surface-0);
+  border: 1px solid var(--border-0);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 28px;
+}
+.hist-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.hist-table thead {
+  background: rgba(255,255,255,0.02);
+  border-bottom: 1px solid var(--border-0);
+}
+.hist-table th {
+  text-align: left;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  padding: 14px 18px;
+}
+.hist-table th:last-child { text-align: right; }
+.hist-table td {
+  padding: 14px 18px;
+  font-size: 13px;
+  font-weight: 300;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  vertical-align: middle;
+  color: var(--text-primary);
+}
+.hist-table td:last-child { text-align: right; }
+.hist-table tbody tr:hover { background: var(--surface-1); cursor: pointer; }
+.hist-table tbody tr:last-child td { border-bottom: none; }
+.hist-date-main { font-size: 12px; font-weight: 400; color: var(--text-primary); }
+.hist-date-sub { font-family: var(--font-mono); font-size: 10px; color: var(--text-tertiary); margin-top: 2px; font-weight: 300; }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.badge.completed { background: var(--success-dim); color: var(--success); border: 1px solid rgba(76,175,125,0.2); }
+.badge.cancelled { background: var(--danger-dim); color: var(--danger); border: 1px solid rgba(224,82,82,0.2); }
+.badge.dinein { background: var(--gold-glow); color: var(--gold); border: 1px solid var(--border-gold); }
+.badge.takeaway { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(107,159,212,0.2); }
+.hist-amount {
+  font-family: var(--font-mono);
+  font-weight: 300;
+  color: var(--gold);
+  font-size: 13px;
+}
+
+/* Order detail expand */
+.detail-row td { padding: 0 !important; }
+.order-detail-inner {
+  margin: 0 18px 12px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border-0);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  animation: slide-down 0.2s ease;
+}
+@keyframes slide-down {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.detail-item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  font-weight: 300;
+}
+.detail-item-row:last-child { border-bottom: none; }
+.detail-item-name { flex: 1; }
+.detail-item-qty { color: var(--text-tertiary); margin: 0 16px; font-family: var(--font-mono); font-size: 11px; }
+.detail-item-price { color: var(--gold); font-family: var(--font-mono); font-size: 12px; font-weight: 300; }
+.detail-totals { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-0); }
+.detail-total-row { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-tertiary); margin-bottom: 4px; font-weight: 300; }
+.detail-grand { color: var(--gold); font-weight: 400; font-size: 14px; }
+.detail-meta { display: flex; gap: 16px; font-size: 11px; color: var(--text-tertiary); margin-bottom: 10px; font-weight: 300; }
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 40px;
+}
+.page-btn {
+  padding: 7px 13px;
+  background: var(--surface-1);
+  border: 1px solid var(--border-0);
+  color: var(--text-tertiary);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 500;
+  font-family: var(--font-mono);
+  transition: var(--transition);
+}
+.page-btn:hover, .page-btn.active {
+  background: var(--gold-dim);
+  color: var(--gold);
+  border-color: var(--border-gold);
+}
+.page-btn:disabled { opacity: 0.2; cursor: not-allowed; }
+
+/* No history */
+.no-history {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-tertiary);
+}
+.no-history-icon { font-size: 40px; margin-bottom: 16px; opacity: 0.25; }
+.no-history-text { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; font-weight: 400; }
+
+/* ─────────────────────────────────────────
+   PRINT LAYOUT
+───────────────────────────────────────── */
 @media print {
   body > *:not(#print-area) { display: none !important; }
   #print-area { display: block !important; }
@@ -545,474 +1437,289 @@ body::before {
 .print-footer { text-align: center; font-size: 10px; margin-top: 12px; color: #555; }
 .print-thankyou { font-size: 14px; font-weight: 900; text-align: center; margin: 8px 0 4px; }
 
-@media (max-width: 768px) {
-  .brand-name { font-size: 40px; }
+/* ─────────────────────────────────────────
+   SCROLLBAR
+───────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-1); border-radius: 3px; }
+
+/* ─────────────────────────────────────────
+   RESPONSIVE
+───────────────────────────────────────── */
+@media (max-width: 900px) {
+  .sidebar { display: none; }
+  .topbar { padding: 0 20px; }
+  .page-content { padding: 24px 20px 48px; }
   .tables-grid { grid-template-columns: 1fr; }
-  body { padding: 15px; }
-  .bill-modal-body { padding: 16px; }
-  .bill-modal-footer { padding: 12px 16px 20px; flex-direction: column; }
+  .modal-overlay { padding: 16px; }
+  .modal-body { padding: 20px; }
+  .modal-header { padding: 20px; }
+  .modal-footer { padding: 14px 20px 20px; flex-direction: column; }
+  .summary-strip { flex-direction: column; gap: 0; }
+  .strip-item { border-bottom: 1px solid var(--border-0); }
+  .topbar-brand { font-size: 20px; letter-spacing: 6px; }
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
 }
-
-/* ======== TABS ======== */
-.tab-nav {
-  display: flex;
-  gap: 8px;
-  max-width: 1200px;
-  margin: 0 auto 32px;
-  background: rgba(200,200,200,0.04);
-  border: 1px solid rgba(180,180,180,0.09);
-  backdrop-filter: blur(12px);
-  border-radius: 14px;
-  padding: 6px;
-}
-.tab-btn {
-  flex: 1;
-  padding: 12px 20px;
-  border: none;
-  border-radius: 10px;
-  font-family: 'Raleway', sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  color: var(--text-muted);
-  background: transparent;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-}
-.tab-btn.active {
-  background: rgba(237,171,24,0.12);
-  color: var(--primary-yellow);
-  border: 1px solid rgba(237,171,24,0.22);
-  box-shadow: 0 2px 12px rgba(237,171,24,0.07);
-}
-.tab-btn:not(.active):hover {
-  background: rgba(200,200,200,0.07);
-  color: var(--text-light);
-}
-.tab-panel { display: none; }
-.tab-panel.active { display: block; }
-
-/* ======== HISTORY TAB ======== */
-.history-controls {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  align-items: center;
-  margin-bottom: 24px;
-  max-width: 1200px;
-}
-.history-controls label {
-  font-size: 11px;
-  color: var(--text-muted);
-  font-weight: 700;
-  font-family: 'Lato', sans-serif;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-}
-.date-input {
-  background: rgba(150,210,235,0.06);
-  border: 1px solid rgba(150,210,235,0.14);
-  color: white;
-  padding: 10px 14px;
-  border-radius: 10px;
-  font-family: 'DM Mono', monospace;
-  font-size: 13px;
-  outline: none;
-  cursor: pointer;
-}
-.date-input:focus { border-color: rgba(255,204,0,0.35); }
-.date-input::-webkit-calendar-picker-indicator { filter: invert(0.6); cursor: pointer; }
-.filter-btn {
-  padding: 10px 18px;
-  background: rgba(255,204,0,0.13);
-  color: var(--primary-yellow);
-  border: 1px solid rgba(255,204,0,0.25);
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 700;
-  font-family: 'Raleway', sans-serif;
-  letter-spacing: 0.5px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.filter-btn:hover { background: rgba(255,204,0,0.22); border-color: rgba(255,204,0,0.4); }
-.filter-btn.secondary {
-  background: rgba(150,210,235,0.07);
-  color: var(--text-muted);
-  border-color: rgba(150,210,235,0.12);
-}
-.filter-btn.secondary:hover { background: rgba(150,210,235,0.13); color: white; }
-
-.stats-row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 16px;
-  margin-bottom: 28px;
-}
-.stat-card {
-  background: rgba(150,210,235,0.055);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(150,210,235,0.12);
-  border-radius: 14px;
-  padding: 20px;
-  border-left: 2px solid rgba(255,204,0,0.4);
-}
-.stat-label {
-  font-size: 10px;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  margin-bottom: 8px;
-  font-family: 'Lato', sans-serif;
-  font-weight: 700;
-}
-.stat-value { font-size: 26px; font-weight: 700; color: var(--primary-yellow); font-family: 'DM Mono', monospace; }
-.stat-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; font-family: 'Lato', sans-serif; }
-
-.history-table-wrap {
-  background: rgba(150,210,235,0.045);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(150,210,235,0.12);
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.3);
-  margin-bottom: 40px;
-}
-.history-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-.history-table thead {
-  background: rgba(150,210,235,0.06);
-  border-bottom: 1px solid rgba(150,210,235,0.1);
-}
-.history-table th {
-  text-align: left;
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  color: var(--text-muted);
-  padding: 14px 16px;
-  font-family: 'Lato', sans-serif;
-}
-.history-table th:last-child { text-align: right; }
-.history-table td {
-  padding: 14px 16px;
-  font-size: 14px;
-  border-bottom: 1px solid rgba(150,210,235,0.06);
-  vertical-align: middle;
-  font-family: 'Elegant Display', 'Raleway', sans-serif;
-}
-.history-table td:last-child { text-align: right; }
-.history-table tbody tr:hover { background: rgba(150,210,235,0.05); cursor: pointer; }
-.history-table tbody tr:last-child td { border-bottom: none; }
-
-.hist-badge {
-  display: inline-block;
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-family: 'Lato', sans-serif;
-}
-.hist-badge.completed { background: rgba(34,197,94,0.12); color: var(--success); border: 1px solid rgba(34,197,94,0.2); }
-.hist-badge.cancelled { background: rgba(239,68,68,0.12); color: var(--danger); border: 1px solid rgba(239,68,68,0.2); }
-.hist-badge.dinein { background: rgba(255,204,0,0.1); color: var(--primary-yellow); border: 1px solid rgba(255,204,0,0.2); }
-.hist-badge.takeaway { background: rgba(59,130,246,0.12); color: var(--blue); border: 1px solid rgba(59,130,246,0.2); }
-
-.hist-amount { font-weight: 700; color: var(--primary-yellow); font-family: 'DM Mono', monospace; }
-
-/* Order detail drawer */
-.detail-drawer {
-  background: rgba(8,20,40,0.6);
-  border-radius: 12px;
-  padding: 0;
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.35s ease, padding 0.35s ease;
-}
-.detail-drawer.open {
-  max-height: 400px;
-  padding: 16px 20px;
-}
-.drawer-items { list-style: none; }
-.drawer-item-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 6px 0;
-  font-size: 13px;
-  color: #b8d4e4;
-  border-bottom: 1px solid rgba(150,210,235,0.06);
-  font-family: 'Elegant Display', 'Raleway', sans-serif;
-}
-.drawer-item-row:last-child { border-bottom: none; }
-.drawer-item-name { flex: 1; }
-.drawer-item-qty { color: var(--text-muted); margin: 0 12px; font-family: 'DM Mono', monospace; }
-.drawer-item-price { color: var(--primary-yellow); font-weight: 600; font-family: 'DM Mono', monospace; }
-.drawer-totals { margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(150,210,235,0.1); }
-.drawer-total-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px; font-family: 'Elegant Display', 'Raleway', sans-serif; }
-.drawer-grand { font-size: 15px; font-weight: 800; color: var(--primary-yellow); }
-.drawer-meta { font-size: 12px; color: var(--text-muted); margin-top: 8px; font-family: 'Lato', sans-serif; }
-
-.no-history {
-  text-align: center;
-  padding: 60px 20px;
-  color: var(--text-muted);
-  font-family: 'Lato', sans-serif;
-}
-.no-history-icon { font-size: 56px; margin-bottom: 16px; opacity: 0.3; }
-
-/* Pagination */
-.pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  margin-top: 20px;
-  margin-bottom: 40px;
-}
-.page-btn {
-  padding: 8px 14px;
-  background: rgba(150,210,235,0.06);
-  border: 1px solid rgba(150,210,235,0.12);
-  color: var(--text-muted);
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 600;
-  font-family: 'Raleway', sans-serif;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.page-btn:hover, .page-btn.active {
-  background: rgba(255,204,0,0.14);
-  color: var(--primary-yellow);
-  border-color: rgba(255,204,0,0.3);
-}
-.page-btn:disabled { opacity: 0.25; cursor: not-allowed; }
 </style>
-
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
-
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyC_LUKzINx6H4XE7uWoCpeLSldpIp-DR80",
-  authDomain: "restro-4db49.firebaseapp.com",
-  databaseURL: "https://restro-4db49-default-rtdb.firebaseio.com",
-  projectId: "restro-4db49",
-  storageBucket: "restro-4db49.firebasestorage.app",
-  messagingSenderId: "860567729744",
-  appId: "1:860567729744:web:773f5a315af7340d950355",
-  measurementId: "G-D9CJCYZJF4"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-const analytics = firebase.analytics();
-
-db.ref("tables").on("value", (snapshot) => {
-  const tablesData = snapshot.val();
-  if (tablesData) allTables = Array.isArray(tablesData) ? tablesData : Object.values(tablesData);
-  renderManagerDashboard();
-});
-db.ref("queue").on("value", (snapshot) => {
-  const queueData = snapshot.val();
-  allQueue = queueData ? Object.values(queueData) : [];
-  renderManagerDashboard();
-});
-</script>
 </head>
 
 <body>
-<div class="bg-live-layer">
-  <div class="bg-orb bg-orb-1"></div>
-  <div class="bg-orb bg-orb-2"></div>
-  <div class="bg-orb bg-orb-3"></div>
-  <div class="bg-orb bg-orb-4"></div>
-  <div class="bg-orb bg-orb-5"></div>
+
+<!-- ── ANIMATED BACKGROUND ────────────────── -->
+<div class="bg-canvas">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div class="orb orb-4"></div>
+  <div class="orb orb-5"></div>
 </div>
 
-<div class="header">
-  <div class="brand-name">EMERALD</div>
-  <div class="subtitle"><b>Manager Dashboard</b></div>
-</div>
+<!-- ── SHELL ──────────────────────────────── -->
+<div class="shell">
 
-<!-- TAB NAVIGATION -->
-<nav class="tab-nav" style="max-width:1200px;margin:0 auto 32px;">
-  <button class="tab-btn active" onclick="switchTab('live')" id="tab-live">
-    🏠 Live Dashboard
-  </button>
-  <button class="tab-btn" onclick="switchTab('history')" id="tab-history">
-    📊 Bill History
-  </button>
-</nav>
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">Emerald</div>
+    <div class="sidebar-divider"></div>
 
-<!-- LIVE DASHBOARD TAB -->
-<div class="tab-panel active" id="panel-live">
-<div class="dashboard-container">
-  <h2 class="section-header">Tables Status</h2>
-  <div id="tables" class="tables-grid"></div>
-  <div class="queue-section">
-    <h2 class="section-header">Waiting Queue</h2>
-    <div id="queue" class="queue-list"></div>
-  </div>
-</div>
-</div>
+    <button class="nav-item active" onclick="switchTab('live')" id="tab-live">
+      <span>⊞</span>
+      <span class="tooltip">Live Dashboard</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('history')" id="tab-history">
+      <span>◷</span>
+      <span class="tooltip">Bill History</span>
+    </button>
 
-<!-- HISTORY TAB -->
-<div class="tab-panel" id="panel-history">
-<div class="dashboard-container">
-  <h2 class="section-header">Bill History</h2>
+    <div class="sidebar-spacer"></div>
+    <div class="sidebar-time" id="sidebarTime">—</div>
+  </aside>
 
-  <!-- Filters -->
-  <div class="history-controls">
-    <div style="display:flex;align-items:center;gap:8px;">
-      <label>From</label>
-      <input type="date" class="date-input" id="histFrom">
-    </div>
-    <div style="display:flex;align-items:center;gap:8px;">
-      <label>To</label>
-      <input type="date" class="date-input" id="histTo">
-    </div>
-    <button class="filter-btn" onclick="applyHistoryFilter()">Apply Filter</button>
-    <button class="filter-btn secondary" onclick="setCurrentMonth()">This Month</button>
-    <button class="filter-btn secondary" onclick="setToday()">Today</button>
-    <button class="filter-btn secondary" onclick="clearFilter()">All Time</button>
-  </div>
+  <!-- MAIN -->
+  <div class="main">
 
-  <!-- Stats -->
-  <div class="stats-row" id="histStats">
-    <div class="stat-card">
-      <div class="stat-label">Total Orders</div>
-      <div class="stat-value" id="statOrders">—</div>
-      <div class="stat-sub">Completed bills</div>
-    </div>
-    <div class="stat-card" style="border-color:rgba(59,130,246,0.4);">
-      <div class="stat-label">Total Revenue</div>
-      <div class="stat-value" id="statRevenue" style="color:#3b82f6;">—</div>
-      <div class="stat-sub">Grand total collected</div>
-    </div>
-    <div class="stat-card" style="border-color:rgba(34,197,94,0.4);">
-      <div class="stat-label">Avg Bill Value</div>
-      <div class="stat-value" id="statAvg" style="color:#22c55e;">—</div>
-      <div class="stat-sub">Per order</div>
-    </div>
-    <div class="stat-card" style="border-color:rgba(245,158,11,0.4);">
-      <div class="stat-label">Total Discount</div>
-      <div class="stat-value" id="statDiscount" style="color:#f59e0b;">—</div>
-      <div class="stat-sub">Given away</div>
-    </div>
-  </div>
+    <!-- TOP BAR -->
+    <header class="topbar">
+      <div class="topbar-brand">EMERALD</div>
+      <div class="topbar-sep"></div>
+      <div class="topbar-context">Operations</div>
+      <div class="topbar-right">
+        <div class="live-indicator">
+          <div class="live-dot"></div>
+          Live
+        </div>
+        <div class="topbar-date" id="topbarDate">—</div>
+      </div>
+    </header>
 
-  <!-- Table -->
-  <div class="history-table-wrap">
-    <table class="history-table">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Date & Time</th>
-          <th>Customer</th>
-          <th>Type</th>
-          <th>Table</th>
-          <th>Items</th>
-          <th>Status</th>
-          <th>Total</th>
-        </tr>
-      </thead>
-      <tbody id="historyBody">
-        <tr><td colspan="8" class="no-history"><div class="no-history-icon">📂</div><div>Loading history...</div></td></tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="pagination" id="histPagination"></div>
-</div>
-</div>
+    <!-- PAGE CONTENT -->
+    <div class="page-content">
 
-<!-- ======== BILL MODAL ======== -->
+      <!-- ─── LIVE DASHBOARD TAB ─── -->
+      <div class="tab-panel active" id="panel-live">
+
+        <!-- Summary strip -->
+        <div class="summary-strip" id="summaryStrip">
+          <div class="strip-item">
+            <div class="strip-label">Tables Total</div>
+            <div class="strip-value" id="sumTotal">—</div>
+          </div>
+          <div class="strip-item">
+            <div class="strip-label">Occupied</div>
+            <div class="strip-value accent" id="sumOccupied">—</div>
+          </div>
+          <div class="strip-item">
+            <div class="strip-label">Available</div>
+            <div class="strip-value green" id="sumFree">—</div>
+          </div>
+          <div class="strip-item">
+            <div class="strip-label">Queue</div>
+            <div class="strip-value" id="sumQueue">—</div>
+          </div>
+        </div>
+
+        <!-- Tables section -->
+        <div class="section-label">
+          <span class="section-label-text">Floor Status</span>
+          <div class="section-label-line"></div>
+          <span class="section-label-count" id="tableCount">0 tables</span>
+        </div>
+        <div class="tables-grid" id="tables"></div>
+
+        <!-- Queue section -->
+        <div class="queue-section">
+          <div class="section-label">
+            <span class="section-label-text">Waiting Queue</span>
+            <div class="section-label-line"></div>
+            <span class="section-label-count" id="queueCount">0 waiting</span>
+          </div>
+          <div class="queue-list" id="queue"></div>
+        </div>
+      </div>
+
+      <!-- ─── HISTORY TAB ─── -->
+      <div class="tab-panel" id="panel-history">
+
+        <div class="section-label" style="margin-bottom:24px;">
+          <span class="section-label-text">Revenue History</span>
+          <div class="section-label-line"></div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-row">
+          <div class="filter-group">
+            <span class="filter-group-label">From</span>
+            <input type="date" class="date-input" id="histFrom">
+          </div>
+          <div class="filter-group">
+            <span class="filter-group-label">To</span>
+            <input type="date" class="date-input" id="histTo">
+          </div>
+          <button class="filter-btn" onclick="applyHistoryFilter()">Apply</button>
+          <button class="filter-btn muted" onclick="setCurrentMonth()">This Month</button>
+          <button class="filter-btn muted" onclick="setToday()">Today</button>
+          <button class="filter-btn muted" onclick="clearFilter()">All Time</button>
+        </div>
+
+        <!-- Stat cards -->
+        <div class="stats-row" id="histStats">
+          <div class="stat-card gold-accent">
+            <div class="stat-key">Orders</div>
+            <div class="stat-num gold" id="statOrders">—</div>
+            <div class="stat-sub">Completed bills</div>
+          </div>
+          <div class="stat-card blue-accent">
+            <div class="stat-key">Revenue</div>
+            <div class="stat-num blue" id="statRevenue">—</div>
+            <div class="stat-sub">Total collected</div>
+          </div>
+          <div class="stat-card green-accent">
+            <div class="stat-key">Avg Bill</div>
+            <div class="stat-num green" id="statAvg">—</div>
+            <div class="stat-sub">Per order</div>
+          </div>
+          <div class="stat-card amber-accent">
+            <div class="stat-key">Discounts</div>
+            <div class="stat-num amber" id="statDiscount">—</div>
+            <div class="stat-sub">Given away</div>
+          </div>
+        </div>
+
+        <!-- History table -->
+        <div class="hist-table-wrap">
+          <table class="hist-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Date & Time</th>
+                <th>Customer</th>
+                <th>Type</th>
+                <th>Table</th>
+                <th>Items</th>
+                <th>Status</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody id="historyBody">
+              <tr><td colspan="8"><div class="no-history"><div class="no-history-icon">📂</div><div class="no-history-text">Loading history</div></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="pagination" id="histPagination"></div>
+      </div>
+
+    </div><!-- /page-content -->
+  </div><!-- /main -->
+</div><!-- /shell -->
+
+<!-- ─── BILL MODAL ─────────────────────────── -->
 <div class="modal-overlay" id="billModal">
   <div class="bill-modal">
-    <div class="bill-modal-header">
-      <div>
-        <div class="bill-modal-title">🧾 Generate Bill</div>
-        <div class="bill-modal-subtitle" id="billModalSubtitle">Table — | Customer —</div>
+    <div class="modal-header">
+      <div class="modal-title-block">
+        <div class="modal-eyebrow">Generate Bill</div>
+        <div class="modal-title">Settlement</div>
+        <div class="modal-subtitle" id="billModalSubtitle">Table — · Customer —</div>
       </div>
-      <button class="close-btn" onclick="closeBillModal()">✕</button>
+      <button class="modal-close" onclick="closeBillModal()">✕</button>
     </div>
 
-    <div class="bill-modal-body">
-      <!-- Add Items from Menu -->
-      <div class="add-items-section">
-        <div class="add-items-title">➕ Add Items to Bill</div>
-        <div class="menu-search-row">
-          <input type="text" class="menu-search-input" id="menuSearchInput" placeholder="Search menu items to add..." oninput="searchMenuItems()">
-        </div>
-        <div class="menu-results" id="menuResults" style="display:none;"></div>
-      </div>
+    <div class="modal-body">
+      <!-- Add items -->
+      <label class="field-label">Add Items</label>
+      <input type="text" class="search-input" id="menuSearchInput" placeholder="Search menu…" oninput="searchMenuItems()">
+      <div class="search-results" id="menuResults"></div>
 
-      <!-- Bill Items Table -->
-      <div class="bill-items-section">
-        <div class="add-items-title">📋 Order Items</div>
-        <table class="bill-table">
-          <thead>
-            <tr>
-              <th>Item</th>
-              <th>Qty</th>
-              <th>Rate (₹)</th>
-              <th>Amt (₹)</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="billItemsBody">
-            <tr><td colspan="5" class="empty-bill-msg">Loading order items...</td></tr>
-          </tbody>
-        </table>
-      </div>
+      <!-- Order items -->
+      <div class="bill-section-label">Order Items</div>
+      <table class="bill-table">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Qty</th>
+            <th>Rate</th>
+            <th>Amt</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="billItemsBody">
+          <tr><td colspan="5" class="empty-bill">Loading…</td></tr>
+        </tbody>
+      </table>
 
-      <!-- Totals & Discount -->
-      <div class="bill-totals">
-        <div class="total-row">
-          <span class="total-label">Subtotal</span>
-          <span class="total-value" id="billSubtotal">₹0.00</span>
+      <!-- Totals -->
+      <div class="totals-block">
+        <div class="total-line">
+          <span class="total-key">Subtotal</span>
+          <span class="total-val" id="billSubtotal">₹0.00</span>
         </div>
         <div class="discount-row">
-          <span class="discount-label">Discount</span>
-          <div class="discount-toggle">
+          <span class="total-key" style="min-width:72px;">Discount</span>
+          <div class="disc-toggle">
             <button id="discPctBtn" class="active" onclick="setDiscountMode('pct')">%</button>
             <button id="discRupBtn" onclick="setDiscountMode('rs')">₹</button>
           </div>
-          <input type="number" class="discount-input" id="discountInput" placeholder="0" min="0" oninput="recalcBill()">
-          <span class="total-value" id="discountAmount" style="color:#ef4444;font-family:'DM Mono',monospace;">-₹0.00</span>
+          <input type="number" class="disc-input" id="discountInput" placeholder="0" min="0" oninput="recalcBill()">
+          <span class="disc-result" id="discountAmount">−₹0.00</span>
         </div>
-        <hr class="divider">
-        <div class="grand-total-row">
-          <span class="grand-total-label">TOTAL</span>
-          <span class="grand-total-value" id="billGrandTotal">₹0.00</span>
+        <hr class="totals-sep">
+        <div class="grand-line">
+          <span class="grand-key">Grand Total</span>
+          <span class="grand-val" id="billGrandTotal">₹0.00</span>
         </div>
       </div>
     </div>
 
-    <div class="bill-modal-footer">
-      <button class="save-btn" onclick="saveAndClose()">💾 Save Only</button>
-      <button class="print-btn" onclick="printBill()">🖨️ Print Bill & Free Table</button>
+    <div class="modal-footer">
+      <button class="btn-modal-secondary" onclick="saveAndClose()">Save Only</button>
+      <button class="btn-modal-primary" onclick="printBill()">Print & Free Table</button>
     </div>
   </div>
 </div>
 
-<!-- Print Area (hidden, shown only on print) -->
+<!-- Print area -->
 <div id="print-area"></div>
 
 <script>
-/* ======================================================
-   FULL MENU DATA (copied from menu.html)
-   ====================================================== */
+/* ══════════════════════════════════════════
+   CLOCK
+══════════════════════════════════════════ */
+function updateClock() {
+  const now = new Date();
+  const t = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+  const d = now.toLocaleDateString('en-IN', { weekday: 'short', day: '2-digit', month: 'short' });
+  const el = document.getElementById('sidebarTime');
+  const de = document.getElementById('topbarDate');
+  if (el) el.textContent = t;
+  if (de) de.textContent = d.toUpperCase();
+}
+updateClock();
+setInterval(updateClock, 30000);
+
+/* ══════════════════════════════════════════
+   MENU DATA
+══════════════════════════════════════════ */
 const menuData = {
   starters: [
     { id:'st1', name:'Corn Tikki', price:200 }, { id:'st2', name:'Paneer Tikka Dry', price:235 },
@@ -1124,149 +1831,168 @@ const menuData = {
     { id:'ic5', name:'Gajar Halwa', price:100 }
   ]
 };
-
-// Flatten all menu items for search
 const allMenuItems = Object.values(menuData).flat();
 
-/* ======================================================
-   MANAGER STATE
-   ====================================================== */
+/* ══════════════════════════════════════════
+   STATE
+══════════════════════════════════════════ */
 let allTables = [];
-let allQueue = [];
-
-// Bill modal state
-let currentBillOrderId = null;
+let allQueue  = [];
+let currentBillOrderId    = null;
 let currentBillTableNumber = null;
-let currentBillTableKey = null;
-let billItems = [];       // [{id, name, qty, price}]
-let discountMode = 'pct'; // 'pct' | 'rs'
+let currentBillTableKey   = null;
+let billItems    = [];
+let discountMode = 'pct';
 
-/* ======================================================
-   INITIALIZE TABLES
-   ====================================================== */
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
 function initializeTables() {
-  db.ref("tables").once("value", (snapshot) => {
-    if (!snapshot.exists()) {
-      const defaultTables = [];
+  db.ref("tables").once("value", (snap) => {
+    if (!snap.exists()) {
+      const t = [];
       for (let i = 1; i <= 10; i++) {
-        defaultTables.push({ number: i, capacity: i <= 4 ? 2 : i <= 8 ? 4 : 6, occupied: false, current: null });
+        t.push({ number: i, capacity: i <= 4 ? 2 : i <= 8 ? 4 : 6, occupied: false, current: null });
       }
-      db.ref("tables").set(defaultTables);
+      db.ref("tables").set(t);
     }
   });
-  db.ref("queue").once("value", (snapshot) => {
-    if (!snapshot.exists()) db.ref("queue").set([]);
+  db.ref("queue").once("value", (snap) => {
+    if (!snap.exists()) db.ref("queue").set([]);
   });
 }
+initializeTables();
 
-/* ======================================================
-   RENDER MANAGER DASHBOARD
-   ====================================================== */
+/* ══════════════════════════════════════════
+   RENDER DASHBOARD
+══════════════════════════════════════════ */
 function renderManagerDashboard() {
   const tablesDiv = document.getElementById("tables");
-  const queueDiv = document.getElementById("queue");
+  const queueDiv  = document.getElementById("queue");
   tablesDiv.innerHTML = "";
-  queueDiv.innerHTML = "";
+  queueDiv.innerHTML  = "";
+
+  // Summary strip
+  const occupied = allTables.filter(t => t.occupied).length;
+  const free = allTables.length - occupied;
+  document.getElementById('sumTotal').textContent    = allTables.length;
+  document.getElementById('sumOccupied').textContent = occupied;
+  document.getElementById('sumFree').textContent     = free;
+  document.getElementById('sumQueue').textContent    = allQueue.length;
+  document.getElementById('tableCount').textContent  = allTables.length + ' tables';
+  document.getElementById('queueCount').textContent  = allQueue.length + ' waiting';
 
   if (allTables.length === 0) {
-    tablesDiv.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🪑</div><div>No tables configured</div></div>`;
+    tablesDiv.innerHTML = `<div class="empty-state"><div class="empty-glyph">⊘</div><div class="empty-label">No tables configured</div></div>`;
     return;
   }
 
   allTables.forEach(t => {
-    const occupiedClass = t.occupied ? 'occupied' : '';
-    const statusClass = t.occupied ? 'occupied' : 'free';
-    const statusText = t.occupied ? 'Occupied' : 'Free';
-    let customerHTML = '';
+    const isOccupied = t.occupied;
+    let customerBlock = '';
+    let actionBlock   = '';
+
     if (t.current) {
-      const minutesSince = Math.floor((Date.now() - t.current.since) / 60000);
-      customerHTML = `
-        <div class="customer-details">
-          <div class="customer-name">${t.current.name || 'Customer'}</div>
-          <div class="customer-meta">
-            <span>👥 ${t.current.people} ${t.current.people === 1 ? 'Person' : 'People'}</span>
-            <span>⏱️ ${minutesSince} min</span>
+      const mins = Math.floor((Date.now() - t.current.since) / 60000);
+      customerBlock = `
+        <div class="customer-block">
+          <div class="cust-name">${t.current.name || 'Guest'}</div>
+          <div class="cust-tags">
+            <span class="cust-tag"><span class="cust-tag-icon">○</span>${t.current.people} ${t.current.people === 1 ? 'person' : 'people'}</span>
+            <span class="cust-tag"><span class="cust-tag-icon">◷</span>${mins} min seated</span>
           </div>
-        </div>
-        <div class="btn-row">
-          <button onclick="openBillModal(${t.number})" class="bill-btn">🧾 Print Bill</button>
-          <button onclick="freeTable(${t.number})" class="free-btn">✕ Free</button>
-        </div>
-      `;
+        </div>`;
+      actionBlock = `
+        <div class="card-actions">
+          <button class="btn-primary" onclick="openBillModal(${t.number})">Bill</button>
+          <button class="btn-ghost" onclick="freeTable(${t.number})">Free</button>
+        </div>`;
     }
+
+    const metaBlock = `
+      <div class="card-meta">
+        <div class="meta-item">
+          <div class="meta-key">Capacity</div>
+          <div class="meta-val">${t.capacity} pax</div>
+        </div>
+        ${isOccupied && t.current ? `
+        <div class="meta-item">
+          <div class="meta-key">Since</div>
+          <div class="meta-val">${new Date(t.current.since).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}</div>
+        </div>` : ''}
+      </div>`;
+
     tablesDiv.innerHTML += `
-      <div class="table-card ${occupiedClass}">
-        <div class="table-header">
-          <div class="table-number">Table ${t.number}</div>
-          <div class="status-badge ${statusClass}">${statusText}</div>
-        </div>
-        <div class="table-info">
-          <div class="info-row">
-            <span class="info-label">Capacity</span>
-            <span class="info-value">${t.capacity} ${t.capacity === 1 ? 'Person' : 'People'}</span>
+      <div class="table-card ${isOccupied ? 'occupied' : 'free'}">
+        <div class="card-accent-bar"></div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="table-num-block">
+              <div class="table-numeral">${String(t.number).padStart(2,'0')}</div>
+              <div class="table-label">Table</div>
+            </div>
+            <div class="status-pill ${isOccupied ? 'occupied' : 'free'}">
+              <div class="status-pip"></div>
+              ${isOccupied ? 'Occupied' : 'Available'}
+            </div>
           </div>
+          ${metaBlock}
+          ${customerBlock}
+          ${actionBlock}
         </div>
-        ${customerHTML}
-      </div>
-    `;
+      </div>`;
   });
 
   // Queue
   if (allQueue.length === 0) {
-    queueDiv.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📋</div><div>No customers waiting</div></div>`;
+    queueDiv.innerHTML = `<div class="empty-state"><div class="empty-glyph">◻</div><div class="empty-label">Queue is clear</div></div>`;
   } else {
-    allQueue.forEach(q => {
-      const waitingMinutes = Math.floor((Date.now() - (q.time || Date.now())) / 60000);
+    allQueue.forEach((q, i) => {
+      const mins = Math.floor((Date.now() - (q.time || Date.now())) / 60000);
       queueDiv.innerHTML += `
         <div class="queue-card">
-          <div class="queue-info">
-            <div class="queue-name">${q.name || 'Customer'}</div>
+          <div class="queue-position">${String(i+1).padStart(2,'0')}</div>
+          <div>
+            <div class="queue-name">${q.name || 'Guest'}</div>
             <div class="queue-meta">
-              <span>👥 ${q.people} ${q.people === 1 ? 'Person' : 'People'}</span>
-              <span>⏱️ Waiting ${waitingMinutes} min</span>
+              <span>○ ${q.people} ${q.people === 1 ? 'person' : 'people'}</span>
             </div>
           </div>
-        </div>
-      `;
+          <div class="queue-wait">◷ ${mins}m waiting</div>
+        </div>`;
     });
   }
 }
 
-/* ======================================================
+/* ══════════════════════════════════════════
    FREE TABLE
-   ====================================================== */
+══════════════════════════════════════════ */
 function freeTable(tableNumber) {
-  db.ref("tables").once("value", (snapshot) => {
-    const raw = snapshot.val();
+  db.ref("tables").once("value", (snap) => {
+    const raw = snap.val();
     if (!raw) return;
     let tableKey = null;
     if (Array.isArray(raw)) { tableKey = tableNumber - 1; }
-    else { Object.entries(raw).forEach(([k, v]) => { if (v.number === tableNumber) tableKey = k; }); }
+    else { Object.entries(raw).forEach(([k,v]) => { if (v.number === tableNumber) tableKey = k; }); }
     if (tableKey === null) return;
     const table = raw[tableKey];
     db.ref("tables/" + tableKey).update({ occupied: false, current: null });
     db.ref("queue").once("value", (qSnap) => {
       let queue = qSnap.val() ? Object.values(qSnap.val()) : [];
       if (queue.length > 0) {
-        const nextCustomer = queue.shift();
-        if ((table.capacity || 4) >= nextCustomer.people) {
-          db.ref("tables/" + tableKey).update({
-            occupied: true,
-            current: { name: nextCustomer.name, people: nextCustomer.people, since: Date.now(), orderId: nextCustomer.orderId }
-          });
+        const next = queue.shift();
+        if ((table.capacity || 4) >= next.people) {
+          db.ref("tables/" + tableKey).update({ occupied: true, current: { name: next.name, people: next.people, since: Date.now(), orderId: next.orderId } });
           db.ref("queue").set(queue);
-        } else {
-          queue.unshift(nextCustomer);
-          db.ref("queue").set(queue);
-        }
+        } else { queue.unshift(next); db.ref("queue").set(queue); }
       }
     });
   });
 }
 
-/* ======================================================
-   BILL MODAL — OPEN
-   ====================================================== */
+/* ══════════════════════════════════════════
+   BILL MODAL
+══════════════════════════════════════════ */
 function openBillModal(tableNumber) {
   currentBillTableNumber = tableNumber;
   billItems = [];
@@ -1275,40 +2001,34 @@ function openBillModal(tableNumber) {
   document.getElementById('menuResults').style.display = 'none';
   setDiscountMode('pct');
 
-  // Find table key and orderId
-  db.ref("tables").once("value", (snapshot) => {
-    const raw = snapshot.val();
+  db.ref("tables").once("value", (snap) => {
+    const raw = snap.val();
     if (!raw) return;
-    let tableKey = null, orderId = null, table = null;
-    if (Array.isArray(raw)) {
-      tableKey = tableNumber - 1;
-      table = raw[tableKey];
-    } else {
-      Object.entries(raw).forEach(([k, v]) => { if (v.number === tableNumber) { tableKey = k; table = v; } });
-    }
+    let tableKey = null, table = null;
+    if (Array.isArray(raw)) { tableKey = tableNumber - 1; table = raw[tableKey]; }
+    else { Object.entries(raw).forEach(([k,v]) => { if (v.number === tableNumber) { tableKey = k; table = v; } }); }
     currentBillTableKey = tableKey;
-    orderId = table?.current?.orderId || null;
+    const orderId = table?.current?.orderId || null;
     currentBillOrderId = orderId;
 
-    const subtitle = `Table ${tableNumber} | ${table?.current?.name || 'Customer'} | ${table?.current?.people || 1} pax`;
-    document.getElementById('billModalSubtitle').textContent = subtitle;
+    document.getElementById('billModalSubtitle').textContent =
+      `Table ${tableNumber}  ·  ${table?.current?.name || 'Guest'}  ·  ${table?.current?.people || 1} pax`;
 
-    // Load order items from Firebase
+    const proceed = () => {
+      renderBillItems();
+      recalcBill();
+      document.getElementById('billModal').classList.add('active');
+    };
+
     if (orderId) {
       db.ref("orders/" + orderId).once("value", (oSnap) => {
         const order = oSnap.val();
         if (order && Array.isArray(order.items)) {
           billItems = order.items.map(i => ({ id: i.id || ('item_' + Math.random()), name: i.name, qty: i.qty, price: i.price }));
         }
-        renderBillItems();
-        recalcBill();
-        document.getElementById('billModal').classList.add('active');
+        proceed();
       });
-    } else {
-      renderBillItems();
-      recalcBill();
-      document.getElementById('billModal').classList.add('active');
-    }
+    } else { proceed(); }
   });
 }
 
@@ -1320,61 +2040,56 @@ function closeBillModal() {
   billItems = [];
 }
 
-/* ======================================================
-   BILL ITEMS RENDER
-   ====================================================== */
+/* ══════════════════════════════════════════
+   BILL ITEMS
+══════════════════════════════════════════ */
 function renderBillItems() {
   const tbody = document.getElementById('billItemsBody');
   if (billItems.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" class="empty-bill-msg">No items yet. Add from menu above or order data is empty.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" class="empty-bill">No items yet — search menu above</td></tr>`;
     return;
   }
-  tbody.innerHTML = billItems.map((item, idx) => `
+  tbody.innerHTML = billItems.map((item, i) => `
     <tr>
-      <td><input class="item-name-editable" value="${item.name}" onchange="updateItemName(${idx}, this.value)"></td>
+      <td><input class="item-input" value="${item.name}" onchange="updateItemName(${i}, this.value)"></td>
       <td>
-        <div class="qty-cell">
-          <button class="qty-btn" onclick="updateBillQty(${idx}, -1)">−</button>
-          <span class="qty-val">${item.qty}</span>
-          <button class="qty-btn" onclick="updateBillQty(${idx}, 1)">+</button>
+        <div class="qty-row">
+          <button class="qty-btn" onclick="updateBillQty(${i},-1)">−</button>
+          <span class="qty-num">${item.qty}</span>
+          <button class="qty-btn" onclick="updateBillQty(${i},1)">+</button>
         </div>
       </td>
-      <td><input class="price-editable" type="number" value="${item.price.toFixed(2)}" onchange="updateItemPrice(${idx}, this.value)"></td>
-      <td>₹${(item.price * item.qty).toFixed(2)}</td>
-      <td><button class="remove-item-btn" onclick="removeBillItem(${idx})" title="Remove">✕</button></td>
-    </tr>
-  `).join('');
+      <td><input class="price-input" type="number" value="${item.price.toFixed(2)}" onchange="updateItemPrice(${i}, this.value)"></td>
+      <td style="font-family:var(--font-mono);font-size:12px;color:var(--gold);font-weight:300;">₹${(item.price * item.qty).toFixed(2)}</td>
+      <td><button class="row-del" onclick="removeBillItem(${i})">✕</button></td>
+    </tr>`).join('');
 }
 
-function updateItemName(idx, val) { billItems[idx].name = val; }
-function updateItemPrice(idx, val) { billItems[idx].price = parseFloat(val) || 0; renderBillItems(); recalcBill(); }
-function updateBillQty(idx, delta) {
-  billItems[idx].qty = Math.max(1, billItems[idx].qty + delta);
-  renderBillItems(); recalcBill();
-}
-function removeBillItem(idx) { billItems.splice(idx, 1); renderBillItems(); recalcBill(); }
+function updateItemName(i, v)  { billItems[i].name = v; }
+function updateItemPrice(i, v) { billItems[i].price = parseFloat(v)||0; renderBillItems(); recalcBill(); }
+function updateBillQty(i, d)   { billItems[i].qty = Math.max(1, billItems[i].qty + d); renderBillItems(); recalcBill(); }
+function removeBillItem(i)     { billItems.splice(i,1); renderBillItems(); recalcBill(); }
 
-/* ======================================================
-   ADD FROM MENU SEARCH
-   ====================================================== */
+/* ══════════════════════════════════════════
+   MENU SEARCH
+══════════════════════════════════════════ */
 function searchMenuItems() {
-  const query = document.getElementById('menuSearchInput').value.toLowerCase().trim();
-  const resultsDiv = document.getElementById('menuResults');
-  if (!query) { resultsDiv.style.display = 'none'; return; }
-  const filtered = allMenuItems.filter(i => i.name.toLowerCase().includes(query)).slice(0, 10);
-  if (filtered.length === 0) { resultsDiv.style.display = 'none'; return; }
-  resultsDiv.style.display = 'block';
-  resultsDiv.innerHTML = filtered.map(i => `
-    <div class="menu-result-item" onclick="addMenuItemToBill('${i.id}', '${i.name.replace(/'/g, "\\'")}', ${i.price})">
-      <span class="menu-result-name">${i.name}</span>
-      <span class="menu-result-price">₹${i.price.toFixed(2)}</span>
-    </div>
-  `).join('');
+  const q = document.getElementById('menuSearchInput').value.toLowerCase().trim();
+  const el = document.getElementById('menuResults');
+  if (!q) { el.style.display = 'none'; return; }
+  const hits = allMenuItems.filter(i => i.name.toLowerCase().includes(q)).slice(0, 10);
+  if (!hits.length) { el.style.display = 'none'; return; }
+  el.style.display = 'block';
+  el.innerHTML = hits.map(i => `
+    <div class="result-item" onclick="addMenuItemToBill('${i.id}','${i.name.replace(/'/g,"\\'")}',${i.price})">
+      <span class="result-name">${i.name}</span>
+      <span class="result-price">₹${i.price}</span>
+    </div>`).join('');
 }
 
 function addMenuItemToBill(id, name, price) {
-  const existing = billItems.find(i => i.id === id);
-  if (existing) { existing.qty += 1; }
+  const ex = billItems.find(i => i.id === id);
+  if (ex) { ex.qty += 1; }
   else { billItems.push({ id, name, qty: 1, price }); }
   document.getElementById('menuSearchInput').value = '';
   document.getElementById('menuResults').style.display = 'none';
@@ -1382,16 +2097,15 @@ function addMenuItemToBill(id, name, price) {
   recalcBill();
 }
 
-// Close search results when clicking outside
 document.addEventListener('click', (e) => {
-  if (!e.target.closest('.add-items-section')) {
+  if (!e.target.closest('.search-input') && !e.target.closest('.search-results')) {
     document.getElementById('menuResults').style.display = 'none';
   }
 });
 
-/* ======================================================
-   DISCOUNT & RECALC
-   ====================================================== */
+/* ══════════════════════════════════════════
+   DISCOUNT + RECALC
+══════════════════════════════════════════ */
 function setDiscountMode(mode) {
   discountMode = mode;
   document.getElementById('discPctBtn').classList.toggle('active', mode === 'pct');
@@ -1400,76 +2114,58 @@ function setDiscountMode(mode) {
 }
 
 function recalcBill() {
-  const subtotal = billItems.reduce((s, i) => s + (i.price * i.qty), 0);
-  const discVal = parseFloat(document.getElementById('discountInput').value) || 0;
-  let discountAmt = 0;
-  if (discountMode === 'pct') { discountAmt = Math.min(subtotal, subtotal * discVal / 100); }
-  else { discountAmt = Math.min(subtotal, discVal); }
-  const grandTotal = subtotal - discountAmt;
-  document.getElementById('billSubtotal').textContent = `₹${subtotal.toFixed(2)}`;
-  document.getElementById('discountAmount').textContent = `-₹${discountAmt.toFixed(2)}`;
-  document.getElementById('billGrandTotal').textContent = `₹${grandTotal.toFixed(2)}`;
+  const sub = billItems.reduce((s,i) => s + i.price * i.qty, 0);
+  const dv = parseFloat(document.getElementById('discountInput').value) || 0;
+  let disc = 0;
+  if (discountMode === 'pct') disc = Math.min(sub, sub * dv / 100);
+  else disc = Math.min(sub, dv);
+  const grand = sub - disc;
+  document.getElementById('billSubtotal').textContent  = `₹${sub.toFixed(2)}`;
+  document.getElementById('discountAmount').textContent = `−₹${disc.toFixed(2)}`;
+  document.getElementById('billGrandTotal').textContent = `₹${grand.toFixed(2)}`;
 }
 
-/* ======================================================
-   SAVE BILL TO FIREBASE (without freeing table)
-   ====================================================== */
+/* ══════════════════════════════════════════
+   SAVE
+══════════════════════════════════════════ */
 function saveAndClose() {
   if (currentBillOrderId) {
     db.ref("orders/" + currentBillOrderId).update({
       items: billItems,
-      total: billItems.reduce((s, i) => s + i.price * i.qty, 0)
-    }).then(() => { closeBillModal(); });
-  } else {
-    closeBillModal();
-  }
+      total: billItems.reduce((s,i) => s + i.price * i.qty, 0)
+    }).then(() => closeBillModal());
+  } else { closeBillModal(); }
 }
 
-/* ======================================================
-   PRINT BILL (then free table)
-   ====================================================== */
+/* ══════════════════════════════════════════
+   PRINT
+══════════════════════════════════════════ */
 function printBill() {
-  // Gather values
-  const subtotal = billItems.reduce((s, i) => s + (i.price * i.qty), 0);
-  const discVal = parseFloat(document.getElementById('discountInput').value) || 0;
-  let discountAmt = 0;
-  if (discountMode === 'pct') { discountAmt = Math.min(subtotal, subtotal * discVal / 100); }
-  else { discountAmt = Math.min(subtotal, discVal); }
-  const grandTotal = subtotal - discountAmt;
+  const sub = billItems.reduce((s,i) => s + i.price * i.qty, 0);
+  const dv  = parseFloat(document.getElementById('discountInput').value) || 0;
+  let disc  = 0;
+  if (discountMode === 'pct') disc = Math.min(sub, sub * dv / 100);
+  else disc = Math.min(sub, dv);
+  const grand = sub - disc;
   const now = new Date();
   const dateStr = now.toLocaleDateString('en-IN');
-  const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+  const timeStr = now.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
   const orderNo = currentBillOrderId ? currentBillOrderId.replace('ORD','') : Date.now();
 
-  // Discount label
-  let discLabel = '';
-  if (discountAmt > 0) {
-    discLabel = discountMode === 'pct'
-      ? `Discount (${discVal}%)`
-      : `Discount`;
-  }
-
-  // Build print HTML
+  let discLabel = disc > 0 ? (discountMode === 'pct' ? `Discount (${dv}%)` : 'Discount') : '';
   const itemsHTML = billItems.map(i => `
     <div class="print-item-row">
       <span class="print-item-name">${i.name}</span>
       <span class="print-item-qty">x${i.qty}</span>
       <span class="print-item-price">${(i.price * i.qty).toFixed(2)}</span>
-    </div>
-  `).join('');
-
-  const discountHTML = discountAmt > 0 ? `
-    <div class="print-total-row">
-      <span>${discLabel}</span>
-      <span>-${discountAmt.toFixed(2)}</span>
-    </div>
-  ` : '';
+    </div>`).join('');
+  const discHTML = disc > 0 ? `<div class="print-total-row"><span>${discLabel}</span><span>-${disc.toFixed(2)}</span></div>` : '';
 
   document.getElementById('print-area').innerHTML = `
     <div class="print-header">
       <div class="print-restaurant">EMERALD</div>
       <div class="print-tagline">Fine Dining & Hospitality</div>
-      <div style="font-size:10px; color:#555; margin-top:4px;">Open Daily: 12:00 PM – 11:00 PM</div>
+      <div style="font-size:10px;color:#555;margin-top:4px;">Open Daily: 12:00 PM – 11:00 PM</div>
     </div>
     <hr class="print-divider">
     <div class="print-info-row"><span>Order No:</span><span>#${orderNo}</span></div>
@@ -1484,50 +2180,36 @@ function printBill() {
     ${itemsHTML}
     <hr class="print-divider">
     <div class="print-totals-section">
-      <div class="print-total-row"><span>Subtotal</span><span>₹${subtotal.toFixed(2)}</span></div>
-      ${discountHTML}
+      <div class="print-total-row"><span>Subtotal</span><span>₹${sub.toFixed(2)}</span></div>
+      ${discHTML}
       <hr class="print-divider">
-      <div class="print-grand-row"><span>TOTAL</span><span>₹${grandTotal.toFixed(2)}</span></div>
+      <div class="print-grand-row"><span>TOTAL</span><span>₹${grand.toFixed(2)}</span></div>
     </div>
     <hr class="print-divider">
     <div class="print-thankyou">Thank You! 🙏</div>
-    <div class="print-footer">Visit us again • EMERALD Restaurant<br>*This is your bill receipt*</div>
-  `;
+    <div class="print-footer">Visit us again · EMERALD Restaurant<br>*This is your bill receipt*</div>`;
 
-  // Update Firebase order as Completed + save final bill items
-  const updates = { status: 'Completed', items: billItems, total: subtotal, grandTotal, discount: discountAmt, billedAt: new Date().toISOString() };
-  if (currentBillOrderId) { db.ref("orders/" + currentBillOrderId).update(updates); }
+  const updates = { status:'Completed', items:billItems, total:sub, grandTotal:grand, discount:disc, billedAt:new Date().toISOString() };
+  if (currentBillOrderId) db.ref("orders/" + currentBillOrderId).update(updates);
 
-  // Free the table AFTER print
   const tableNumToFree = currentBillTableNumber;
   const tableKeyToFree = currentBillTableKey;
-
   closeBillModal();
-
-  // Trigger browser print
   window.print();
 
-  // Free table after print dialog closes (short delay)
   setTimeout(() => {
     if (tableKeyToFree !== null) {
       db.ref("tables/" + tableKeyToFree).update({ occupied: false, current: null });
-      // Check queue
       db.ref("queue").once("value", (qSnap) => {
         let queue = qSnap.val() ? Object.values(qSnap.val()) : [];
         if (queue.length > 0) {
           db.ref("tables/" + tableKeyToFree).once("value", (tSnap) => {
             const t = tSnap.val();
-            const nextCustomer = queue.shift();
-            if ((t?.capacity || 4) >= nextCustomer.people) {
-              db.ref("tables/" + tableKeyToFree).update({
-                occupied: true,
-                current: { name: nextCustomer.name, people: nextCustomer.people, since: Date.now(), orderId: nextCustomer.orderId }
-              });
+            const next = queue.shift();
+            if ((t?.capacity || 4) >= next.people) {
+              db.ref("tables/" + tableKeyToFree).update({ occupied:true, current:{ name:next.name, people:next.people, since:Date.now(), orderId:next.orderId } });
               db.ref("queue").set(queue);
-            } else {
-              queue.unshift(nextCustomer);
-              db.ref("queue").set(queue);
-            }
+            } else { queue.unshift(next); db.ref("queue").set(queue); }
           });
         }
       });
@@ -1535,67 +2217,61 @@ function printBill() {
   }, 500);
 }
 
-// Initialize on load
-initializeTables();
-
-/* ======================================================
+/* ══════════════════════════════════════════
    TAB SWITCHING
-   ====================================================== */
+══════════════════════════════════════════ */
 function switchTab(name) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
   document.getElementById('panel-' + name).classList.add('active');
   if (name === 'history') loadHistory();
 }
 
-/* ======================================================
-   BILL HISTORY
-   ====================================================== */
-let historyData = [];        // all completed orders from Firebase
-let filteredHistory = [];    // after date filter
+/* ══════════════════════════════════════════
+   HISTORY
+══════════════════════════════════════════ */
+let historyData = [];
+let filteredHistory = [];
 let histPage = 1;
 const HIST_PAGE_SIZE = 20;
 
-/* Set default dates on load — current month */
-(function initHistoryDates() {
+(function initDates() {
   const now = new Date();
-  const y = now.getFullYear(), m = String(now.getMonth() + 1).padStart(2, '0');
+  const y = now.getFullYear(), m = String(now.getMonth()+1).padStart(2,'0');
   document.getElementById('histFrom').value = `${y}-${m}-01`;
-  document.getElementById('histTo').value = now.toISOString().split('T')[0];
+  document.getElementById('histTo').value   = now.toISOString().split('T')[0];
 })();
 
 function setCurrentMonth() {
   const now = new Date();
-  const y = now.getFullYear(), m = String(now.getMonth() + 1).padStart(2, '0');
+  const y = now.getFullYear(), m = String(now.getMonth()+1).padStart(2,'0');
   document.getElementById('histFrom').value = `${y}-${m}-01`;
-  document.getElementById('histTo').value = now.toISOString().split('T')[0];
+  document.getElementById('histTo').value   = now.toISOString().split('T')[0];
   applyHistoryFilter();
 }
-
 function setToday() {
-  const today = new Date().toISOString().split('T')[0];
-  document.getElementById('histFrom').value = today;
-  document.getElementById('histTo').value = today;
+  const t = new Date().toISOString().split('T')[0];
+  document.getElementById('histFrom').value = t;
+  document.getElementById('histTo').value   = t;
   applyHistoryFilter();
 }
-
 function clearFilter() {
   document.getElementById('histFrom').value = '';
-  document.getElementById('histTo').value = '';
+  document.getElementById('histTo').value   = '';
   applyHistoryFilter();
 }
 
 function loadHistory() {
-  db.ref("orders").once("value", (snapshot) => {
-    const data = snapshot.val();
+  db.ref("orders").once("value", (snap) => {
+    const data = snap.val();
     if (!data) { historyData = []; }
     else {
       historyData = Object.values(data)
         .filter(o => o.billedAt || o.status === 'Completed' || o.status === 'Cancelled')
-        .sort((a, b) => {
-          const ta = a.billedAt ? new Date(a.billedAt).getTime() : (a.timestamp || 0);
-          const tb = b.billedAt ? new Date(b.billedAt).getTime() : (b.timestamp || 0);
+        .sort((a,b) => {
+          const ta = a.billedAt ? new Date(a.billedAt).getTime() : (a.timestamp||0);
+          const tb = b.billedAt ? new Date(b.billedAt).getTime() : (b.timestamp||0);
           return tb - ta;
         });
     }
@@ -1606,41 +2282,37 @@ function loadHistory() {
 function applyHistoryFilter() {
   const from = document.getElementById('histFrom').value;
   const to   = document.getElementById('histTo').value;
-
   filteredHistory = historyData.filter(o => {
     const raw = o.billedAt || (o.timestamp ? new Date(o.timestamp).toISOString() : null);
     if (!raw) return false;
-    const d = new Date(raw);
-    const ds = d.toISOString().split('T')[0];
+    const ds = new Date(raw).toISOString().split('T')[0];
     if (from && ds < from) return false;
     if (to   && ds > to)   return false;
     return true;
   });
-
   histPage = 1;
   renderHistoryStats();
   renderHistoryTable();
 }
 
 function renderHistoryStats() {
-  const completed = filteredHistory.filter(o => o.status === 'Completed');
-  const totalRev = completed.reduce((s, o) => s + (o.grandTotal || o.total || 0), 0);
-  const totalDisc = completed.reduce((s, o) => s + (o.discount || 0), 0);
-  const avg = completed.length ? totalRev / completed.length : 0;
-
-  document.getElementById('statOrders').textContent = completed.length;
-  document.getElementById('statRevenue').textContent = '₹' + totalRev.toFixed(0);
-  document.getElementById('statAvg').textContent = completed.length ? '₹' + avg.toFixed(0) : '—';
-  document.getElementById('statDiscount').textContent = totalDisc > 0 ? '₹' + totalDisc.toFixed(0) : '₹0';
+  const done = filteredHistory.filter(o => o.status === 'Completed');
+  const rev  = done.reduce((s,o) => s + (o.grandTotal || o.total || 0), 0);
+  const disc = done.reduce((s,o) => s + (o.discount || 0), 0);
+  const avg  = done.length ? rev / done.length : 0;
+  document.getElementById('statOrders').textContent  = done.length;
+  document.getElementById('statRevenue').textContent = '₹' + rev.toFixed(0);
+  document.getElementById('statAvg').textContent     = done.length ? '₹' + avg.toFixed(0) : '—';
+  document.getElementById('statDiscount').textContent= disc > 0 ? '₹' + disc.toFixed(0) : '₹0';
 }
 
 function renderHistoryTable() {
   const tbody = document.getElementById('historyBody');
-  const pagination = document.getElementById('histPagination');
+  const pag   = document.getElementById('histPagination');
 
   if (filteredHistory.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="8"><div class="no-history"><div class="no-history-icon">📭</div><div>No orders found for this period</div></div></td></tr>`;
-    pagination.innerHTML = '';
+    tbody.innerHTML = `<tr><td colspan="8"><div class="no-history"><div class="no-history-icon">○</div><div class="no-history-text">No records for this period</div></div></td></tr>`;
+    pag.innerHTML = '';
     return;
   }
 
@@ -1648,109 +2320,100 @@ function renderHistoryTable() {
   const start = (histPage - 1) * HIST_PAGE_SIZE;
   const pageData = filteredHistory.slice(start, start + HIST_PAGE_SIZE);
 
-  tbody.innerHTML = pageData.map((order, idx) => {
-    const globalIdx = start + idx + 1;
+  tbody.innerHTML = pageData.map((order, i) => {
+    const idx = start + i + 1;
     const rawDate = order.billedAt || (order.timestamp ? new Date(order.timestamp).toISOString() : null);
     const dateObj = rawDate ? new Date(rawDate) : null;
-    const dateStr  = dateObj ? dateObj.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'2-digit' }) : '—';
-    const timeStr  = dateObj ? dateObj.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' }) : '';
+    const dateStr = dateObj ? dateObj.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'2-digit'}) : '—';
+    const timeStr = dateObj ? dateObj.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}) : '';
     const statusBadge = order.status === 'Completed'
-      ? '<span class="hist-badge completed">Completed</span>'
-      : '<span class="hist-badge cancelled">Cancelled</span>';
+      ? '<span class="badge completed">Completed</span>'
+      : '<span class="badge cancelled">Cancelled</span>';
     const typeBadge = order.orderType === 'dinein'
-      ? '<span class="hist-badge dinein">Dine-In</span>'
-      : '<span class="hist-badge takeaway">Takeaway</span>';
+      ? '<span class="badge dinein">Dine-In</span>'
+      : '<span class="badge takeaway">Takeaway</span>';
     const tableLabel = order.orderType === 'dinein' ? (order.tableNumber || '—') : '—';
     const itemCount  = Array.isArray(order.items) ? order.items.length : '—';
     const total = order.grandTotal || order.total || 0;
     const orderId = order.id || '';
 
     return `
-      <tr onclick="toggleOrderDetail('${orderId}', this)" style="user-select:none;">
-        <td style="color:var(--text-muted);font-size:12px;font-family:'DM Mono',monospace;">#${globalIdx}</td>
+      <tr onclick="toggleOrderDetail('${orderId}',this)" style="user-select:none;">
+        <td style="font-family:var(--font-mono);font-size:11px;color:var(--text-tertiary);">${String(idx).padStart(3,'0')}</td>
         <td>
-          <div style="font-weight:600;">${dateStr}</div>
-          <div style="font-size:12px;color:var(--text-muted);font-family:'DM Mono',monospace;">${timeStr}</div>
+          <div class="hist-date-main">${dateStr}</div>
+          <div class="hist-date-sub">${timeStr}</div>
         </td>
-        <td>${order.customerName || order.name || 'Guest'}</td>
+        <td style="font-weight:400;">${order.customerName || order.name || 'Guest'}</td>
         <td>${typeBadge}</td>
-        <td>${tableLabel}</td>
-        <td style="color:var(--text-muted);">${itemCount} item${itemCount !== 1 ? 's' : ''}</td>
+        <td style="font-family:var(--font-mono);font-size:12px;">${tableLabel}</td>
+        <td style="color:var(--text-tertiary);font-size:12px;">${itemCount} items</td>
         <td>${statusBadge}</td>
         <td class="hist-amount">₹${total.toFixed(2)}</td>
       </tr>
       <tr id="detail-${orderId}" class="detail-row" style="display:none;">
-        <td colspan="8" style="padding:0 16px 12px;">
-          ${renderOrderDetail(order)}
-        </td>
-      </tr>
-    `;
+        <td colspan="8">${renderOrderDetail(order)}</td>
+      </tr>`;
   }).join('');
 
-  // Pagination
-  if (totalPages <= 1) { pagination.innerHTML = ''; return; }
-  let pages = '';
-  pages += `<button class="page-btn" onclick="goHistPage(${histPage-1})" ${histPage===1?'disabled':''}>‹ Prev</button>`;
+  if (totalPages <= 1) { pag.innerHTML = ''; return; }
+  let pages = `<button class="page-btn" onclick="goHistPage(${histPage-1})" ${histPage===1?'disabled':''}>‹</button>`;
   for (let i = 1; i <= totalPages; i++) {
     if (i === 1 || i === totalPages || Math.abs(i - histPage) <= 1) {
       pages += `<button class="page-btn ${i===histPage?'active':''}" onclick="goHistPage(${i})">${i}</button>`;
     } else if (Math.abs(i - histPage) === 2) {
-      pages += `<span style="color:var(--text-muted);padding:0 4px;">…</span>`;
+      pages += `<span style="color:var(--text-tertiary);padding:0 4px;">…</span>`;
     }
   }
-  pages += `<button class="page-btn" onclick="goHistPage(${histPage+1})" ${histPage===totalPages?'disabled':''}>Next ›</button>`;
-  pagination.innerHTML = pages;
+  pages += `<button class="page-btn" onclick="goHistPage(${histPage+1})" ${histPage===totalPages?'disabled':''}>›</button>`;
+  pag.innerHTML = pages;
 }
 
 function goHistPage(p) {
-  const totalPages = Math.ceil(filteredHistory.length / HIST_PAGE_SIZE);
-  if (p < 1 || p > totalPages) return;
+  const total = Math.ceil(filteredHistory.length / HIST_PAGE_SIZE);
+  if (p < 1 || p > total) return;
   histPage = p;
   renderHistoryTable();
   document.getElementById('panel-history').scrollIntoView({ behavior: 'smooth' });
 }
 
 function renderOrderDetail(order) {
-  const items = Array.isArray(order.items) ? order.items : [];
-  const subtotal = items.reduce((s, i) => s + (i.price * i.qty), 0);
-  const disc = order.discount || 0;
-  const grand = order.grandTotal || order.total || subtotal;
-  const diet = order.diet ? `<span style="margin-left:12px;color:var(--text-muted);">Diet: ${order.diet}</span>` : '';
-  const people = order.people ? `<span style="color:var(--text-muted);">👥 ${order.people} ${order.people===1?'person':'people'}</span>` : '';
+  const items   = Array.isArray(order.items) ? order.items : [];
+  const sub     = items.reduce((s,i) => s + i.price * i.qty, 0);
+  const disc    = order.discount || 0;
+  const grand   = order.grandTotal || order.total || sub;
+  const people  = order.people ? `○ ${order.people} ${order.people===1?'person':'people'}` : '';
+  const diet    = order.diet   ? `· Diet: ${order.diet}` : '';
 
   const itemRows = items.length > 0
     ? items.map(i => `
-        <li class="drawer-item-row">
-          <span class="drawer-item-name">${i.name}</span>
-          <span class="drawer-item-qty">× ${i.qty}</span>
-          <span class="drawer-item-price">₹${(i.price * i.qty).toFixed(2)}</span>
-        </li>`).join('')
-    : '<li class="drawer-item-row"><span style="color:var(--text-muted)">No item details recorded</span></li>';
+        <div class="detail-item-row">
+          <span class="detail-item-name">${i.name}</span>
+          <span class="detail-item-qty">× ${i.qty}</span>
+          <span class="detail-item-price">₹${(i.price*i.qty).toFixed(2)}</span>
+        </div>`).join('')
+    : `<div class="detail-item-row"><span style="color:var(--text-tertiary)">No item details recorded</span></div>`;
 
   return `
-    <div style="background:rgba(8,20,40,0.6);border:1px solid rgba(150,210,235,0.08);border-radius:12px;padding:16px;margin-top:4px;">
-      <div class="drawer-meta">${people}${diet}</div>
-      <ul class="drawer-items" style="margin-top:10px;">${itemRows}</ul>
-      <div class="drawer-totals">
-        <div class="drawer-total-row"><span style="color:var(--text-muted)">Subtotal</span><span>₹${subtotal.toFixed(2)}</span></div>
-        ${disc > 0 ? `<div class="drawer-total-row"><span style="color:var(--danger)">Discount</span><span style="color:var(--danger)">-₹${disc.toFixed(2)}</span></div>` : ''}
-        <div class="drawer-total-row drawer-grand"><span>Grand Total</span><span>₹${grand.toFixed(2)}</span></div>
+    <div class="order-detail-inner">
+      <div class="detail-meta"><span>${people}</span><span>${diet}</span></div>
+      ${itemRows}
+      <div class="detail-totals">
+        <div class="detail-total-row"><span>Subtotal</span><span>₹${sub.toFixed(2)}</span></div>
+        ${disc > 0 ? `<div class="detail-total-row" style="color:var(--danger)"><span>Discount</span><span>−₹${disc.toFixed(2)}</span></div>` : ''}
+        <div class="detail-total-row detail-grand"><span>Grand Total</span><span>₹${grand.toFixed(2)}</span></div>
       </div>
-    </div>
-  `;
+    </div>`;
 }
 
-let openDetailId = null;
 function toggleOrderDetail(orderId, row) {
   if (!orderId) return;
-  const detailRow = document.getElementById('detail-' + orderId);
-  if (!detailRow) return;
-  const isOpen = detailRow.style.display !== 'none';
-  // Close any open
+  const dr = document.getElementById('detail-' + orderId);
+  if (!dr) return;
+  const isOpen = dr.style.display !== 'none';
   document.querySelectorAll('.detail-row').forEach(r => r.style.display = 'none');
-  if (!isOpen) detailRow.style.display = 'table-row';
+  if (!isOpen) dr.style.display = 'table-row';
 }
-
 </script>
 </body>
 </html>

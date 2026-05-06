@@ -57,102 +57,111 @@ body {
 }
 
 /* ======== LIVE WALLPAPER BACKGROUND ======== */
-/* Layer 1: deep black base */
+/* Each orb is its own element animated with transform — GPU-smooth, no gradient jumps */
+
 body::before {
   content: '';
   position: fixed;
   inset: 0;
-  z-index: -3;
-  background: #050505;
+  z-index: -10;
+  background: #060606;
 }
 
-/* Layer 2: primary drifting grey orbs — the "live wallpaper" */
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -2;
-  background:
-    radial-gradient(ellipse 70% 55% at 22% 28%, rgba(160,160,160,0.22) 0%, rgba(100,100,100,0.08) 45%, transparent 72%),
-    radial-gradient(ellipse 55% 65% at 78% 60%, rgba(130,130,130,0.16) 0%, rgba(80,80,80,0.06) 45%, transparent 72%),
-    radial-gradient(ellipse 50% 40% at 50% 90%, rgba(90,90,90,0.10) 0%, transparent 65%),
-    radial-gradient(ellipse 40% 35% at 85% 12%, rgba(110,110,110,0.09) 0%, transparent 60%);
-  animation: liveOrbs 14s ease-in-out infinite alternate;
-}
-
-@keyframes liveOrbs {
-  0% {
-    background:
-      radial-gradient(ellipse 70% 55% at 22% 28%, rgba(160,160,160,0.22) 0%, rgba(100,100,100,0.08) 45%, transparent 72%),
-      radial-gradient(ellipse 55% 65% at 78% 60%, rgba(130,130,130,0.16) 0%, rgba(80,80,80,0.06) 45%, transparent 72%),
-      radial-gradient(ellipse 50% 40% at 50% 90%, rgba(90,90,90,0.10) 0%, transparent 65%),
-      radial-gradient(ellipse 40% 35% at 85% 12%, rgba(110,110,110,0.09) 0%, transparent 60%);
-  }
-  16% {
-    background:
-      radial-gradient(ellipse 65% 60% at 35% 18%, rgba(150,150,150,0.20) 0%, rgba(90,90,90,0.07) 45%, transparent 72%),
-      radial-gradient(ellipse 60% 55% at 68% 72%, rgba(140,140,140,0.18) 0%, rgba(85,85,85,0.07) 45%, transparent 72%),
-      radial-gradient(ellipse 45% 50% at 15% 75%, rgba(100,100,100,0.12) 0%, transparent 65%),
-      radial-gradient(ellipse 50% 30% at 90% 30%, rgba(120,120,120,0.10) 0%, transparent 60%);
-  }
-  33% {
-    background:
-      radial-gradient(ellipse 75% 50% at 10% 45%, rgba(170,170,170,0.19) 0%, rgba(110,110,110,0.07) 45%, transparent 72%),
-      radial-gradient(ellipse 50% 70% at 85% 40%, rgba(125,125,125,0.17) 0%, rgba(75,75,75,0.06) 45%, transparent 72%),
-      radial-gradient(ellipse 55% 38% at 55% 85%, rgba(95,95,95,0.11) 0%, transparent 65%),
-      radial-gradient(ellipse 38% 40% at 70% 8%, rgba(115,115,115,0.10) 0%, transparent 60%);
-  }
-  50% {
-    background:
-      radial-gradient(ellipse 60% 65% at 28% 55%, rgba(145,145,145,0.21) 0%, rgba(95,95,95,0.08) 45%, transparent 72%),
-      radial-gradient(ellipse 65% 52% at 72% 25%, rgba(155,155,155,0.16) 0%, rgba(90,90,90,0.06) 45%, transparent 72%),
-      radial-gradient(ellipse 48% 44% at 88% 78%, rgba(105,105,105,0.12) 0%, transparent 65%),
-      radial-gradient(ellipse 44% 36% at 18% 10%, rgba(125,125,125,0.09) 0%, transparent 60%);
-  }
-  66% {
-    background:
-      radial-gradient(ellipse 68% 58% at 40% 35%, rgba(165,165,165,0.20) 0%, rgba(105,105,105,0.08) 45%, transparent 72%),
-      radial-gradient(ellipse 52% 62% at 62% 68%, rgba(135,135,135,0.17) 0%, rgba(82,82,82,0.06) 45%, transparent 72%),
-      radial-gradient(ellipse 52% 42% at 25% 88%, rgba(98,98,98,0.11) 0%, transparent 65%),
-      radial-gradient(ellipse 42% 38% at 78% 15%, rgba(118,118,118,0.09) 0%, transparent 60%);
-  }
-  83% {
-    background:
-      radial-gradient(ellipse 72% 52% at 15% 62%, rgba(155,155,155,0.22) 0%, rgba(98,98,98,0.08) 45%, transparent 72%),
-      radial-gradient(ellipse 58% 60% at 82% 48%, rgba(142,142,142,0.15) 0%, rgba(87,87,87,0.06) 45%, transparent 72%),
-      radial-gradient(ellipse 46% 48% at 60% 80%, rgba(102,102,102,0.12) 0%, transparent 65%),
-      radial-gradient(ellipse 48% 32% at 92% 22%, rgba(122,122,122,0.10) 0%, transparent 60%);
-  }
-  100% {
-    background:
-      radial-gradient(ellipse 66% 56% at 30% 40%, rgba(158,158,158,0.20) 0%, rgba(100,100,100,0.07) 45%, transparent 72%),
-      radial-gradient(ellipse 62% 58% at 74% 55%, rgba(132,132,132,0.18) 0%, rgba(80,80,80,0.07) 45%, transparent 72%),
-      radial-gradient(ellipse 52% 42% at 45% 92%, rgba(96,96,96,0.11) 0%, transparent 65%),
-      radial-gradient(ellipse 42% 37% at 82% 10%, rgba(116,116,116,0.09) 0%, transparent 60%);
-  }
-}
-
-/* Layer 3: slow-drifting shimmer overlay that adds depth */
+/* Orb container */
 .bg-live-layer {
   position: fixed;
   inset: 0;
-  z-index: -1;
-  background:
-    radial-gradient(ellipse 80% 30% at 50% 0%, rgba(120,120,120,0.07) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 25% at 50% 100%, rgba(80,80,80,0.08) 0%, transparent 55%);
-  animation: liveSweep 20s linear infinite alternate;
+  z-index: -5;
+  overflow: hidden;
   pointer-events: none;
 }
 
-@keyframes liveSweep {
-  0%   { transform: translateX(-5%) scaleY(1.0); opacity: 0.7; }
-  25%  { transform: translateX(3%)  scaleY(1.06); opacity: 0.9; }
-  50%  { transform: translateX(-2%) scaleY(0.97); opacity: 0.75; }
-  75%  { transform: translateX(5%)  scaleY(1.04); opacity: 0.88; }
-  100% { transform: translateX(-4%) scaleY(1.0);  opacity: 0.72; }
+/* Base orb shape */
+.bg-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  will-change: transform;
+  mix-blend-mode: screen;
 }
 
-/* bg-shimmer replaced by bg-live-layer */
+/* Orb 1 — large, top-left, slow drift */
+.bg-orb-1 {
+  width: 75vw;
+  height: 75vw;
+  top: -20%;
+  left: -15%;
+  background: radial-gradient(circle, rgba(180,180,180,0.28) 0%, rgba(100,100,100,0.10) 50%, transparent 75%);
+  animation: orbDrift1 22s ease-in-out infinite alternate;
+}
+@keyframes orbDrift1 {
+  0%   { transform: translate(0%,    0%)   scale(1.00); }
+  33%  { transform: translate(18%,  12%)   scale(1.08); }
+  66%  { transform: translate(8%,   30%)   scale(0.95); }
+  100% { transform: translate(28%,  10%)   scale(1.05); }
+}
+
+/* Orb 2 — medium, bottom-right */
+.bg-orb-2 {
+  width: 60vw;
+  height: 60vw;
+  bottom: -15%;
+  right: -10%;
+  background: radial-gradient(circle, rgba(150,150,150,0.22) 0%, rgba(80,80,80,0.08) 55%, transparent 75%);
+  animation: orbDrift2 28s ease-in-out infinite alternate;
+}
+@keyframes orbDrift2 {
+  0%   { transform: translate(0%,    0%)   scale(1.00); }
+  40%  { transform: translate(-22%, -14%)  scale(1.10); }
+  70%  { transform: translate(-10%, -28%)  scale(0.92); }
+  100% { transform: translate(-30%, -8%)   scale(1.06); }
+}
+
+/* Orb 3 — smaller, mid-screen, faster */
+.bg-orb-3 {
+  width: 45vw;
+  height: 45vw;
+  top: 35%;
+  left: 30%;
+  background: radial-gradient(circle, rgba(130,130,130,0.18) 0%, rgba(70,70,70,0.06) 55%, transparent 75%);
+  animation: orbDrift3 18s ease-in-out infinite alternate;
+}
+@keyframes orbDrift3 {
+  0%   { transform: translate(0%,   0%)   scale(1.00); }
+  50%  { transform: translate(-20%, 20%)  scale(1.12); }
+  100% { transform: translate(15%, -18%) scale(0.90); }
+}
+
+/* Orb 4 — subtle top-right accent */
+.bg-orb-4 {
+  width: 40vw;
+  height: 40vw;
+  top: -5%;
+  right: 5%;
+  background: radial-gradient(circle, rgba(120,120,120,0.15) 0%, rgba(60,60,60,0.05) 55%, transparent 75%);
+  animation: orbDrift4 24s ease-in-out infinite alternate;
+}
+@keyframes orbDrift4 {
+  0%   { transform: translate(0%,  0%)  scale(1.00); }
+  45%  { transform: translate(-12%, 22%) scale(1.07); }
+  100% { transform: translate(10%, 35%) scale(0.94); }
+}
+
+/* Orb 5 — bottom-left accent */
+.bg-orb-5 {
+  width: 50vw;
+  height: 50vw;
+  bottom: -10%;
+  left: 5%;
+  background: radial-gradient(circle, rgba(140,140,140,0.16) 0%, rgba(75,75,75,0.06) 55%, transparent 75%);
+  animation: orbDrift5 32s ease-in-out infinite alternate;
+}
+@keyframes orbDrift5 {
+  0%   { transform: translate(0%,  0%)   scale(1.00); }
+  35%  { transform: translate(20%, -16%) scale(1.09); }
+  70%  { transform: translate(10%, -30%) scale(0.96); }
+  100% { transform: translate(25%, -12%) scale(1.04); }
+}
 
 /* ======== HEADER ======== */
 .header { text-align: center; margin-bottom: 40px; }
@@ -823,7 +832,13 @@ db.ref("queue").on("value", (snapshot) => {
 </head>
 
 <body>
-<div class="bg-live-layer"></div>
+<div class="bg-live-layer">
+  <div class="bg-orb bg-orb-1"></div>
+  <div class="bg-orb bg-orb-2"></div>
+  <div class="bg-orb bg-orb-3"></div>
+  <div class="bg-orb bg-orb-4"></div>
+  <div class="bg-orb bg-orb-5"></div>
+</div>
 
 <div class="header">
   <div class="brand-name">EMERALD</div>

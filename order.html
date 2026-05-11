@@ -5,389 +5,351 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Kitchen Dashboard - EMERALD</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Raleway:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
 :root {
-  --primary:          #EDAB18;
-  --primary-dark:     #c4880e;
-  --bg-dark:          #000000;
-  --text-light:       #e8e8e8;
-  --text-mid:         #b8b8b8;
-  --text-muted:       #7a7a7a;
-  --success:          #22c55e;
-  --danger:           #ef4444;
-  --warning:          #f59e0b;
-  --blue:             #60a5fa;
-  --jain-color:       #fbbf24;
-  --swami-color:      #60a5fa;
-  --regular-color:    #22c55e;
+  --primary-yellow: #ffcc00;
+  --primary-dark: #cc9900;
+  --card-bg: #1e293b;
+  --bg-dark: #111827;
+  --text-light: #ffffff;
+  --text-muted: #9ca3af;
+  --success: #22c55e;
+  --warning: #facc15;
+  --jain: #fbbf24;
+  --swaminarayan: #60a5fa;
+  --regular: #22c55e;
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
 
 body {
-  font-family: 'Raleway', sans-serif;
+  font-family: 'Inter', sans-serif;
   background: var(--bg-dark);
   color: var(--text-light);
   min-height: 100vh;
   padding: 20px;
-  overflow-x: hidden;
-  position: relative;
 }
 
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -2;
-  background: #000000;
+.header {
+  text-align: center;
+  margin-bottom: 40px;
 }
-
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  animation: greyPulse 6s ease-in-out infinite alternate;
-}
-
-@keyframes greyPulse {
-  0%   { background: radial-gradient(circle 600px at 20% 30%, rgba(80,80,80,0.09) 0%, transparent 70%), radial-gradient(circle 500px at 75% 65%, rgba(70,70,70,0.07) 0%, transparent 70%), radial-gradient(circle 400px at 50% 10%, rgba(90,90,90,0.06) 0%, transparent 65%); }
-  20%  { background: radial-gradient(circle 650px at 30% 20%, rgba(90,90,90,0.11) 0%, transparent 70%), radial-gradient(circle 480px at 65% 75%, rgba(75,75,75,0.09) 0%, transparent 70%), radial-gradient(circle 420px at 40% 55%, rgba(85,85,85,0.07) 0%, transparent 65%); }
-  40%  { background: radial-gradient(circle 580px at 10% 50%, rgba(70,70,70,0.10) 0%, transparent 70%), radial-gradient(circle 520px at 80% 30%, rgba(80,80,80,0.08) 0%, transparent 70%), radial-gradient(circle 380px at 55% 80%, rgba(95,95,95,0.07) 0%, transparent 65%); }
-  60%  { background: radial-gradient(circle 620px at 40% 10%, rgba(85,85,85,0.10) 0%, transparent 70%), radial-gradient(circle 500px at 20% 70%, rgba(70,70,70,0.08) 0%, transparent 70%), radial-gradient(circle 450px at 70% 45%, rgba(80,80,80,0.06) 0%, transparent 65%); }
-  80%  { background: radial-gradient(circle 560px at 60% 25%, rgba(75,75,75,0.11) 0%, transparent 70%), radial-gradient(circle 540px at 85% 55%, rgba(85,85,85,0.07) 0%, transparent 70%), radial-gradient(circle 400px at 30% 85%, rgba(90,90,90,0.08) 0%, transparent 65%); }
-  100% { background: radial-gradient(circle 610px at 15% 40%, rgba(80,80,80,0.10) 0%, transparent 70%), radial-gradient(circle 490px at 70% 20%, rgba(75,75,75,0.08) 0%, transparent 70%), radial-gradient(circle 430px at 45% 70%, rgba(88,88,88,0.07) 0%, transparent 65%); }
-}
-
-/* HEADER */
-.header { text-align: center; margin-bottom: 44px; }
 
 .brand-name {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 58px;
-  font-weight: 700;
-  color: var(--primary);
-  letter-spacing: 8px;
-  text-shadow: 0 0 40px rgba(237,171,24,0.30), 0 4px 20px rgba(237,171,24,0.15);
-  margin-bottom: 6px;
+  font-family: 'Playfair Display', serif;
+  font-size: 48px;
+  color: var(--primary-yellow);
+  letter-spacing: 3px;
+  text-shadow: 0 4px 10px rgba(255, 204, 0, 0.3);
+  margin-bottom: 10px;
 }
 
 .subtitle {
-  font-family: 'Lato', sans-serif;
-  font-size: 13px;
-  font-weight: 300;
+  font-size: 18px;
   color: var(--text-muted);
-  letter-spacing: 4px;
-  text-transform: uppercase;
+  font-weight: 500;
 }
-
-/* SECTION HEADER */
-.section-header {
-  font-family: 'Raleway', sans-serif;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  margin-bottom: 24px;
-  color: var(--text-muted);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  max-width: 1200px;
-  margin-left: auto;
-  margin-right: auto;
-}
-.section-header::before { content: ''; width: 28px; height: 1px; background: linear-gradient(90deg, var(--primary), transparent); }
-.section-header::after  { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(180,180,180,0.1), transparent); }
-
-/* GRID */
-.orders-wrapper { max-width: 1200px; margin: 0 auto; }
 
 .orders-container {
+  max-width: 1200px;
+  margin: 0 auto;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 24px;
 }
 
-/* ============================================================
-   ORDER CARD — 3-LAYER PROFESSIONAL GLASSMORPHISM
-   Layer 1 (element)  : frosted grey body + asymmetric lit border
-   Layer 2 (::before) : diagonal specular gloss sweep
-   Layer 3 (::after)  : stacked inset shadows = 3D bevel + curvature
-   ============================================================ */
 .order-card {
-  position: relative;
-  border-radius: 20px;
-  background: rgba(155, 155, 155, 0.10);
-  backdrop-filter: blur(24px) saturate(160%) brightness(1.08);
-  -webkit-backdrop-filter: blur(24px) saturate(160%) brightness(1.08);
-  border: 1px solid rgba(210, 210, 210, 0.18);
-  border-top-color:    rgba(230, 230, 230, 0.28);
-  border-left-color:   rgba(220, 220, 220, 0.22);
-  border-bottom-color: rgba(100, 100, 100, 0.12);
-  border-right-color:  rgba(100, 100, 100, 0.10);
-  box-shadow:
-    0 2px 4px   rgba(0,0,0,0.30),
-    0 8px 24px  rgba(0,0,0,0.55),
-    0 20px 48px rgba(0,0,0,0.40),
-    inset 0 0 0 0.5px rgba(255,255,255,0.04);
-  isolation: isolate;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  transition: transform 0.32s cubic-bezier(0.22,1,0.36,1),
-              box-shadow 0.32s cubic-bezier(0.22,1,0.36,1),
-              border-color 0.32s ease,
-              background 0.32s ease;
+  background: var(--card-bg);
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 2px solid transparent;
 }
-
-/* Specular highlight — convex glass catching light from top-left */
-.order-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 20px;
-  pointer-events: none;
-  z-index: 1;
-  background: linear-gradient(
-    135deg,
-    rgba(255,255,255,0.13) 0%,
-    rgba(255,255,255,0.06) 20%,
-    rgba(255,255,255,0.00) 50%,
-    rgba(0,0,0,0.04) 80%,
-    rgba(0,0,0,0.10) 100%
-  );
-}
-
-/* Faux 3D bevel — lit top-left, shadowed bottom-right, concave bowl center */
-.order-card::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 20px;
-  pointer-events: none;
-  z-index: 2;
-  box-shadow:
-    inset  1.5px  2px   0px -1px rgba(255,255,255,0.20),
-    inset  1px    1px   3px -1px rgba(255,255,255,0.12),
-    inset -1.5px -2px   0px -1px rgba(0,0,0,0.35),
-    inset -1px   -1px   4px -1px rgba(0,0,0,0.22),
-    inset  0px    0px  18px  0px rgba(0,0,0,0.15);
-}
-
-/* Status top accent bar — above pseudo-elements */
-.card-top-bar {
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  border-radius: 20px 20px 0 0;
-  z-index: 10;
-}
-.order-card.preparing .card-top-bar { background: linear-gradient(90deg, var(--warning) 0%, rgba(245,158,11,0.25) 100%); }
-.order-card.ready     .card-top-bar { background: linear-gradient(90deg, var(--success) 0%, rgba(34,197,94,0.25) 100%); }
-
-.order-card.preparing { border-top-color: rgba(245,158,11,0.32); border-left-color: rgba(245,158,11,0.20); }
-.order-card.ready     { border-top-color: rgba(34,197,94,0.30);  border-left-color: rgba(34,197,94,0.18);  }
 
 .order-card:hover {
-  transform: translateY(-6px) scale(1.013);
-  background: rgba(165, 165, 165, 0.13);
-  border-top-color:  rgba(240,240,240,0.32);
-  border-left-color: rgba(230,230,230,0.26);
-  box-shadow:
-    0 4px 8px   rgba(0,0,0,0.35),
-    0 16px 40px rgba(0,0,0,0.65),
-    0 32px 64px rgba(0,0,0,0.45),
-    inset 0 0 0 0.5px rgba(255,255,255,0.06);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
 }
-.order-card.preparing:hover { border-top-color: rgba(245,158,11,0.50); box-shadow: 0 4px 8px rgba(0,0,0,0.35), 0 16px 40px rgba(0,0,0,0.65), 0 32px 64px rgba(0,0,0,0.45), 0 0 36px rgba(245,158,11,0.10); }
-.order-card.ready:hover     { border-top-color: rgba(34,197,94,0.48);  box-shadow: 0 4px 8px rgba(0,0,0,0.35), 0 16px 40px rgba(0,0,0,0.65), 0 32px 64px rgba(0,0,0,0.45), 0 0 36px rgba(34,197,94,0.10);  }
 
-/* CARD BODY — above all pseudo-elements */
-.card-body {
-  position: relative;
-  z-index: 5;
-  padding: 26px 26px 0 26px;
-  flex: 1;
+.order-card.preparing { border-color: var(--warning); }
+.order-card.ready     { border-color: var(--success); }
+
+.order-header {
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
 }
 
-.order-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
-.order-info   { flex: 1; min-width: 0; }
+.order-info { flex: 1; }
 
 .table-number {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 26px; font-weight: 700;
-  color: var(--primary); letter-spacing: 1px;
-  margin-bottom: 6px; line-height: 1.1;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--primary-yellow);
+  margin-bottom: 4px;
 }
 
+/* ── Real Firebase Order ID chip ── */
 .order-id-chip {
-  display: inline-flex; align-items: center; gap: 6px;
-  background: rgba(237,171,24,0.10);
-  border: 1px solid rgba(237,171,24,0.25);
-  border-radius: 20px; padding: 4px 11px;
-  font-size: 11px; font-weight: 700;
-  color: var(--primary); letter-spacing: 0.8px;
-  margin-bottom: 10px; font-family: 'DM Mono', monospace;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,204,0,0.12);
+  border: 1px solid rgba(255,204,0,0.3);
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--primary-yellow);
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  font-family: 'Courier New', monospace;
 }
-.order-id-chip svg { width: 12px; height: 12px; flex-shrink: 0; }
-
-.customer-name {
-  font-family: 'Raleway', sans-serif;
-  font-size: 15px; font-weight: 600;
-  color: var(--text-light); margin-bottom: 10px;
+.order-id-chip svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
 }
 
 .diet-badge {
-  display: inline-block; padding: 5px 13px; border-radius: 20px;
-  font-family: 'Lato', sans-serif; font-size: 11px; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 1.2px;
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
 }
-.diet-badge.jain         { background: rgba(251,191,36,0.13); color: var(--jain-color);    border: 1px solid rgba(251,191,36,0.25); }
-.diet-badge.swaminarayan { background: rgba(96,165,250,0.13);  color: var(--swami-color);   border: 1px solid rgba(96,165,250,0.25); }
-.diet-badge.regular      { background: rgba(34,197,94,0.13);   color: var(--regular-color); border: 1px solid rgba(34,197,94,0.25); }
-
-/* Action column */
-.order-action { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; flex-shrink: 0; }
-
-.ready-btn {
-  padding: 12px 18px;
-  background: rgba(34,197,94,0.15); color: var(--success);
-  border: 1px solid rgba(34,197,94,0.30); border-radius: 12px;
-  font-family: 'Raleway', sans-serif; font-size: 13px; font-weight: 700;
-  cursor: pointer; transition: all 0.2s ease;
-  text-transform: uppercase; letter-spacing: 0.8px; white-space: nowrap;
-}
-.ready-btn:hover  { background: rgba(34,197,94,0.26); border-color: rgba(34,197,94,0.50); transform: translateY(-2px); box-shadow: 0 4px 16px rgba(34,197,94,0.18); }
-.ready-btn:active { transform: translateY(0); }
-
-.ready-label {
-  font-family: 'Lato', sans-serif; font-size: 13px; font-weight: 700;
-  color: var(--success); text-transform: uppercase; letter-spacing: 1px;
-  display: flex; align-items: center; gap: 8px;
-  padding: 10px 14px; background: rgba(34,197,94,0.08);
-  border: 1px solid rgba(34,197,94,0.20); border-radius: 12px; white-space: nowrap;
-}
-.ready-label::before {
-  content: '✓'; display: flex; align-items: center; justify-content: center;
-  width: 22px; height: 22px; background: var(--success); color: white;
-  border-radius: 50%; font-weight: 900; font-size: 12px; flex-shrink: 0;
-}
-
-/* STATUS ROW — centered full-width band */
-.status-row {
-  display: flex; justify-content: center; align-items: center;
-  margin-top: 16px; padding: 10px 0;
-  border-top: 1px solid rgba(180,180,180,0.09);
-  border-bottom: 1px solid rgba(180,180,180,0.09);
-}
+.diet-badge.jain         { background: rgba(251,191,36,0.2); color: var(--jain); }
+.diet-badge.swaminarayan { background: rgba(96,165,250,0.2); color: var(--swaminarayan); }
+.diet-badge.regular      { background: rgba(34,197,94,0.2);  color: var(--regular); }
 
 .status-indicator {
-  font-family: 'Lato', sans-serif; font-size: 13px; font-weight: 700;
-  letter-spacing: 1.2px; text-transform: uppercase;
-  display: flex; align-items: center; gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 .status-indicator.preparing { color: var(--warning); }
 .status-indicator.ready     { color: var(--success); }
 
 .status-dot {
-  width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
   animation: pulse 2s ease-in-out infinite;
 }
 .status-indicator.preparing .status-dot { background: var(--warning); }
 .status-indicator.ready     .status-dot { background: var(--success); }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1;   transform: scale(1);    }
-  50%       { opacity: 0.5; transform: scale(1.25); }
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(1.2); }
 }
 
-/* ITEMS LIST */
-.items-list { list-style: none; margin-top: 14px; padding-bottom: 16px; flex: 1; }
-
-.item-row {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 9px 0; border-bottom: 1px solid rgba(180,180,180,0.07);
-}
-.item-row:last-child { border-bottom: none; }
-
-.item-name {
-  font-family: 'Raleway', sans-serif;
-  font-size: 15px; font-weight: 500; color: var(--text-light); flex: 1;
+/* ── Right-side action column ── */
+.order-action {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
 }
 
-.item-qty {
-  font-family: 'DM Mono', monospace;
-  font-size: 14px; font-weight: 700; color: var(--primary);
-  margin-left: 14px; min-width: 40px; text-align: right;
+.ready-btn {
+  padding: 12px 20px;
+  background: var(--success);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px rgba(34,197,94,0.3);
+  white-space: nowrap;
 }
+.ready-btn:hover  { background: #16a34a; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(34,197,94,0.4); }
+.ready-btn:active { transform: translateY(0); }
 
-/* PRINT KOT FOOTER — pinned bottom center */
-.card-footer {
-  position: relative; z-index: 5;
-  padding: 14px 26px 20px;
-  border-top: 1px solid rgba(180,180,180,0.09);
-  display: flex; justify-content: center;
-}
-
+/* ── Print KOT button ── */
 .print-btn {
-  padding: 11px 32px;
-  background: rgba(237,171,24,0.11); color: var(--primary);
-  border: 1px solid rgba(237,171,24,0.28); border-radius: 12px;
-  font-family: 'Raleway', sans-serif; font-size: 13px; font-weight: 700;
-  cursor: pointer; transition: all 0.2s ease;
-  text-transform: uppercase; letter-spacing: 1px;
-  display: flex; align-items: center; gap: 8px; white-space: nowrap;
+  padding: 10px 16px;
+  background: transparent;
+  color: var(--primary-yellow);
+  border: 1.5px solid rgba(255,204,0,0.4);
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
 }
-.print-btn:hover  { background: rgba(237,171,24,0.22); border-color: rgba(237,171,24,0.50); transform: translateY(-2px); box-shadow: 0 4px 14px rgba(237,171,24,0.12); }
+.print-btn:hover  { background: rgba(255,204,0,0.12); border-color: var(--primary-yellow); transform: translateY(-2px); }
 .print-btn:active { transform: translateY(0); }
 .print-btn svg    { width: 14px; height: 14px; }
 
-/* EMPTY STATE */
-.empty-state { grid-column: 1 / -1; text-align: center; padding: 80px 20px; }
-.empty-state-icon  { font-size: 72px; margin-bottom: 20px; opacity: 0.35; }
-.empty-state-text  { font-family: 'Raleway', sans-serif; font-size: 18px; font-weight: 600; color: var(--text-mid); letter-spacing: 1px; }
-.empty-state-sub   { font-family: 'Lato', sans-serif; font-size: 14px; color: var(--text-muted); margin-top: 8px; letter-spacing: 0.5px; }
-
-/* RESPONSIVE */
-@media (max-width: 768px) {
-  .brand-name { font-size: 40px; }
-  .orders-container { grid-template-columns: 1fr; }
-  body { padding: 15px; }
-  .order-header { flex-wrap: wrap; }
-  .order-action { flex-direction: row; flex-wrap: wrap; justify-content: flex-end; }
+.ready-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--success);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ready-label::before {
+  content: '✓';
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: var(--success);
+  color: white;
+  border-radius: 50%;
+  font-weight: 900;
 }
 
-/* KOT PRINT */
-#kot-print-area { display: none; }
+.items-list {
+  list-style: none;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  color: #d1d5db;
+  font-size: 15px;
+}
+.item-name { flex: 1; }
+.item-qty  { font-weight: 700; color: var(--primary-yellow); margin-left: 12px; min-width: 40px; text-align: right; }
+
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 80px 20px;
+  color: var(--text-muted);
+}
+.empty-state-icon { font-size: 80px; margin-bottom: 20px; opacity: 0.5; }
+.empty-state-text { font-size: 18px; font-weight: 500; }
+
+@media (max-width: 768px) {
+  .brand-name { font-size: 36px; }
+  .orders-container { grid-template-columns: 1fr; }
+  body { padding: 15px; }
+}
+
+/* ══════════════════════════════════════
+   KOT PRINT STYLES  (only active during window.print())
+   ══════════════════════════════════════ */
+#kot-print-area {
+  display: none;
+}
 
 @media print {
-  body > * { display: none !important; }
-  #kot-print-area { display: block !important; }
+  /* Hide everything except the KOT slip */
+  body > *          { display: none !important; }
+  #kot-print-area   { display: block !important; }
 
   #kot-print-area {
     font-family: 'Courier New', Courier, monospace;
-    color: #000; width: 80mm; margin: 0 auto;
-    padding: 6mm 4mm; font-size: 13px; line-height: 1.6;
+    color: #000;
+    width: 80mm;
+    margin: 0 auto;
+    padding: 6mm 4mm;
+    font-size: 13px;
+    line-height: 1.6;
   }
+
   .kot-restaurant {
-    text-align: center; font-size: 20px; font-weight: 900;
-    letter-spacing: 4px; border-bottom: 2px dashed #000;
-    padding-bottom: 6px; margin-bottom: 6px;
+    text-align: center;
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    border-bottom: 2px dashed #000;
+    padding-bottom: 6px;
+    margin-bottom: 6px;
   }
-  .kot-title { text-align: center; font-size: 15px; font-weight: 700; letter-spacing: 2px; margin-bottom: 8px; }
-  .kot-meta  { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
-  .kot-divider { border: none; border-top: 1px dashed #000; margin: 8px 0; }
-  .kot-items-header { display: flex; justify-content: space-between; font-weight: 900; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
-  .kot-item-line { display: flex; justify-content: space-between; font-size: 13px; padding: 2px 0; }
+
+  .kot-title {
+    text-align: center;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+  }
+
+  .kot-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+
+  .kot-divider {
+    border: none;
+    border-top: 1px dashed #000;
+    margin: 8px 0;
+  }
+
+  .kot-items-header {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 900;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+
+  .kot-item-line {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    padding: 2px 0;
+  }
+
   .kot-item-name { flex: 1; }
   .kot-item-qty  { font-weight: 900; min-width: 30px; text-align: right; }
-  .kot-footer    { text-align: center; font-size: 11px; margin-top: 10px; border-top: 2px dashed #000; padding-top: 6px; letter-spacing: 1px; }
-  .kot-timestamp { text-align: center; font-size: 11px; color: #444; margin-top: 4px; }
+
+  .kot-footer {
+    text-align: center;
+    font-size: 11px;
+    margin-top: 10px;
+    border-top: 2px dashed #000;
+    padding-top: 6px;
+    letter-spacing: 1px;
+  }
+
+  .kot-timestamp {
+    text-align: center;
+    font-size: 11px;
+    color: #444;
+    margin-top: 4px;
+  }
 }
 </style>
 
@@ -397,14 +359,14 @@ body::after {
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
 <script>
 const firebaseConfig = {
-  apiKey: "AIzaSyC_LUKzINx6H4XE7uWoCpeLSldpIp-DR80",
-  authDomain: "restro-4db49.firebaseapp.com",
-  databaseURL: "https://restro-4db49-default-rtdb.firebaseio.com",
-  projectId: "restro-4db49",
-  storageBucket: "restro-4db49.firebasestorage.app",
-  messagingSenderId: "860567729744",
-  appId: "1:860567729744:web:773f5a315af7340d950355",
-  measurementId: "G-D9CJCYZJF4"
+  apiKey: "AIzaSyCCdNd2Arh9u7dCBouUGL95Gmk2o8G9SDk",
+  authDomain: "emerlad-213c0.firebaseapp.com",
+  databaseURL: "https://emerlad-213c0-default-rtdb.firebaseio.com",
+  projectId: "emerlad-213c0",
+  storageBucket: "emerlad-213c0.firebasestorage.app",
+  messagingSenderId: "773704600274",
+  appId: "1:773704600274:web:01a362fccfe4db96633b0b",
+  measurementId: "G-HLR1W64K41"
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
@@ -419,117 +381,183 @@ const analytics = firebase.analytics();
   <div class="subtitle">Kitchen Dashboard</div>
 </div>
 
-<h2 class="section-header">Active Orders</h2>
-
-<div class="orders-wrapper">
-  <div id="ordersContainer" class="orders-container">
-    <div class="empty-state">
-      <div class="empty-state-icon">🍳</div>
-      <div class="empty-state-text">Loading orders...</div>
-    </div>
+<div id="ordersContainer" class="orders-container">
+  <div class="empty-state">
+    <div class="empty-state-icon">🍳</div>
+    <div class="empty-state-text">Loading orders...</div>
   </div>
 </div>
 
+<!-- Hidden KOT slip that gets populated before printing -->
 <div id="kot-print-area"></div>
 
 <script>
+/* ══════════════════════════════
+   LIVE FIREBASE LISTENER
+   ══════════════════════════════ */
 db.ref("orders").on("value", (snapshot) => {
   renderOrders(snapshot.val());
 });
 
+/* ══════════════════════════════
+   RENDER ORDER CARDS
+   ══════════════════════════════ */
 function renderOrders(data) {
   const container = document.getElementById("ordersContainer");
   container.innerHTML = "";
 
-  if (!data) { container.innerHTML = emptyState("No active orders"); return; }
+  if (!data) {
+    container.innerHTML = emptyState("No active orders");
+    return;
+  }
 
   const orders = Object.values(data).filter(
     o => o.status !== "Completed" && o.status !== "Cancelled"
   );
 
-  if (orders.length === 0) { container.innerHTML = emptyState("No active orders"); return; }
+  if (orders.length === 0) {
+    container.innerHTML = emptyState("No active orders");
+    return;
+  }
+
+  // ── Group orders by table number ──
+  // Each table card shows Round 1, Round 2… sections
+  const tableMap = {}; // tableKey -> { tableNumber, tableLabel, diet, orders: [] }
 
   orders.forEach(order => {
-    const isReady     = order.status === "Ready";
-    const statusClass = isReady ? "ready" : "preparing";
-    const statusText  = isReady ? "Ready to Serve" : "Preparing";
+    const key = order.orderType === "dinein"
+      ? "T" + (order.tableNumber || "0")
+      : "TKW_" + order.id;
 
+    if (!tableMap[key]) {
+      tableMap[key] = {
+        tableNumber: order.tableNumber,
+        tableLabel: order.orderType === "dinein"
+          ? "Table " + (order.tableNumber || "—")
+          : "Takeaway",
+        diet: order.diet || "Regular",
+        orders: []
+      };
+    }
+    tableMap[key].orders.push(order);
+  });
+
+  // ── For each table, sort rounds by createdAt and render one card ──
+  Object.values(tableMap).forEach(tableGroup => {
+    // Sort rounds: oldest first
+    tableGroup.orders.sort((a, b) => {
+      const ta = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const tb = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return ta - tb;
+    });
+
+    // Overall card status: if any order is Preparing → preparing, else ready
+    const anyPreparing = tableGroup.orders.some(o => o.status === "Preparing");
+    const cardStatusClass = anyPreparing ? "preparing" : "ready";
+
+    // Diet badge from first order
+    const firstOrder = tableGroup.orders[0];
     let dietClass = "regular";
-    if (order.diet === "Jain")         dietClass = "jain";
-    if (order.diet === "Swaminarayan") dietClass = "swaminarayan";
+    if (firstOrder.diet === "Jain") dietClass = "jain";
+    if (firstOrder.diet === "Swaminarayan") dietClass = "swaminarayan";
 
-    const realId  = order.id || "—";
-    const shortId = realId.length > 16 ? realId.slice(-12).toUpperCase() : realId.toUpperCase();
+    // Build rounds HTML
+    let roundsHTML = "";
+    tableGroup.orders.forEach((order, roundIdx) => {
+      const roundNum = order.round || (roundIdx + 1);
+      const isReady = order.status === "Ready";
+      const realId = order.id || "—";
+      const shortId = realId.length > 16 ? realId.slice(-12).toUpperCase() : realId.toUpperCase();
+      const statusClass2 = isReady ? "ready" : "preparing";
+      const statusText = isReady ? "Ready to Serve" : "Preparing";
 
-    const tableLabel = order.orderType === "dinein"
-      ? "Table " + (order.tableNumber || "—")
-      : "Takeaway";
+      const actionBtn = !isReady
+        ? `<button onclick="markReady('${realId}')" class="ready-btn" style="padding:8px 14px;font-size:12px;">✔ Mark Ready</button>`
+        : `<div class="ready-label" style="font-size:12px;">✓ Ready</div>`;
 
-    const actionHTML = !isReady
-      ? `<button onclick="markReady('${realId}')" class="ready-btn">✦ Mark Ready</button>`
-      : `<div class="ready-label">Order Ready</div>`;
+      const itemsHTML = Array.isArray(order.items)
+        ? order.items.map(i => `
+            <li class="item-row">
+              <span class="item-name">${i.name}</span>
+              <span class="item-qty">× ${i.qty}</span>
+            </li>`).join("")
+        : "";
 
-    const itemsHTML = Array.isArray(order.items)
-      ? order.items.map(i => `
-          <li class="item-row">
-            <span class="item-name">${i.name}</span>
-            <span class="item-qty">× ${i.qty}</span>
-          </li>`).join("")
-      : "";
+      const isFirst = roundIdx === 0;
+      const roundBorderColor = isReady ? "#22c55e" : "#facc15";
+      const roundBg = isFirst ? "rgba(255,204,0,0.04)" : "rgba(59,130,246,0.06)";
+      const roundLabel = isFirst ? "Round 1 — Initial Order" : `Round ${roundNum} — Additional Order`;
+      const roundLabelColor = isFirst ? "#facc15" : "#60a5fa";
+
+      roundsHTML += `
+        <div class="kot-round" style="border-left:3px solid ${roundBorderColor}; background:${roundBg}; border-radius:10px; padding:14px 16px; margin-bottom:12px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+            <div>
+              <span style="font-size:12px;font-weight:700;color:${roundLabelColor};text-transform:uppercase;letter-spacing:1px;">${roundLabel}</span>
+              <div class="order-id-chip" style="margin-top:4px;display:inline-flex;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;">
+                  <rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>
+                </svg>
+                ${shortId}
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+              <div class="status-indicator ${statusClass2}" style="font-size:12px;">
+                <div class="status-dot"></div>
+                <span>${statusText}</span>
+              </div>
+              ${actionBtn}
+              <button class="print-btn" onclick="printKOT('${realId}')" style="padding:8px 12px;font-size:12px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>
+                </svg>
+                KOT
+              </button>
+            </div>
+          </div>
+          <ul class="items-list" style="margin-top:0;padding-top:12px;">${itemsHTML}</ul>
+        </div>
+      `;
+    });
+
+    // ── Total items across all rounds (for reference) ──
+    const allItems = tableGroup.orders.flatMap(o => Array.isArray(o.items) ? o.items : []);
+    const totalItemCount = allItems.reduce((s, i) => s + (i.qty || 1), 0);
 
     const card = document.createElement("div");
-    card.className = `order-card ${statusClass}`;
+    card.className = `order-card ${cardStatusClass}`;
     card.innerHTML = `
-      <div class="card-top-bar"></div>
-
-      <div class="card-body">
-        <div class="order-header">
-          <div class="order-info">
-            <div class="table-number">${tableLabel}</div>
-            <div class="order-id-chip">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>
-              </svg>
-              ${shortId}
-            </div>
-            <div class="customer-name">${order.customerName || "Guest"}</div>
-            <div class="diet-badge ${dietClass}">${order.diet || "Regular"}</div>
-          </div>
-          <div class="order-action">
-            ${actionHTML}
+      <div class="order-header" style="margin-bottom:16px;">
+        <div class="order-info">
+          <div class="table-number">${tableGroup.tableLabel}</div>
+          <div class="diet-badge ${dietClass}">${firstOrder.diet || "Regular"}</div>
+          <div style="font-size:12px;color:#9ca3af;margin-top:4px;">
+            ${tableGroup.orders.length} round${tableGroup.orders.length !== 1 ? "s" : ""} · ${totalItemCount} total item${totalItemCount !== 1 ? "s" : ""}
           </div>
         </div>
-
-        <div class="status-row">
-          <div class="status-indicator ${statusClass}">
-            <div class="status-dot"></div>
-            <span>${statusText}</span>
-          </div>
+        <div class="order-action" style="align-items:flex-end;">
+          ${anyPreparing
+            ? `<div class="status-indicator preparing" style="font-size:13px;"><div class="status-dot"></div><span>In Progress</span></div>`
+            : `<div class="ready-label">All Ready</div>`}
         </div>
-
-        <ul class="items-list">${itemsHTML}</ul>
       </div>
-
-      <div class="card-footer">
-        <button class="print-btn" onclick="printKOT('${realId}')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="6 9 6 2 18 2 18 9"/>
-            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
-            <rect x="6" y="14" width="12" height="8"/>
-          </svg>
-          Print KOT
-        </button>
-      </div>
+      ${roundsHTML}
     `;
     container.appendChild(card);
   });
 }
 
+/* ══════════════════════════════
+   MARK ORDER READY
+   ══════════════════════════════ */
 function markReady(orderId) {
   db.ref("orders/" + orderId).update({ status: "Ready" })
     .catch(err => console.error("Error updating order:", err));
 }
 
+/* ══════════════════════════════
+   PRINT KOT
+   ══════════════════════════════ */
 function printKOT(orderId) {
   db.ref("orders/" + orderId).once("value", (snap) => {
     const o = snap.val();
@@ -551,18 +579,41 @@ function printKOT(orderId) {
           </div>`).join("")
       : "<div>No items</div>";
 
-    document.getElementById("kot-print-area").innerHTML = `
+    // Use the full Firebase key as the Order ID on the slip
+    const printSlip = document.getElementById("kot-print-area");
+    printSlip.innerHTML = `
       <div class="kot-restaurant">EMERALD</div>
       <div class="kot-title">— KITCHEN ORDER TICKET —</div>
-      <div class="kot-meta"><span><strong>Order ID:</strong></span><span>${orderId}</span></div>
-      <div class="kot-meta"><span><strong>${tableLabel}</strong></span><span>${o.customerName || "—"}</span></div>
-      <div class="kot-meta"><span><strong>Diet:</strong></span><span>${o.diet || "Regular"}</span></div>
-      <div class="kot-meta"><span><strong>Type:</strong></span><span>${o.orderType === "dinein" ? "Dine In" : "Takeaway"}</span></div>
+
+      <div class="kot-meta">
+        <span><strong>Order ID:</strong></span>
+        <span>${orderId}</span>
+      </div>
+      <div class="kot-meta">
+        <span><strong>${tableLabel}</strong></span>
+        <span>${o.customerName || "—"}</span>
+      </div>
+      <div class="kot-meta">
+        <span><strong>Diet:</strong></span>
+        <span>${o.diet || "Regular"}</span>
+      </div>
+      <div class="kot-meta">
+        <span><strong>Type:</strong></span>
+        <span>${o.orderType === "dinein" ? "Dine In" : "Takeaway"}</span>
+      </div>
+
       <hr class="kot-divider"/>
-      <div class="kot-items-header"><span>Item</span><span>Qty</span></div>
+
+      <div class="kot-items-header">
+        <span>Item</span>
+        <span>Qty</span>
+      </div>
       <hr class="kot-divider"/>
+
       ${itemsHTML}
+
       <hr class="kot-divider"/>
+
       <div class="kot-footer">*** KITCHEN COPY ***</div>
       <div class="kot-timestamp">${dateStr} &nbsp; ${timeStr}</div>
     `;
@@ -571,11 +622,13 @@ function printKOT(orderId) {
   });
 }
 
+/* ══════════════════════════════
+   HELPERS
+   ══════════════════════════════ */
 function emptyState(msg) {
   return `<div class="empty-state">
     <div class="empty-state-icon">🍳</div>
     <div class="empty-state-text">${msg}</div>
-    <div class="empty-state-sub">All clear — no orders pending</div>
   </div>`;
 }
 </script>

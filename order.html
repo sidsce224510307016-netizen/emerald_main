@@ -359,17 +359,15 @@ body {
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
 <script>
 const firebaseConfig = {
- const firebaseConfig = {
-  apiKey: "AIzaSyC_LUKzINx6H4XE7uWoCpeLSldpIp-DR80",
-  authDomain: "restro-4db49.firebaseapp.com",
-  databaseURL: "https://restro-4db49-default-rtdb.firebaseio.com",
-  projectId: "restro-4db49",
-  storageBucket: "restro-4db49.firebasestorage.app",
-  messagingSenderId: "860567729744",
-  appId: "1:860567729744:web:773f5a315af7340d950355",
-  measurementId: "G-D9CJCYZJF4"
+  apiKey: "AIzaSyCCdNd2Arh9u7dCBouUGL95Gmk2o8G9SDk",
+  authDomain: "emerlad-213c0.firebaseapp.com",
+  databaseURL: "https://emerlad-213c0-default-rtdb.firebaseio.com",
+  projectId: "emerlad-213c0",
+  storageBucket: "emerlad-213c0.firebasestorage.app",
+  messagingSenderId: "773704600274",
+  appId: "1:773704600274:web:01a362fccfe4db96633b0b",
+  measurementId: "G-HLR1W64K41"
 };
-
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const analytics = firebase.analytics();
@@ -477,8 +475,9 @@ function renderOrders(data) {
         ? `<button onclick="markReady('${realId}')" class="ready-btn" style="padding:8px 14px;font-size:12px;">✔ Mark Ready</button>`
         : `<div class="ready-label" style="font-size:12px;">✓ Ready</div>`;
 
-      const itemsHTML = Array.isArray(order.items)
-        ? order.items.map(i => `
+      const itemsArr = Array.isArray(order.items) ? order.items : (order.items && typeof order.items === 'object' ? Object.values(order.items) : []);
+      const itemsHTML = Array.isArray(itemsArr)
+        ? itemsArr.map(i => `
             <li class="item-row">
               <span class="item-name">${i.name}</span>
               <span class="item-qty">× ${i.qty}</span>

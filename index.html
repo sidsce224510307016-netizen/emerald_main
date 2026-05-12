@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -225,6 +223,24 @@
     margin-top: 20px;
   }
 
+
+  #takeaway-form {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), margin-bottom 0.4s ease, padding 0.4s ease;
+    background: #fff;
+    border-radius: 16px;
+    margin-bottom: 0;
+    border: 0 solid #e0e0e0;
+  }
+
+  #takeaway-form.active {
+    max-height: 100px;
+    margin-bottom: 20px;
+    border: 1px solid #e0e0e0;
+    padding: 15px;
+  }
+
   @media (max-width: 480px) {
     .brand-name { font-size: 48px; } 
     .app-shell { padding: 15px; }
@@ -289,13 +305,22 @@ const analytics = firebase.analytics();
       </div>
     </div>
 
-    <div class="option" data-type="takeaway">
+    <div class="option" data-type="takeaway" id="takeaway-option">
       <div class="icon-box">
         <svg viewBox="0 0 24 24"><path d="M6 7h12l-1 14H7L6 7z"/><path d="M9 7V5a3 3 0 016 0v2"/></svg>
       </div>
       <div class="option-text">
         <h3>Takeaway</h3>
         <p>Pick up your order</p>
+      </div>
+      <div class="arrow-toggle" id="arrowToggleTakeaway">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </div>
+    </div>
+
+    <div id="takeaway-form">
+      <div class="input-group">
+        <input type="text" id="takeawayName" placeholder="Your Name">
       </div>
     </div>
 
@@ -311,14 +336,21 @@ const analytics = firebase.analytics();
 const options = document.querySelectorAll(".option");
 const btn = document.getElementById("viewMenuBtn");
 const dineinForm = document.getElementById("dinein-form");
+const takeawayForm = document.getElementById("takeaway-form");
 const nameInput = document.getElementById("userName");
 const countInput = document.getElementById("userCount");
+const takeawayNameInput = document.getElementById("takeawayName");
 const arrowToggle = document.getElementById("arrowToggle");
+const arrowToggleTakeaway = document.getElementById("arrowToggleTakeaway");
 let selected = null;
 
 function validateForm() {
   if (selected === "takeaway") {
-    btn.classList.add("active");
+    if (takeawayNameInput.value.trim() !== "") {
+      btn.classList.add("active");
+    } else {
+      btn.classList.remove("active");
+    }
   } else if (selected === "dinein") {
     if (nameInput.value.trim() !== "" && countInput.value.trim() !== "") {
       btn.classList.add("active");
@@ -332,10 +364,17 @@ function validateForm() {
 
 options.forEach(option => {
   option.addEventListener("click", (e) => {
+    // Arrow toggle for dine-in (collapse/expand)
     if (option.id === "dinein-option" && selected === "dinein" && e.target.closest('#arrowToggle')) {
-        dineinForm.classList.toggle("active");
-        arrowToggle.classList.toggle("rotated");
-        return;
+      dineinForm.classList.toggle("active");
+      arrowToggle.classList.toggle("rotated");
+      return;
+    }
+    // Arrow toggle for takeaway (collapse/expand)
+    if (option.id === "takeaway-option" && selected === "takeaway" && e.target.closest('#arrowToggleTakeaway')) {
+      takeawayForm.classList.toggle("active");
+      arrowToggleTakeaway.classList.toggle("rotated");
+      return;
     }
 
     if (window.navigator && window.navigator.vibrate) {
@@ -349,8 +388,14 @@ options.forEach(option => {
     if (selected === "dinein") {
       dineinForm.classList.add("active");
       arrowToggle.classList.remove("rotated");
+      takeawayForm.classList.remove("active");
+    } else if (selected === "takeaway") {
+      takeawayForm.classList.add("active");
+      arrowToggleTakeaway.classList.remove("rotated");
+      dineinForm.classList.remove("active");
     } else {
       dineinForm.classList.remove("active");
+      takeawayForm.classList.remove("active");
     }
 
     validateForm();
@@ -359,19 +404,18 @@ options.forEach(option => {
 
 nameInput.addEventListener("input", validateForm);
 countInput.addEventListener("input", validateForm);
+takeawayNameInput.addEventListener("input", validateForm);
 
 btn.addEventListener("click", () => {
   if (btn.classList.contains("active")) {
-    // Save order info to localStorage
     const orderInfo = {
       orderType: selected,
-      name: selected === "dinein" ? nameInput.value.trim() : "Takeaway Customer",
+      name: selected === "dinein" ? nameInput.value.trim() : takeawayNameInput.value.trim(),
       people: selected === "dinein" ? parseInt(countInput.value) : 1,
       timestamp: Date.now()
     };
-    
     localStorage.setItem("currentOrderInfo", JSON.stringify(orderInfo));
-    window.location.href = "menu.html"; 
+    window.location.href = "menu.html";
   }
 });
 </script>

@@ -359,14 +359,14 @@ body {
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
 <script>
 const firebaseConfig = {
-  apiKey: "AIzaSyCCdNd2Arh9u7dCBouUGL95Gmk2o8G9SDk",
-  authDomain: "emerlad-213c0.firebaseapp.com",
-  databaseURL: "https://emerlad-213c0-default-rtdb.firebaseio.com",
-  projectId: "emerlad-213c0",
-  storageBucket: "emerlad-213c0.firebasestorage.app",
-  messagingSenderId: "773704600274",
-  appId: "1:773704600274:web:01a362fccfe4db96633b0b",
-  measurementId: "G-HLR1W64K41"
+  apiKey: "AIzaSyC_LUKzINx6H4XE7uWoCpeLSldpIp-DR80",
+  authDomain: "restro-4db49.firebaseapp.com",
+  databaseURL: "https://restro-4db49-default-rtdb.firebaseio.com",
+  projectId: "restro-4db49",
+  storageBucket: "restro-4db49.firebasestorage.app",
+  messagingSenderId: "860567729744",
+  appId: "1:860567729744:web:773f5a315af7340d950355",
+  measurementId: "G-D9CJCYZJF4"
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
@@ -475,14 +475,14 @@ function renderOrders(data) {
         ? `<button onclick="markReady('${realId}')" class="ready-btn" style="padding:8px 14px;font-size:12px;">✔ Mark Ready</button>`
         : `<div class="ready-label" style="font-size:12px;">✓ Ready</div>`;
 
-      const itemsArr = Array.isArray(order.items) ? order.items : (order.items && typeof order.items === 'object' ? Object.values(order.items) : []);
-      const itemsHTML = Array.isArray(itemsArr)
-        ? itemsArr.map(i => `
+      const itemsArr = Array.isArray(order.items)
+        ? order.items
+        : (order.items && typeof order.items === 'object' ? Object.values(order.items) : []);
+      const itemsHTML = itemsArr.map(i => `
             <li class="item-row">
               <span class="item-name">${i.name}</span>
               <span class="item-qty">× ${i.qty}</span>
-            </li>`).join("")
-        : "";
+            </li>`).join("");
 
       const isFirst = roundIdx === 0;
       const roundBorderColor = isReady ? "#22c55e" : "#facc15";
@@ -522,7 +522,7 @@ function renderOrders(data) {
     });
 
     // ── Total items across all rounds (for reference) ──
-    const allItems = tableGroup.orders.flatMap(o => Array.isArray(o.items) ? o.items : []);
+    const allItems = tableGroup.orders.flatMap(o => Array.isArray(o.items) ? o.items : (o.items && typeof o.items === "object" ? Object.values(o.items) : []));
     const totalItemCount = allItems.reduce((s, i) => s + (i.qty || 1), 0);
 
     const card = document.createElement("div");
@@ -572,8 +572,11 @@ function printKOT(orderId) {
     const dateStr = now.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
     const timeStr = now.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true });
 
-    const itemsHTML = Array.isArray(o.items)
-      ? o.items.map(i => `
+    const kotItemsArr = Array.isArray(o.items)
+      ? o.items
+      : (o.items && typeof o.items === 'object' ? Object.values(o.items) : []);
+    const itemsHTML = kotItemsArr.length > 0
+      ? kotItemsArr.map(i => `
           <div class="kot-item-line">
             <span class="kot-item-name">${i.name}</span>
             <span class="kot-item-qty">x${i.qty}</span>

@@ -390,6 +390,56 @@ body { font-family: 'Inter', sans-serif; background: var(--bg-dark); color: var(
 }
 .page-btn:hover, .page-btn.active { background: var(--primary-yellow); color: #111; border-color: var(--primary-yellow); }
 .page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+/* ======== EXPORT BUTTONS ======== */
+.export-bar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+.export-bar-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-right: 4px;
+}
+.export-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 22px;
+  border: none;
+  border-radius: 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  top: 0;
+}
+.export-btn:active { top: 2px; }
+.export-btn.pdf {
+  background: #ef4444;
+  color: #fff;
+  box-shadow: 0 4px 0 #b91c1c, 0 6px 16px rgba(239,68,68,0.3);
+}
+.export-btn.pdf:hover { background: #dc2626; }
+.export-btn.excel {
+  background: #16a34a;
+  color: #fff;
+  box-shadow: 0 4px 0 #15803d, 0 6px 16px rgba(22,163,74,0.3);
+}
+.export-btn.excel:hover { background: #15803d; }
+.export-btn svg { width: 18px; height: 18px; fill: currentColor; flex-shrink: 0; }
+.export-spinner { display: none; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.export-btn.loading .export-spinner { display: block; }
+.export-btn.loading .export-icon { display: none; }
+
 
 /* ======== TAKEAWAY ORDERS SECTION ======== */
 .takeaway-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px,1fr)); gap: 20px; margin-bottom: 50px; }
@@ -457,6 +507,8 @@ db.ref("orders").on("value", (snapshot) => {
   renderTakeawayOrders();
 });
 </script>
+<!-- SheetJS for Excel export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 
 <body>
@@ -545,6 +597,27 @@ db.ref("orders").on("value", (snapshot) => {
       <div class="stat-value" id="statTakeaway" style="color:#22c55e;">—</div>
       <div class="stat-sub">Pickup orders</div>
     </div>
+  </div>
+
+
+  <!-- Export Buttons -->
+  <div class="export-bar">
+    <span class="export-bar-label">📤 Export</span>
+    <button class="export-btn pdf" id="exportPdfBtn" onclick="exportPDF()">
+      <span class="export-icon">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM8.5 17H8v1H7v-4h1.5a1.5 1.5 0 0 1 0 3zm4-.5a2 2 0 0 1-2 2H10v-4h.5a2 2 0 0 1 2 2zm4-1.5h-1.5v1H17v1h-1.5V19H14v-4h3v1zm-7.5 0H8v1h.5a.5.5 0 0 0 0-1zm3 0h-.5v2h.5a1 1 0 0 0 0-2z"/></svg>
+      </span>
+      <span class="export-spinner"></span>
+      Export PDF
+    </button>
+    <button class="export-btn excel" id="exportExcelBtn" onclick="exportExcel()">
+      <span class="export-icon">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM7 19l2-3-2-3h1.5l1.25 2 1.25-2H12.5l-2 3 2 3H11l-1.25-2L8.5 19H7zm6.5 0v-6H15v5h2v1h-3.5z"/></svg>
+      </span>
+      <span class="export-spinner"></span>
+      Export Excel
+    </button>
+    <span id="exportNote" style="font-size:12px;color:var(--text-muted);display:none;">Exporting filtered data (<span id="exportCount">0</span> orders)</span>
   </div>
 
   <!-- Table -->
@@ -1336,6 +1409,7 @@ function applyHistoryFilter() {
   histPage = 1;
   renderHistoryStats();
   renderHistoryTable();
+  updateExportNote();
 }
 
 function renderHistoryStats() {
@@ -1458,6 +1532,217 @@ function renderOrderDetail(order) {
       </div>
     </div>
   `;
+}
+
+
+/* ======================================================
+   EXPORT FUNCTIONS
+   ====================================================== */
+
+function getExportRows() {
+  // Uses filteredHistory (whatever date filter is currently applied)
+  return filteredHistory.map((order, idx) => {
+    const items = Array.isArray(order.items) ? order.items
+      : (order.items && typeof order.items === 'object' ? Object.values(order.items) : []);
+    const itemsSummary = items.map(i => `${i.name} x${i.qty}`).join(', ');
+    const rawDate = order.billedAt || (order.createdAt ? order.createdAt : null);
+    const dateObj = rawDate ? new Date(rawDate) : null;
+    const dateStr = dateObj ? dateObj.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' }) : '—';
+    const timeStr = dateObj ? dateObj.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' }) : '';
+    return {
+      '#': idx + 1,
+      'Order ID': order.id || '—',
+      'Date': dateStr,
+      'Time': timeStr,
+      'Customer': order.customerName || order.name || 'Guest',
+      'Type': order.orderType === 'dinein' ? 'Dine-In' : 'Takeaway',
+      'Table': order.orderType === 'dinein' ? (order.tableNumber || '—') : '—',
+      'Items': itemsSummary || '—',
+      'Item Count': items.length,
+      'Subtotal (₹)': (order.total || 0).toFixed(2),
+      'Discount (₹)': (order.discount || 0).toFixed(2),
+      'Grand Total (₹)': (order.grandTotal || order.total || 0).toFixed(2),
+      'Status': order.status || 'pending'
+    };
+  });
+}
+
+function getSummaryRows() {
+  const completed = filteredHistory.filter(o => o.status === 'Completed');
+  const totalRev   = completed.reduce((s, o) => s + (o.grandTotal || o.total || 0), 0);
+  const dineInRev  = completed.filter(o => o.orderType === 'dinein').reduce((s, o) => s + (o.grandTotal || o.total || 0), 0);
+  const takeRev    = completed.filter(o => o.orderType === 'takeaway').reduce((s, o) => s + (o.grandTotal || o.total || 0), 0);
+  const totalDisc  = completed.reduce((s, o) => s + (o.discount || 0), 0);
+  const avg        = completed.length ? totalRev / completed.length : 0;
+  const from = document.getElementById('histFrom').value || 'All';
+  const to   = document.getElementById('histTo').value   || 'All';
+  return [
+    { 'Metric': 'Report Period From', 'Value': from },
+    { 'Metric': 'Report Period To',   'Value': to   },
+    { 'Metric': 'Total Completed Orders', 'Value': completed.length },
+    { 'Metric': 'Total Revenue (₹)',      'Value': totalRev.toFixed(2)  },
+    { 'Metric': 'Dine-In Revenue (₹)',    'Value': dineInRev.toFixed(2) },
+    { 'Metric': 'Takeaway Revenue (₹)',   'Value': takeRev.toFixed(2)   },
+    { 'Metric': 'Total Discount (₹)',     'Value': totalDisc.toFixed(2) },
+    { 'Metric': 'Avg Bill Value (₹)',     'Value': avg.toFixed(2)       },
+  ];
+}
+
+function getDateRangeLabel() {
+  const from = document.getElementById('histFrom').value;
+  const to   = document.getElementById('histTo').value;
+  if (from && to) return from + '_to_' + to;
+  if (from) return 'from_' + from;
+  if (to)   return 'till_' + to;
+  return 'all_time';
+}
+
+/* ──────────────── EXCEL EXPORT ──────────────── */
+function exportExcel() {
+  if (filteredHistory.length === 0) { alert('No data to export. Please adjust the date filter.'); return; }
+  const btn = document.getElementById('exportExcelBtn');
+  btn.classList.add('loading');
+
+  setTimeout(() => {
+    try {
+      const wb = XLSX.utils.book_new();
+
+      // Sheet 1 — Orders
+      const rows = getExportRows();
+      const ws1 = XLSX.utils.json_to_sheet(rows);
+      // Column widths
+      ws1['!cols'] = [
+        {wch:4},{wch:18},{wch:12},{wch:8},{wch:18},{wch:10},{wch:6},{wch:50},
+        {wch:8},{wch:12},{wch:12},{wch:14},{wch:10}
+      ];
+      XLSX.utils.book_append_sheet(wb, ws1, 'Orders');
+
+      // Sheet 2 — Summary
+      const summaryRows = getSummaryRows();
+      const ws2 = XLSX.utils.json_to_sheet(summaryRows);
+      ws2['!cols'] = [{wch:28},{wch:20}];
+      XLSX.utils.book_append_sheet(wb, ws2, 'Summary');
+
+      const filename = 'Emerald_Revenue_' + getDateRangeLabel() + '.xlsx';
+      XLSX.writeFile(wb, filename);
+    } catch(e) {
+      alert('Export failed: ' + e.message);
+    }
+    btn.classList.remove('loading');
+  }, 50);
+}
+
+/* ──────────────── PDF EXPORT ──────────────── */
+function exportPDF() {
+  if (filteredHistory.length === 0) { alert('No data to export. Please adjust the date filter.'); return; }
+  const btn = document.getElementById('exportPdfBtn');
+  btn.classList.add('loading');
+
+  setTimeout(() => {
+    try {
+      const rows = getExportRows();
+      const summary = getSummaryRows();
+      const from = document.getElementById('histFrom').value || 'All time';
+      const to   = document.getElementById('histTo').value   || '';
+      const periodLabel = to ? from + ' → ' + to : from;
+
+      // Build a print-only PDF page
+      const pdfWin = window.open('', '_blank', 'width=900,height=700');
+      if (!pdfWin) { alert('Pop-up blocked. Please allow pop-ups for this site.'); btn.classList.remove('loading'); return; }
+
+      const summaryHTML = summary.map(r =>
+        `<tr><td style="padding:5px 10px;color:#555;font-size:12px;">${r['Metric']}</td>
+             <td style="padding:5px 10px;font-weight:700;font-size:13px;text-align:right;">${r['Value']}</td></tr>`
+      ).join('');
+
+      const ordersHTML = rows.map(r => `
+        <tr>
+          <td>${r['#']}</td>
+          <td>${r['Order ID']}</td>
+          <td>${r['Date']}<br><span style="color:#888;font-size:10px;">${r['Time']}</span></td>
+          <td>${r['Customer']}</td>
+          <td><span style="padding:2px 7px;border-radius:10px;font-size:10px;font-weight:700;background:${r['Type']==='Dine-In'?'#fff8e1':'#e8f5e9'};color:${r['Type']==='Dine-In'?'#b8860b':'#2e7d32'}">${r['Type']}</span></td>
+          <td>${r['Table']}</td>
+          <td style="font-size:10px;max-width:140px;">${r['Items']}</td>
+          <td style="text-align:right;">₹${r['Subtotal (₹)']}</td>
+          <td style="text-align:right;color:#e53e3e;">-₹${r['Discount (₹)']}</td>
+          <td style="text-align:right;font-weight:700;">₹${r['Grand Total (₹)']}</td>
+          <td><span style="padding:2px 7px;border-radius:10px;font-size:10px;font-weight:700;background:${r['Status']==='Completed'?'#e8f5e9':'#fff3e0'};color:${r['Status']==='Completed'?'#2e7d32':'#e65100'}">${r['Status']}</span></td>
+        </tr>`).join('');
+
+      pdfWin.document.write(`<!DOCTYPE html><html><head>
+        <title>Emerald Revenue Report</title>
+        <style>
+          * { margin:0; padding:0; box-sizing:border-box; }
+          body { font-family: 'Segoe UI', Arial, sans-serif; color: #111; background: #fff; padding: 28px; }
+          .report-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px; border-bottom:3px solid #ffcc00; padding-bottom:16px; }
+          .brand { font-size:32px; font-weight:900; letter-spacing:3px; color:#111; }
+          .brand-sub { font-size:13px; color:#555; margin-top:4px; }
+          .report-meta { text-align:right; font-size:12px; color:#555; }
+          .report-meta strong { color:#111; font-size:14px; }
+          h2 { font-size:14px; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:#555; margin:20px 0 10px; border-left:3px solid #ffcc00; padding-left:10px; }
+          .summary-table { width:380px; border-collapse:collapse; background:#f9f9f9; border-radius:8px; overflow:hidden; border:1px solid #eee; }
+          .orders-table { width:100%; border-collapse:collapse; font-size:11px; }
+          .orders-table thead { background:#ffcc00; }
+          .orders-table thead th { padding:7px 8px; text-align:left; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; }
+          .orders-table tbody tr:nth-child(even) { background:#f9f9f9; }
+          .orders-table tbody td { padding:6px 8px; border-bottom:1px solid #f0f0f0; vertical-align:top; }
+          .footer { margin-top:24px; padding-top:12px; border-top:1px solid #eee; font-size:11px; color:#888; text-align:center; }
+          @media print { body { padding:14px; } }
+        </style>
+      </head><body>
+        <div class="report-header">
+          <div>
+            <div class="brand">EMERALD</div>
+            <div class="brand-sub">Revenue Report</div>
+          </div>
+          <div class="report-meta">
+            <div><strong>Period: ${periodLabel}</strong></div>
+            <div>Generated: ${new Date().toLocaleString('en-IN')}</div>
+            <div>Total records: ${rows.length}</div>
+          </div>
+        </div>
+
+        <h2>Summary</h2>
+        <table class="summary-table">${summaryHTML}</table>
+
+        <h2>Order Details</h2>
+        <table class="orders-table">
+          <thead>
+            <tr>
+              <th>#</th><th>Order ID</th><th>Date</th><th>Customer</th>
+              <th>Type</th><th>Table</th><th>Items</th>
+              <th>Subtotal</th><th>Discount</th><th>Total</th><th>Status</th>
+            </tr>
+          </thead>
+          <tbody>${ordersHTML}</tbody>
+        </table>
+
+        <div class="footer">EMERALD Restaurant • Generated by Manager Dashboard • ${new Date().toLocaleDateString('en-IN')}</div>
+        <script>
+          window.onload = function() {
+            setTimeout(function() { window.print(); }, 400);
+          };
+        <\/script>
+      </body></html>`);
+      pdfWin.document.close();
+    } catch(e) {
+      alert('Export failed: ' + e.message);
+    }
+    btn.classList.remove('loading');
+  }, 50);
+}
+
+/* Show export note when filter applied */
+function updateExportNote() {
+  const note = document.getElementById('exportNote');
+  const count = document.getElementById('exportCount');
+  if (filteredHistory.length > 0) {
+    note.style.display = 'inline';
+    count.textContent = filteredHistory.length;
+  } else {
+    note.style.display = 'none';
+  }
 }
 
 let openDetailId = null;

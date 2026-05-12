@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1031,11 +1029,15 @@ function processPayment() {
   const customerName = currentOrderInfo.name || "Customer";
   const peopleCount = parseInt(currentOrderInfo.people) || 1;
 
+  // Convert cart items array → keyed object (Firebase rejects JS arrays)
+  const cartItems = {};
+  Object.values(cart).forEach(item => { cartItems[item.id] = item; });
+
   const order = {
     id: orderId,
     tableNumber: peopleCount,
     customerName: customerName,
-    items: Object.values(cart),
+    items: cartItems,
     total: Object.values(cart).reduce((sum, item) => sum + (item.price * item.qty), 0),
     status: "pending",
     diet: "Regular",

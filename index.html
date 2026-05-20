@@ -4,18 +4,14 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <title>EMERALD</title>
-
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-
 <style>
   :root {
     --primary-yellow: #ffcc00;
     --primary-dark: #cc9900;   
     --card-bg: #f7f7f7;
   }
-
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
   body {
     font-family: 'Inter', sans-serif;
     background: url("https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=1920") center/cover no-repeat fixed;
@@ -23,16 +19,14 @@
     display: flex;
     justify-content: center;
   }
-
   body::before {
     content: "";
     position: fixed;
     inset: 0;
     background: rgba(0,0,0,0.65); 
-    backdrop-filter: blur(4px);    
+    backdrop-filter: blur(4px);
     z-index: 0;
   }
-
   .app-shell {
     position: relative;
     z-index: 2; 
@@ -43,20 +37,17 @@
     flex-direction: column;
     padding: 20px; 
   }
-
   .header {
     text-align: center;
     padding: 40px 0;
   }
-
   .brand-name {
     font-family: 'Playfair Display', serif;
     font-size: 64px; 
     color: #fff;
-    letter-spacing: 3px; 
+    letter-spacing: 3px;
     text-shadow: 0 4px 10px rgba(0,0,0,0.3);
   }
-
   .card {
     background: var(--card-bg);
     border-radius: 28px;        
@@ -65,16 +56,14 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    margin-bottom: 100px; 
+    margin-bottom: 100px;
   }
-
   .card h2 {
     text-align: center;
     margin-bottom: 30px;
     font-weight: 500;
-    color: #111; 
+    color: #111;
   }
-
   .option {
     display: flex;
     align-items: center;
@@ -90,34 +79,28 @@
     box-shadow: 0 6px 0px #d6d6d6, 0 8px 15px rgba(0,0,0,0.1);
     transition: all 0.1s ease;
   }
-
   .option:active {
     top: 4px;
     box-shadow: 0 2px 0px #d6d6d6, 0 4px 8px rgba(0,0,0,0.1);
   }
-
   .option.selected {
     background: var(--primary-yellow);
-    border-color: #e6b800;             
+    border-color: #e6b800;
     box-shadow: 0 6px 0px var(--primary-dark), 0 8px 20px rgba(255, 204, 0, 0.3);
-    top: -2px; 
+    top: -2px;
   }
-
   .arrow-toggle {
     margin-left: auto;
     padding: 5px;
     transition: transform 0.3s ease;
     display: none;
   }
-
   .option.selected .arrow-toggle {
     display: block;
   }
-
   .arrow-toggle.rotated {
     transform: rotate(180deg);
   }
-
   #dinein-form {
     max-height: 0;
     overflow: hidden;
@@ -127,18 +110,15 @@
     margin-bottom: 0;
     border: 0 solid #e0e0e0;
   }
-
   #dinein-form.active {
-    max-height: 200px;
+    max-height: 260px;
     margin-bottom: 20px;
     border: 1px solid #e0e0e0;
     padding: 15px;
   }
-
   .input-group {
     margin-bottom: 10px;
   }
-
   .input-group input {
     width: 100%;
     padding: 12px;
@@ -148,11 +128,9 @@
     font-size: 14px;
     outline: none;
   }
-
   .input-group input:focus {
     border-color: var(--primary-dark);
   }
-
   .icon-box {
     width: 48px;
     height: 48px;
@@ -163,9 +141,7 @@
     justify-content: center;
     flex-shrink: 0;
   }
-
   .option.selected .icon-box { background: rgba(255, 255, 255, 0.6); }
-
   .icon-box svg {
     width: 24px;
     height: 24px;
@@ -173,10 +149,8 @@
     stroke-width: 2;
     fill: none;
   }
-
   .option-text h3 { font-size: 16px; color: #111; }
   .option-text p { font-size: 13px; color: #555; } 
-
   .footer-action {
     position: fixed;
     bottom: 0;
@@ -186,7 +160,6 @@
     background: linear-gradient(transparent, rgba(0,0,0,0.4));
     z-index: 10;
   }
-
   .btn {
     width: 100%;
     padding: 20px;
@@ -202,19 +175,16 @@
     top: 0;
     transition: all 0.3s ease;
   }
-
   .btn.active {
     background: var(--primary-yellow); 
     color: #111;
     cursor: pointer;
     box-shadow: 0 6px 0px var(--primary-dark), 0 10px 20px rgba(255, 204, 0, 0.4);
   }
-
   .btn.active:active {
     top: 4px;
     box-shadow: 0 2px 0px var(--primary-dark);
   }
-
   .hours {
     text-align: center;
     color: #000000;
@@ -222,38 +192,15 @@
     opacity: 0.8;
     margin-top: 20px;
   }
-
-
-  #takeaway-form {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), margin-bottom 0.4s ease, padding 0.4s ease;
-    background: #fff;
-    border-radius: 16px;
-    margin-bottom: 0;
-    border: 0 solid #e0e0e0;
-  }
-
-  #takeaway-form.active {
-    max-height: 100px;
-    margin-bottom: 20px;
-    border: 1px solid #e0e0e0;
-    padding: 15px;
-  }
-
   @media (max-width: 480px) {
     .brand-name { font-size: 48px; } 
     .app-shell { padding: 15px; }
   }
 </style>
-
-<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
-
 <script>
-// Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyC_LUKzINx6H4XE7uWoCpeLSldpIp-DR80",
   authDomain: "restro-4db49.firebaseapp.com",
@@ -264,25 +211,18 @@ const firebaseConfig = {
   appId: "1:860567729744:web:773f5a315af7340d950355",
   measurementId: "G-D9CJCYZJF4"
 };
-
-// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const analytics = firebase.analytics();
 </script>
-
 </head>
-
 <body>
-
 <div class="app-shell">
   <header class="header">
     <div class="brand-name">EMERALD</div>
   </header>
-
   <main class="card">
     <h2>Select Order Mode</h2>
-
     <div class="option" data-type="dinein" id="dinein-option">
       <div class="icon-box">
         <svg viewBox="0 0 24 24"><path d="M18 8c0 3.31-2.69 6-6 6M18 8V3M14 8V3M22 8V3M18 21v-7"/><path d="M2 15c0 3.87 3.13 7 7 7s7-3.13 7-7-3.13-7-7-7-7 3.13-7 7zM9 8V2"/></svg>
@@ -295,7 +235,6 @@ const analytics = firebase.analytics();
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
       </div>
     </div>
-
     <div id="dinein-form">
       <div class="input-group">
         <input type="text" id="userName" placeholder="Your Name">
@@ -303,9 +242,11 @@ const analytics = firebase.analytics();
       <div class="input-group">
         <input type="number" id="userCount" placeholder="Number of People">
       </div>
+      <div class="input-group">
+        <input type="number" id="tablePref" placeholder="Preferred Table No. (Optional)">
+      </div>
     </div>
-
-    <div class="option" data-type="takeaway" id="takeaway-option">
+    <div class="option" data-type="takeaway">
       <div class="icon-box">
         <svg viewBox="0 0 24 24"><path d="M6 7h12l-1 14H7L6 7z"/><path d="M9 7V5a3 3 0 016 0v2"/></svg>
       </div>
@@ -313,44 +254,26 @@ const analytics = firebase.analytics();
         <h3>Takeaway</h3>
         <p>Pick up your order</p>
       </div>
-      <div class="arrow-toggle" id="arrowToggleTakeaway">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-      </div>
     </div>
-
-    <div id="takeaway-form">
-      <div class="input-group">
-        <input type="text" id="takeawayName" placeholder="Your Name">
-      </div>
-    </div>
-
     <div class="hours">Open daily: 12:00 PM - 11:00 PM</div>
   </main>
-
   <footer class="footer-action">
     <button class="btn" id="viewMenuBtn">View Menu →</button>
   </footer>
 </div>
-
 <script>
 const options = document.querySelectorAll(".option");
 const btn = document.getElementById("viewMenuBtn");
 const dineinForm = document.getElementById("dinein-form");
-const takeawayForm = document.getElementById("takeaway-form");
 const nameInput = document.getElementById("userName");
 const countInput = document.getElementById("userCount");
-const takeawayNameInput = document.getElementById("takeawayName");
+const tablePrefInput = document.getElementById("tablePref");
 const arrowToggle = document.getElementById("arrowToggle");
-const arrowToggleTakeaway = document.getElementById("arrowToggleTakeaway");
 let selected = null;
 
 function validateForm() {
   if (selected === "takeaway") {
-    if (takeawayNameInput.value.trim() !== "") {
-      btn.classList.add("active");
-    } else {
-      btn.classList.remove("active");
-    }
+    btn.classList.add("active");
   } else if (selected === "dinein") {
     if (nameInput.value.trim() !== "" && countInput.value.trim() !== "") {
       btn.classList.add("active");
@@ -364,23 +287,14 @@ function validateForm() {
 
 options.forEach(option => {
   option.addEventListener("click", (e) => {
-    // Arrow toggle for dine-in (collapse/expand)
     if (option.id === "dinein-option" && selected === "dinein" && e.target.closest('#arrowToggle')) {
-      dineinForm.classList.toggle("active");
-      arrowToggle.classList.toggle("rotated");
-      return;
+        dineinForm.classList.toggle("active");
+        arrowToggle.classList.toggle("rotated");
+        return;
     }
-    // Arrow toggle for takeaway (collapse/expand)
-    if (option.id === "takeaway-option" && selected === "takeaway" && e.target.closest('#arrowToggleTakeaway')) {
-      takeawayForm.classList.toggle("active");
-      arrowToggleTakeaway.classList.toggle("rotated");
-      return;
-    }
-
     if (window.navigator && window.navigator.vibrate) {
       window.navigator.vibrate(15);
     }
-
     options.forEach(o => o.classList.remove("selected"));
     option.classList.add("selected");
     selected = option.dataset.type;
@@ -388,37 +302,29 @@ options.forEach(option => {
     if (selected === "dinein") {
       dineinForm.classList.add("active");
       arrowToggle.classList.remove("rotated");
-      takeawayForm.classList.remove("active");
-    } else if (selected === "takeaway") {
-      takeawayForm.classList.add("active");
-      arrowToggleTakeaway.classList.remove("rotated");
-      dineinForm.classList.remove("active");
     } else {
       dineinForm.classList.remove("active");
-      takeawayForm.classList.remove("active");
     }
-
     validateForm();
   });
 });
 
 nameInput.addEventListener("input", validateForm);
 countInput.addEventListener("input", validateForm);
-takeawayNameInput.addEventListener("input", validateForm);
 
 btn.addEventListener("click", () => {
   if (btn.classList.contains("active")) {
     const orderInfo = {
       orderType: selected,
-      name: selected === "dinein" ? nameInput.value.trim() : takeawayNameInput.value.trim(),
+      name: selected === "dinein" ? nameInput.value.trim() : "Takeaway Customer",
       people: selected === "dinein" ? parseInt(countInput.value) : 1,
+      tablePref: selected === "dinein" ? tablePrefInput.value.trim() : "",
       timestamp: Date.now()
     };
     localStorage.setItem("currentOrderInfo", JSON.stringify(orderInfo));
-    window.location.href = "menu.html";
+    window.location.href = "menu.html"; 
   }
 });
 </script>
-
 </body>
 </html>

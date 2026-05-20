@@ -111,7 +111,7 @@
     border: 0 solid #e0e0e0;
   }
   #dinein-form.active {
-    max-height: 260px;
+    max-height: 160px;
     margin-bottom: 20px;
     border: 1px solid #e0e0e0;
     padding: 15px;
@@ -242,9 +242,6 @@ const analytics = firebase.analytics();
       <div class="input-group">
         <input type="number" id="userCount" placeholder="Number of People">
       </div>
-      <div class="input-group">
-        <input type="number" id="tablePref" placeholder="Preferred Table No. (Optional)">
-      </div>
     </div>
     <div class="option" data-type="takeaway">
       <div class="icon-box">
@@ -267,7 +264,7 @@ const btn = document.getElementById("viewMenuBtn");
 const dineinForm = document.getElementById("dinein-form");
 const nameInput = document.getElementById("userName");
 const countInput = document.getElementById("userCount");
-const tablePrefInput = document.getElementById("tablePref");
+
 const arrowToggle = document.getElementById("arrowToggle");
 let selected = null;
 
@@ -318,7 +315,6 @@ btn.addEventListener("click", () => {
       orderType: selected,
       name: selected === "dinein" ? nameInput.value.trim() : "Takeaway Customer",
       people: selected === "dinein" ? parseInt(countInput.value) : 1,
-      tablePref: selected === "dinein" ? tablePrefInput.value.trim() : "",
       timestamp: Date.now()
     };
     localStorage.setItem("currentOrderInfo", JSON.stringify(orderInfo));

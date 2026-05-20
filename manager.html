@@ -405,6 +405,7 @@ db.ref("orders").on("value",s=>{
   allTkw=ordersArr.filter(o=>o.orderType==='takeaway'&&(o.status==='pending'||o.status==='Preparing'));
   renderTkw();
   updateTrackerStats(ordersArr);
+  syncDineInOrdersToTables(ordersArr);
 });
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -741,6 +742,44 @@ db.ref("tables").once("value",s=>{
     db.ref("tables").set(d);
   }
 });
+
+
+// ── Sync dine-in orders onto tables if they somehow missed the tables listener ─
+function syncDineInOrdersToTables(ordersArr){
+  if(!ordersArr||!allTables.length) return;
+  // Find active dine-in orders that have a tableNumber assigned
+  const activeDineIn = ordersArr.filter(o=>
+    o.orderType==='dinein' &&
+    o.status!=='Completed' && o.status!=='Cancelled' &&
+    o.tableNumber
+  );
+  if(!activeDineIn.length) return;
+
+  db.ref("tables").once("value", s=>{
+    const raw = s.val(); if(!raw) return;
+    activeDineIn.forEach(order=>{
+      // Find if this table is already marked occupied in Firebase
+      let tableKey=null, tableVal=null;
+      Object.entries(raw).forEach(([k,v])=>{
+        if(v && v.number == order.tableNumber){ tableKey=k; tableVal=v; }
+      });
+      if(!tableKey) return;
+      // If the table is NOT occupied but we have an active order for it, fix it
+      if(!tableVal.occupied){
+        db.ref("tables/"+tableKey).update({
+          occupied: true,
+          current: {
+            name: order.customerName || order.name || 'Guest',
+            people: order.people || 1,
+            since: order.createdAt ? new Date(order.createdAt).getTime() : Date.now(),
+            orderId: order.id
+          }
+        });
+      }
+    });
+  });
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 function renderDash(){
   const g=document.getElementById('tgrid'),q=document.getElementById('qlist');
